@@ -1,5 +1,7 @@
 TEMPLATE = app
-TARGET = ../../build/asec_control
+win32: DESTDIR = ../../build/
+unix:  DESTDIR = ../build/
+TARGET = asec_control
 QT += core \
     gui \
     script \

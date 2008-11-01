@@ -1,5 +1,7 @@
 TEMPLATE = app
-TARGET = ../../build/asec_temperature
+win32: DESTDIR = ../../build/
+unix:  DESTDIR = ../build/
+TARGET = asec_temperature
 QT += core \
     gui
 CONFIG += qdbus
