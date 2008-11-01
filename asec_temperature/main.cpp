@@ -1,4 +1,4 @@
-#include "vib_temperature.h"
+#include "asec_temperature.h"
 
 #include <QtGui>
 #include <QApplication>
