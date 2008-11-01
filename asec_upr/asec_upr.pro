@@ -1,5 +1,7 @@
 TEMPLATE = app
-TARGET = ../../build/asec_upr
+win32: DESTDIR = ../../build/
+unix:  DESTDIR = ../build/
+TARGET = asec_upr
 HEADERS += ctrl/vol.h \
     ctrl/osc.h \
     ctrl/gpib.h \
