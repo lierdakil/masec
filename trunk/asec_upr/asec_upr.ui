@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>vibuprautClass</class>
+ <widget class="QWidget" name="vibuprautClass">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>679</width>
+    <height>460</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>vibupraut</string>
+  </property>
+  <layout class="QVBoxLayout">
+   <item>
+    <widget class="QGraphicsView" name="graph"/>
+   </item>
+   <item>
+    <layout class="QGridLayout">
+     <item row="0" column="0">
+      <widget class="QLabel" name="lbOscId">
+       <property name="text">
+        <string>GPIB Осциллографа</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QLabel" name="lbGenId">
+       <property name="text">
+        <string>GPIB Генератора</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="2">
+      <widget class="QLabel" name="lbMulID">
+       <property name="text">
+        <string>GPIB Мультиметра</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLineEdit" name="edOscId"/>
+     </item>
+     <item row="1" column="1">
+      <widget class="QLineEdit" name="edGenId"/>
+     </item>
+     <item row="1" column="2">
+      <widget class="QLineEdit" name="edMulId"/>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <tabstops>
+  <tabstop>edOscId</tabstop>
+  <tabstop>edGenId</tabstop>
+  <tabstop>edMulId</tabstop>
+  <tabstop>graph</tabstop>
+ </tabstops>
+ <resources/>
+ <connections/>
+</ui>
