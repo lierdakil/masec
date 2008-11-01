@@ -1,0 +1,13 @@
+INPUT(
+./release\scripthread.o
+./release\ccontrolbus.o
+./release\numberedtextview.o
+./release\main.o
+./release\asec_control.o
+./release\gdbmacros.o
+./release\moc_scriptthread.o
+./release\moc_cgraphiccontrol.o
+./release\moc_ccontrolbus.o
+./release\moc_numberedtextview.o
+./release\moc_asec_control.o
+);
