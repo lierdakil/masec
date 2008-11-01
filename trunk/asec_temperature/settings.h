@@ -7,7 +7,7 @@
 #include <QtDBus>
 #include <QSettings>
 #include "ui_settings.h"
-#include "ctrl_temp.h"
+#include "ctrl/temp.h"
 #include "QTempTimeline.h"
 
 class settings : public QDialog

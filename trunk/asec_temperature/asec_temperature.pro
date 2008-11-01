@@ -3,7 +3,7 @@ TARGET = ../../build/asec_temperature
 QT += core \
     gui
 CONFIG += qdbus
-HEADERS += ctrl_temp.h \
+HEADERS += ctrl/temp.h \
     QTempTimeline.h \
     settings.h \
     asec_temperature.h
@@ -13,5 +13,6 @@ SOURCES += QTempTimeline.cpp \
     asec_temperature.cpp
 FORMS += settings.ui \
     asec_temperature.ui
-RESOURCES += 
+RESOURCES +=
+INCLUDEPATH += ../asec_gpib/
 LIBS += ../lib/sicl32.lib

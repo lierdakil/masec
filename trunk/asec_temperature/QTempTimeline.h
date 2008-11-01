@@ -8,7 +8,7 @@
 #include <QGraphicsItem>
 #include <QtAlgorithms>
 #include <QGraphicsView>
-#include "ctrl_temp.h"
+#include "ctrl/temp.h"
 #include <math.h>
 
 class QTempTimeline: public QTimeLine

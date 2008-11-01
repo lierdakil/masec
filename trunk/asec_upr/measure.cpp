@@ -1,5 +1,5 @@
 #include "measure.h"
-//TODO: Исправить комментарии...
+//TODO: Fix comments...
 
 cmeasure::cmeasure(QString oscstr, QString genstr, QString volstr, float sf, float ff, float epsilon,QGraphicsScene *scene)
 {
