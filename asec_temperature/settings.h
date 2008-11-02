@@ -20,17 +20,14 @@ public:
     void read_settings();
     double getSettime(double temp);
     QString tempid;
-    //QDBusInterface *iface;
 
 private:
     Ui::Settings ui_settings;
-	QTempTimeline test;
-    
+	QTempTimer test;
+
 private slots:
 	void accept();
 	void on_btTest_clicked();
-	void test_stateChange(QTimeLine::State newState);
-
 };
 
 #endif /*SETTINGS_H_*/

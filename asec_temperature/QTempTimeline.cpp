@@ -1,117 +1,103 @@
 #include "QTempTimeline.h"
 
-QTempTimeline::QTempTimeline() : QTimeLine()
+QTempTimer::QTempTimer() : QObject()
 {
-    setCurveShape(QTimeLine::LinearCurve);
-    setDirection(QTimeLine::Forward);
-    connect(this,SIGNAL(valueChanged(qreal)),this,SLOT(vC(qreal)));
-    connect(this,SIGNAL(finished()),this,SLOT(finish()));
+
 }
 
-void QTempTimeline::start(tempctrl *tempctl, float newtemp, int timeout, double settime, QGraphicsView *view)
+void QTempTimer::start(QString tempid, float nsetp, float nramp, float ntimeout, float nsettime)
 {
-    temp=tempctl;
+	setp=nsetp;
+	ramp=nramp;
+	timeout=ntimeout;
+	settime=nsettime;
 
-    first=true;
-    waittime=settime;
-    waiting=0;
+    temp=new tempctrl(tempid);
+    ramp=temp->ramp(ramp);
 
-    setDuration(timeout);
-    setUpdateInterval(60);
+    temp2=temp->temp();
+    time=0;
 
-    if (view->scene()==0)
+    drawtime=0;
+    QTimer::singleShot(int(60000*TIMESTEP),this,SLOT(draw_temp()));
+
+    float setp0=temp->getsetp();
+    temp->setpoint(setp);
+    if(ramp>0)
     {
-        scene=new QGraphicsScene();
-        view->setScene(scene);
+    	wait(fabs(setp-setp0)/ramp,SLOT(rampdone()));//wait until system dragged setpoint.
     }
     else
-        scene=view->scene();
-
-    QList<QGraphicsItem*> L = scene->items();
-
-    while( ! L.empty() ) {
-        //myscene->removeItem( L.first() );
-        delete L.first();
-        L.removeFirst();
+    {
+    	wait(TIMESTEP,SLOT(step1()));
     }
-
-    scene->update(scene->sceneRect());
-
-    view->repaint();
-
-    setp=newtemp;
-
-    setCurrentTime(0);
-
-    temp2=temp->temp();
-    t0=0;
-
-    h=(setp-temp2)*2;
-    if(h==0) h=1;
-    scene->setSceneRect(t0,temp2,timeout,h);
-    h=2*temp2+h;
-
-    view->fitInView(scene->sceneRect());
-
-    scene->addLine(t0,h-temp2,timeout+t0,h-temp2,Qt::SolidLine);
-    scene->addLine(t0,h-setp,timeout+t0,h-setp,Qt::DashLine);
-
-    temp->setpoint(setp);
-    setp2=temp->getsetp();
-    QTimeLine::start();
 }
 
-QTempTimeline::~QTempTimeline()
+void QTempTimer::wait(float min, const char* member)
+{
+	dt=min;
+	time+=min;
+	QTimer::singleShot(int(60000*min),this,member);//TODO: is this conversion safe?
+}
+
+QTempTimer::~QTempTimer()
 {
 
 }
 
-
-void QTempTimeline::vC(qreal value)
+void QTempTimer::rampdone()
 {
-    if (currentTime()==0)
-        return;
+	if (temp->rampdone())
+		wait(TIMESTEP,SLOT(step1()));
+	else
+		wait(TIMESTEP,SLOT(rampdone()));
+}
+
+bool QTempTimer::stable()
+{
+	//two consequent values of temperature are near setp
+	//TODO: Maybe there's a better algorithm to detect that temperature is stable?
+	return ( fabs(temp1-setp)<=0.5 && fabs(temp2-setp)<=0.5 );
+}
+
+void QTempTimer::draw_temp()
+{
+	drawtime+=TIMESTEP;
+	emit newpoint(drawtime,temp->temp(),temp->getsetp());
+	QTimer::singleShot(int(60000*TIMESTEP),this,SLOT(draw_temp()));
+}
+
+void QTempTimer::step1()
+{
     temp1=temp2;
     temp2=temp->temp();
-    setp1=setp2;
-    setp2=temp->getsetp();
-    dt=updateInterval();
-    t0=currentTime();
-    scene->addLine(t0,h-temp1,t0+dt,h-temp2,Qt::SolidLine);
-    scene->addLine(t0,h-setp1,t0+dt,h-setp2,Qt::DotLine);
 
-    if (waiting>0)
+    if(time>=timeout)
     {
-        waiting-=dt/1000.0;
-        return;
+    	emit timedout();
+    	return;
     }
 
-    if (temp->rampdone())
-    {
-        if ( fabs(temp1-setp)<=0.5 && fabs(temp2-setp)<=0.5 )
-        {
-            if (first)
-            {
-                waiting=waittime;
-                first=false;
-            }
-            else
-            {
-                stop();
-                delete temp;
-                emit reached(temp1,temp2,setp);
-            }
-        } else {
-            first = true;
-        }
-    }
+    if ( stable() )
+    	wait(settime,SLOT(step2()));//wait settime to check if temperature stabilized.
+    else
+    	wait(TIMESTEP,SLOT(step1()));//continue cycle
 }
 
-void QTempTimeline::finish()
+void QTempTimer::step2()
 {
-    //QDBusInterface iface("ru.pp.livid.vib.con","/Main","ru.pp.livid.iface");
-    //iface->call("err");
-    //TODO: Check if this gets called
-    delete temp;
+	if ( stable() )
+	{
+    	//we think that temperature is stable
+		delete temp;
+		emit finished();
+	} else {
+		wait(TIMESTEP,SLOT(step1()));//continue cycle
+	}
+}
+
+void QTempTimer::stop()
+{
+	timeout=time;
 }
 
