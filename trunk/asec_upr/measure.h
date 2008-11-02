@@ -8,7 +8,7 @@
 #include <QList>
 #include <QPair>
 
-//TODO: Переписать под Qt все ctrl_, используя МИНИМУМ возможностей sicl.
+//TODO: РџРµСЂРµРїРёСЃР°С‚СЊ РїРѕРґ Qt РІСЃРµ ctrl_, РёСЃРїРѕР»СЊР·СѓСЏ РњРРќРРњРЈРњ РІРѕР·РјРѕР¶РЅРѕСЃС‚РµР№ sicl.
 #include "ctrl/gen.h"
 #include "ctrl/osc.h"
 #include "ctrl/vol.h"
