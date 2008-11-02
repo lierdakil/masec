@@ -1,7 +1,7 @@
 #ifndef QTEMPTIMELINE_H_
 #define QTEMPTIMELINE_H_
 
-#include <QTimeLine>
+#include <QTimer>
 #include <QtDBus>
 #include <QDebug>
 #include <QGraphicsScene>
@@ -11,30 +11,44 @@
 #include "ctrl/temp.h"
 #include <math.h>
 
-class QTempTimeline: public QTimeLine
+#define TIMESTEP 0.001
+
+class QTempTimer : public QObject
 {
 	Q_OBJECT
-	
+
 private:
 	tempctrl *temp;
-	float temp1,temp2,setp, h, setp1, setp2;
-	int t0,dt;
-	bool first;
-	double waittime;
-	double waiting;
-	QGraphicsScene *scene;
-	
-public slots:
-	void vC(qreal value);
-	void finish();
-	void start(tempctrl *temp, float newtemp, int timeout, double settime, QGraphicsView *view);
-	
-signals:
-	void reached(float temp1,float temp2,float setp);
-	
+	float dt; //minutes
+	float time,drawtime;//minutes
+	void wait(float min, const char *member);
+
 public:
-	QTempTimeline();
-	~QTempTimeline();
+	//"input"
+	float setp;
+	float ramp;
+	float timeout;
+	double settime;
+	//return vals
+	float temp1,temp2;
+
+public slots:
+	bool stable();//we use this function to check if temperature is stable at the moment
+	void start(QString tempid, float nsetp, float nramp, float ntimeout, float nsettime);//start temperature setting
+	void draw_temp();//emit newpoint in separate event thread
+	void rampdone();//first we wait until ramp is done
+	void step1();//now we check every TIMESTEP while temperature stabilizes - main check cycle, should include emit timedout() here
+	void step2();//then we wait $settime and check if it really stabilized
+	void stop();//make it think it timed out
+
+signals:
+	void finished();//temperature stabilized at given setpoint
+	void timedout();//temperature could not stabilize in $timeout minutes
+	void newpoint(float time, float temp, float setpoint);
+
+public:
+	QTempTimer();
+	~QTempTimer();
 };
 
 #endif /*QTEMPTIMELINE_H_*/

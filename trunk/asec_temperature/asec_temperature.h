@@ -21,7 +21,7 @@ public:
     ~vib_temperature();
     settings wset;
     Ui::vib_temperatureClass ui;
-    QTempTimeline temptl;
+    QTempTimer temptl;
     QStringList result();
 
 private slots:
@@ -29,6 +29,7 @@ private slots:
 
 public slots:
     void cont(float temp1, float temp2, float setp);
+    QStringList set_temp(double temp, double ramp, double timeout);
 };
 
 class export_adaptor : public QDBusAbstractAdaptor
@@ -48,21 +49,14 @@ public:
 public slots:
     QStringList set_temp(double temp, double ramp, double timeout)
     {
-        if (!t->wset.tempid.isEmpty())
-        {
-            tempctrl *tempc=new tempctrl((char*)t->wset.tempid.toAscii().data());//TODO: Better move inside temptl
-            tempc->ramp(ramp);
-            setpoint=temp;
-            t->result_var.clear();//TODO: Move call to temptl to vib_temperature::start(...)
-            t->temptl.start(tempc, temp, (int)ceil(timeout*60000), t->wset.getSettime(temp), t->ui.gvTemp);
-            return t->result();
-        }
-        return trUtf8("::ERROR::;Не установлен GPIB ID термоконтроллера.").split(";");
+    	setpoint=temp;
+    	return t->set_temp(setpoint,ramp,timeout);
     }
 
     QStringList step_temp(double step, double ramp, double timeout)
     {
-        return set_temp(setpoint+step,ramp,timeout);
+    	setpoint+=step;
+        return t->set_temp(setpoint,ramp,timeout);
     }
 
     void stop()
