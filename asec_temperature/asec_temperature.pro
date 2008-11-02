@@ -1,6 +1,5 @@
 TEMPLATE = app
-win32: DESTDIR = ../../build/
-unix:  DESTDIR = ../build/
+DESTDIR = ../build/
 TARGET = asec_temperature
 QT += core \
     gui
