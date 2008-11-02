@@ -4,7 +4,7 @@
 #include <QtGui>
 #include <QtCore>
 //#include <QErrorMessage>
-//TODO: Избавиться от qWarning().
+//TODO: Get rid of qWarning().
 #include "ui_asec_control.h"
 #include "scriptthread.h"
 #include <stdarg.h>
