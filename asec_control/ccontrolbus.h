@@ -36,7 +36,7 @@ signals:
 public:
 	//common name: ru.pp.livid.asec.* ; interface: ru.pp.livid.asec.exports
 
-	CControlBus(QString log_file_name, QString description, QString code);
+	CControlBus(QString log_file_name, QString description, QString code,  QString *error);
 	~CControlBus();
 
 	//QScript adaptor
@@ -48,7 +48,7 @@ public:
 
 	//Flow functions
 	QDBusError call(QString function, QString service, QList<QScriptValue> arguments);
-	void stop();//To be called from another thread
+	QString stop();//To be called from another thread
 };
 
 #endif /* VIB_CONTROL_ADAPTOR_H_ */

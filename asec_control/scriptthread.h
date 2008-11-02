@@ -29,6 +29,7 @@ public:
 	void stop();
 signals:
 	void bug(QString message, int BugLine=-1);
+	void error(QString error);
 };
 
 #endif /* SCRIPTTHREAD_H_ */
