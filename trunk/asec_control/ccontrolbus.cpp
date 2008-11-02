@@ -7,13 +7,16 @@
 
 #include "ccontrolbus.h"
 
-CControlBus::CControlBus(QString log_file_name, QString description, QString code)
+CControlBus::CControlBus(QString log_file_name, QString description, QString code, QString *error)
 {
 	QMutexLocker locker(&mutex);
-	// Открыть файл, инициализировать все, что нужно и тд и тп
+	// РћС‚РєСЂС‹С‚СЊ С„Р°Р№Р», РёРЅРёС†РёР°Р»РёР·РёСЂРѕРІР°С‚СЊ РІСЃРµ, С‡С‚Рѕ РЅСѓР¶РЅРѕ Рё С‚Рґ Рё С‚Рї
 	data_file=new QFile(log_file_name);
 	if (!data_file->open(QIODevice::WriteOnly))
-		qFatal("Could not open file!");//TODO: Изменить
+	{
+		*error = trUtf8("Could not open file!");
+		return;
+	}
 	description="/* This file is a data file for ASEC\n"
 		" * Experiment description (UTF-8):\n"
 		" * "+description+"\n"
@@ -21,22 +24,42 @@ CControlBus::CControlBus(QString log_file_name, QString description, QString cod
 		" * Newline separates measurement cycles\n"
 		" * \n"
 		" * Code:\n";
-	// Добавлять в описание код эксперимента
+	// Р”РѕР±Р°РІР»СЏС‚СЊ РІ РѕРїРёСЃР°РЅРёРµ РєРѕРґ СЌРєСЃРїРµСЂРёРјРµРЅС‚Р°
 	description+=" * "+code.replace("\n","\n * ")+"\n";
-	// и список загруженных модулей
-	if (QDBusConnection::sessionBus().interface()->isValid())
+	// Рё СЃРїРёСЃРѕРє Р·Р°РіСЂСѓР¶РµРЅРЅС‹С… РјРѕРґСѓР»РµР№
+	if (QDBusConnection::sessionBus().isConnected())
 	{
-		description+=" * Loaded modules:\n";
-		QStringList list = QDBusConnection::sessionBus().interface()->registeredServiceNames().value().filter(QRegExp("^ru.pp.livid.asec.(.*)"));
-		//for each service in list
-		for(int k=0;k<list.count();++k)
+		if (QDBusConnection::sessionBus().interface()->isValid())
 		{
-			description+=" * "+list.value(k)+"\n";
-			//TODO: описание модуля, экспортируемое самим модулем
+			if (QDBusConnection::sessionBus().interface()->isValid())
+			{
+				description+=" * Loaded modules:\n";
+				QStringList list = QDBusConnection::sessionBus().interface()->registeredServiceNames().value().filter(QRegExp("^ru.pp.livid.asec.(.*)"));
+				//for each service in list
+				for(int k=0;k<list.count();++k)
+				{
+					QDBusInterface iface(list.value(k),"/","ru.pp.livid.asec.help");
+					if (iface.isValid())
+					{
+						description+=" * "+list.value(k)+"\n";
+						QDBusReply<QString> reply=iface.call("module_description");
+						if(reply.isValid())
+							description+=" * "+reply.value().replace("\n","\n * ")+"\n";
+					}
+					//TODO: РѕРїРёСЃР°РЅРёРµ РјРѕРґСѓР»СЏ, СЌРєСЃРїРѕСЂС‚РёСЂСѓРµРјРѕРµ СЃР°РјРёРј РјРѕРґСѓР»РµРј - РІ _РјРѕРґСѓР»СЏС…_
+				}
+			}
 		}
+		else
+			*error=trUtf8("::ERROR::stop::No DBus session interface!");
+			return;
+	}
+	else
+	{
+		*error=trUtf8("::ERROR::stop::No DBus connection!");
+		return;
 	}
 	description+=" */\n";
-	//TODO: What if no DBus connection available? Error handler?
 	data_file->write(description.toUtf8());
 
 	last_call="";
@@ -46,9 +69,9 @@ CControlBus::CControlBus(QString log_file_name, QString description, QString cod
 CControlBus::~CControlBus()
 {
 	if(!stopped)
-		stop();
+		stop();//TODO: Error handler?
 	QMutexLocker locker(&mutex);
-	// Закрыть файл, вычистить все лишнее и тд и тп.
+	// Р—Р°РєСЂС‹С‚СЊ С„Р°Р№Р», РІС‹С‡РёСЃС‚РёС‚СЊ РІСЃРµ Р»РёС€РЅРµРµ Рё С‚Рґ Рё С‚Рї.
 	data_file->write(result_row.join(";").toUtf8());
 	data_file->close();
 	emit new_row(result_row);
@@ -56,32 +79,42 @@ CControlBus::~CControlBus()
 	delete data_file;
 }
 
-void CControlBus::stop()
+QString CControlBus::stop() //returns error
 {
-	//Так же послать всем сервисам команду stop.
-	//TODO: Error handler
-	QStringList list = QDBusConnection::sessionBus().interface()->registeredServiceNames().value().filter(QRegExp("^ru.pp.livid.asec.(.*)"));
-	//for each service in list
-	for(int k=0;k<list.count();++k)
+	//РўР°Рє Р¶Рµ РїРѕСЃР»Р°С‚СЊ РІСЃРµРј СЃРµСЂРІРёСЃР°Рј РєРѕРјР°РЅРґСѓ stop.
+	if (QDBusConnection::sessionBus().isConnected())
 	{
-		QDBusInterface iface(list.at(k),"/","ru.pp.livid.asec.exports");
-
-		if(iface.isValid())
+		if (QDBusConnection::sessionBus().interface()->isValid())
 		{
-			iface.call("stop");
-		}
-	}
+			QStringList list = QDBusConnection::sessionBus().interface()->registeredServiceNames().value().filter(QRegExp("^ru.pp.livid.asec.(.*)"));
+			//for each service in list
+			for(int k=0;k<list.count();++k)
+			{
+				QDBusInterface iface(list.at(k),"/","ru.pp.livid.asec.exports");
 
-	stopped=true;
+				if(iface.isValid())
+				{
+					iface.call("stop");
+				}
+			}
+
+			stopped=true;
+			return QString();
+		}
+		else
+			return trUtf8("::ERROR::stop::No DBus session interface!");
+	}
+	else
+		return trUtf8("::ERROR::stop::No DBus connection!");
 }
 
 QDBusError CControlBus::call(QString function, QString service, QList<QScriptValue> arguments)
 {
-	/* Сделать сброс result_row в выходной файл по условию вызова
-	 * установочного модуля после измерительного, очистка, сигнал
+	/* РЎРґРµР»Р°С‚СЊ СЃР±СЂРѕСЃ result_row РІ РІС‹С…РѕРґРЅРѕР№ С„Р°Р№Р» РїРѕ СѓСЃР»РѕРІРёСЋ РІС‹Р·РѕРІР°
+	 * СѓСЃС‚Р°РЅРѕРІРѕС‡РЅРѕРіРѕ РјРѕРґСѓР»СЏ РїРѕСЃР»Рµ РёР·РјРµСЂРёС‚РµР»СЊРЅРѕРіРѕ, РѕС‡РёСЃС‚РєР°, СЃРёРіРЅР°Р»
 	 *
-	 * Определять флаг по названию, как то set_ или mes_
-	 * Новая строка данных БУДЕТ начата, если полсе измерительной функции вызвана установочная.
+	 * РћРїСЂРµРґРµР»СЏС‚СЊ С„Р»Р°Рі РїРѕ РЅР°Р·РІР°РЅРёСЋ, РєР°Рє С‚Рѕ set_ РёР»Рё mes_
+	 * РќРѕРІР°СЏ СЃС‚СЂРѕРєР° РґР°РЅРЅС‹С… Р‘РЈР”Р•Рў РЅР°С‡Р°С‚Р°, РµСЃР»Рё РїРѕР»СЃРµ РёР·РјРµСЂРёС‚РµР»СЊРЅРѕР№ С„СѓРЅРєС†РёРё РІС‹Р·РІР°РЅР° СѓСЃС‚Р°РЅРѕРІРѕС‡РЅР°СЏ.
 	 */
 	QMutexLocker locker(&mutex);
 
@@ -99,7 +132,7 @@ QDBusError CControlBus::call(QString function, QString service, QList<QScriptVal
 		result_row.clear();
 	}
 
-	//читаем список функций на интерфейсе export
+	//С‡РёС‚Р°РµРј СЃРїРёСЃРѕРє С„СѓРЅРєС†РёР№ РЅР° РёРЅС‚РµСЂС„РµР№СЃРµ export
 	QDBusInterface iface(service,"/","ru.pp.livid.asec.exports");
 
 	if(iface.isValid())
@@ -134,10 +167,8 @@ QDBusError CControlBus::call(QString function, QString service, QList<QScriptVal
 			QString signature(mm.signature());
 			QStringList parameterTypes;
 
-			foreach (QByteArray v, mm.parameterTypes())
-			{
-				parameterTypes<<v;
-			} //TODO: Раскрыть макрос?
+			for(int j=0;j<mm.parameterTypes().count();++j)
+				parameterTypes<<mm.parameterTypes().at(j);
 
 			if (QString(mm.typeName())=="QStringList") //if not, it's not export function, is it?
 			{
@@ -168,7 +199,7 @@ QDBusError CControlBus::call(QString function, QString service, QList<QScriptVal
 		if (iface.lastError().isValid())
 			return iface.lastError();
 
-		//Проверка на предмет ошибки, возвращенной вместо списка результатов.
+		//РџСЂРѕРІРµСЂРєР° РЅР° РїСЂРµРґРјРµС‚ РѕС€РёР±РєРё, РІРѕР·РІСЂР°С‰РµРЅРЅРѕР№ РІРјРµСЃС‚Рѕ СЃРїРёСЃРєР° СЂРµР·СѓР»СЊС‚Р°С‚РѕРІ.
 		if (!reply.isValid())
 			return QDBusError(QDBusError::NoReply,QString("Invalid reply!"));
 
@@ -178,7 +209,7 @@ QDBusError CControlBus::call(QString function, QString service, QList<QScriptVal
 		if (reply.value().at(0)=="::ERROR::")
 			return QDBusError(QDBusError::Other,reply.value().value(1));
 
-		//Сохренение материала из возвращенного значения в result_row
+		//РЎРѕС…СЂРµРЅРµРЅРёРµ РјР°С‚РµСЂРёР°Р»Р° РёР· РІРѕР·РІСЂР°С‰РµРЅРЅРѕРіРѕ Р·РЅР°С‡РµРЅРёСЏ РІ result_row
 		result_row<<reply.value();
 
 		last_call=function.left(function.indexOf('_'));
@@ -191,76 +222,81 @@ QDBusError CControlBus::call(QString function, QString service, QList<QScriptVal
 
 QString CControlBus::init_functions()
 {
-	//прочитать список экспортируемых функций и сгенерировать QScript код их вызова
+	//РїСЂРѕС‡РёС‚Р°С‚СЊ СЃРїРёСЃРѕРє СЌРєСЃРїРѕСЂС‚РёСЂСѓРµРјС‹С… С„СѓРЅРєС†РёР№ Рё СЃРіРµРЅРµСЂРёСЂРѕРІР°С‚СЊ QScript РєРѕРґ РёС… РІС‹Р·РѕРІР°
 
-	//Получить список сервисов и отсортировать по ^ru.pp.livid.asec.(.*)
-	if (QDBusConnection::sessionBus().interface()->isValid())
+	//РџРѕР»СѓС‡РёС‚СЊ СЃРїРёСЃРѕРє СЃРµСЂРІРёСЃРѕРІ Рё РѕС‚СЃРѕСЂС‚РёСЂРѕРІР°С‚СЊ РїРѕ ^ru.pp.livid.asec.(.*)
+	if (QDBusConnection::sessionBus().isConnected())
 	{
-		QStringList list = QDBusConnection::sessionBus().interface()->registeredServiceNames().value().filter(QRegExp("^ru.pp.livid.asec.(.*)"));
-		QString result;
-		QString code="%4.%1 = function(%3) { call(\"%1\", \"%2\", %3); }; ";
-		//for each service in list
-		for(int k=0;k<list.count();++k)
+		if (QDBusConnection::sessionBus().interface()->isValid())
 		{
-			QDBusInterface iface(list.at(k),"/","ru.pp.livid.asec.exports");
-
-			if(iface.isValid())
+			QStringList list = QDBusConnection::sessionBus().interface()->registeredServiceNames().value().filter(QRegExp("^ru.pp.livid.asec.(.*)"));
+			QString result;
+			QString code="%4.%1 = function(%3) { call(\"%1\", \"%2\", %3); }; ";
+			//for each service in list
+			for(int k=0;k<list.count();++k)
 			{
-				QString service=list.at(k);
-				QString object(service);
-				object.remove("ru.pp.livid.asec.");
-				const QMetaObject *mo = iface.metaObject();
+				QDBusInterface iface(list.at(k),"/","ru.pp.livid.asec.exports");
 
-				result.append(QString("var %1 = {};").arg(object));
-
-				//for each method on interface...
-				for (int i = mo->methodOffset(); i < mo->methodCount(); i++)
+				if(iface.isValid())
 				{
-					QMetaMethod mm = mo->method(i);
-					QString signature(mm.signature());
-					QString name=signature.left(signature.indexOf('('));
+					QString service=list.at(k);
+					QString object(service);
+					object.remove("ru.pp.livid.asec.");
+					const QMetaObject *mo = iface.metaObject();
 
-					QString typeName=QString::fromAscii(mm.typeName());
+					result.append(QString("var %1 = {};").arg(object));
 
-					if (typeName=="QStringList") //if not, it's not export function, is it?
+					//for each method on interface...
+					for (int i = mo->methodOffset(); i < mo->methodCount(); i++)
 					{
-						QStringList args;
-						for(int n=0;n<mm.parameterNames().count();++n)
-							args<<mm.parameterNames().value(n);
+						QMetaMethod mm = mo->method(i);
+						QString signature(mm.signature());
+						QString name=signature.left(signature.indexOf('('));
 
-						result.append(code.arg(name,service,args.join(","),object));
+						QString typeName=QString::fromAscii(mm.typeName());
+
+						if (typeName=="QStringList") //if not, it's not export function, is it?
+						{
+							QStringList args;
+							for(int n=0;n<mm.parameterNames().count();++n)
+								args<<mm.parameterNames().value(n);
+
+							result.append(code.arg(name,service,args.join(","),object));
+						}
 					}
+				} else {
+					return trUtf8("::ERROR::init_functions::Could not connect to %1%2 on %3!").arg(iface.service(),iface.path(),iface.interface());
 				}
-			} else {
-				return QString("::ERROR::init_functions::Could not connect to %1%2 on %3!").arg(iface.service(),iface.path(),iface.interface());
 			}
+
+			qDebug()<<result;
+
+			return result;
 		}
-
-		qDebug()<<result;
-
-		return result;
+		else
+			return trUtf8("::ERROR::init_functions::No DBus session interface!");
 	}
 	else
-		return QString("::ERROR::init_functions::No DBus connection!");
+		return trUtf8("::ERROR::init_functions::No DBus connection!");
 }
 
 QString CControlBus::get_help(QString item)
 {
-	//получить справку об экспортируемой функции
+	//РїРѕР»СѓС‡РёС‚СЊ СЃРїСЂР°РІРєСѓ РѕР± СЌРєСЃРїРѕСЂС‚РёСЂСѓРµРјРѕР№ С„СѓРЅРєС†РёРё
 	if (item=="Introduction")
 		return trUtf8(
-				"<p><b>Краткая информация о скриптовом языке</b></p>"
-				"<p>Код следует синтаксису ECMAScript. Microsoft JScript и различные реализации JavaScript так же следуют этому стандарту.</p>"
-				"<p>В целом синтаксис схож с синтаксисом C++. Объявление переменных производится оператором <span style=\" font-weight:600;\">var</span>:</p>"
+				"<p><b>РљСЂР°С‚РєР°СЏ РёРЅС„РѕСЂРјР°С†РёСЏ Рѕ СЃРєСЂРёРїС‚РѕРІРѕРј СЏР·С‹РєРµ</b></p>"
+				"<p>РљРѕРґ СЃР»РµРґСѓРµС‚ СЃРёРЅС‚Р°РєСЃРёСЃСѓ ECMAScript. Microsoft JScript Рё СЂР°Р·Р»РёС‡РЅС‹Рµ СЂРµР°Р»РёР·Р°С†РёРё JavaScript С‚Р°Рє Р¶Рµ СЃР»РµРґСѓСЋС‚ СЌС‚РѕРјСѓ СЃС‚Р°РЅРґР°СЂС‚Сѓ.</p>"
+				"<p>Р’ С†РµР»РѕРј СЃРёРЅС‚Р°РєСЃРёСЃ СЃС…РѕР¶ СЃ СЃРёРЅС‚Р°РєСЃРёСЃРѕРј C++. РћР±СЉСЏРІР»РµРЅРёРµ РїРµСЂРµРјРµРЅРЅС‹С… РїСЂРѕРёР·РІРѕРґРёС‚СЃСЏ РѕРїРµСЂР°С‚РѕСЂРѕРј <span style=\" font-weight:600;\">var</span>:</p>"
 				"<p><code>var i;</code></p>"
-				"<p>Циклы строятся по полной аналогии с C++:</p>"
+				"<p>Р¦РёРєР»С‹ СЃС‚СЂРѕСЏС‚СЃСЏ РїРѕ РїРѕР»РЅРѕР№ Р°РЅР°Р»РѕРіРёРё СЃ C++:</p>"
 				"<p><code>"
 				"for(var i=0; i&lt;max; i++)<br/>"
 				"{<br/>"
-				"&nbsp;&nbsp;//сделать что-то<br/>"
+				"&nbsp;&nbsp;//СЃРґРµР»Р°С‚СЊ С‡С‚Рѕ-С‚Рѕ<br/>"
 				"}"
 				"</code></p>"
-				"<p>На данный момент ни одна функция не возвращает значений.</p>"
+				"<p>РќР° РґР°РЅРЅС‹Р№ РјРѕРјРµРЅС‚ РЅРё РѕРґРЅР° С„СѓРЅРєС†РёСЏ РЅРµ РІРѕР·РІСЂР°С‰Р°РµС‚ Р·РЅР°С‡РµРЅРёР№.</p>"
 		);
 	else
 	{
@@ -276,19 +312,19 @@ QString CControlBus::get_help(QString item)
 			if (desc_long.isValid())
 				return desc_long.value();
 			else
-				return QString("No help for this item found");
+				return trUtf8("No help for this item found");
 		} else
-			return QString("::ERROR::get_help::Could not connect to %1%2 on %3").arg(iface.service(),iface.path(),iface.interface());
+			return trUtf8("::ERROR::get_help::Could not connect to %1%2 on %3").arg(iface.service(),iface.path(),iface.interface());
 	}
-	//По идее, сюда невозможно попасть, все выходы происходят раньше
-	return QString("::ERROR::get_help::Reached end of the function!");
+	//РџРѕ РёРґРµРµ, СЃСЋРґР° РЅРµРІРѕР·РјРѕР¶РЅРѕ РїРѕРїР°СЃС‚СЊ, РІСЃРµ РІС‹С…РѕРґС‹ РїСЂРѕРёСЃС…РѕРґСЏС‚ СЂР°РЅСЊС€Рµ
+	return trUtf8("::ERROR::get_help::Reached end of the function!");
 }
 
 QStringList CControlBus::build_help_index()
 {
-	//прочитать список экспортируемых функций
+	//РїСЂРѕС‡РёС‚Р°С‚СЊ СЃРїРёСЃРѕРє СЌРєСЃРїРѕСЂС‚РёСЂСѓРµРјС‹С… С„СѓРЅРєС†РёР№
 
-	//Получить список сервисов и отсортировать по ^ru.pp.livid.asec.(.*)
+	//РџРѕР»СѓС‡РёС‚СЊ СЃРїРёСЃРѕРє СЃРµСЂРІРёСЃРѕРІ Рё РѕС‚СЃРѕСЂС‚РёСЂРѕРІР°С‚СЊ РїРѕ ^ru.pp.livid.asec.(.*)
 	if (QDBusConnection::sessionBus().interface()->isValid())
 	{
 		QStringList list = QDBusConnection::sessionBus().interface()->registeredServiceNames().value().filter(QRegExp("^ru.pp.livid.asec.(.*)"));
@@ -327,11 +363,11 @@ QStringList CControlBus::build_help_index()
 					}
 				}
 			} else
-				return QStringList(QString("::ERROR::build_help_index::Could not connect to %1%2 on %3").arg(iface.service(),iface.path(),iface.interface()));
+				return QStringList(trUtf8("::ERROR::build_help_index::Could not connect to %1%2 on %3").arg(iface.service(),iface.path(),iface.interface()));
 		}
 
 		return result;
 	}
 	else
-		return QStringList("::ERROR::build_help_index::No DBus connection!");
+		return QStringList(trUtf8("::ERROR::build_help_index::No DBus connection!"));
 }

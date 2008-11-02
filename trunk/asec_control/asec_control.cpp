@@ -9,6 +9,7 @@ vib_control::vib_control(QWidget *parent)
 	connect(&scriptthread,SIGNAL(started()),this,SLOT(script_started()));
 	connect(&scriptthread,SIGNAL(finished()),this,SLOT(script_finished()));
 	connect(&scriptthread,SIGNAL(bug(QString,int)),this,SLOT(script_bug(QString,int)));
+	connect(&scriptthread,SIGNAL(error(QString)),this,SLOT(script_error(QString)));
 }
 
 vib_control::~vib_control()
@@ -53,6 +54,12 @@ void vib_control::script_finished()
 {
 	ui.btStop->setEnabled(false);
 	ui.btRun->setEnabled(true);
+}
+
+void vib_control::script_error(QString error)
+{
+	if(!error.isEmpty())
+		QMessageBox::critical(NULL,trUtf8("Ошибка!"),error);
 }
 
 void vib_control::script_bug(QString message, int BugLine)

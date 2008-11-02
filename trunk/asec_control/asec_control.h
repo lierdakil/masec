@@ -3,8 +3,6 @@
 
 #include <QtGui>
 #include <QtCore>
-//#include <QErrorMessage>
-//TODO: Get rid of qWarning().
 #include "ui_asec_control.h"
 #include "scriptthread.h"
 #include <stdarg.h>
@@ -31,6 +29,7 @@ public slots:
 	void on_cbFunction_currentIndexChanged(QString item);
 	void script_started();
 	void script_finished();
+	void script_error(QString error);
 	void script_bug(QString message, int BugLine);
 };
 

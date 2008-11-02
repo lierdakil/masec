@@ -57,40 +57,47 @@ QScriptValue ScriptThread::call(QScriptContext *context, QScriptEngine *engine)
 
 void ScriptThread::run()
 {
-	bus = new CControlBus(filename,description,code);
-	QScriptEngine *engine=new QScriptEngine(bus);
-
-	engine->globalObject().setProperty("call",engine->newFunction(call,2));
-	//make_graphic
-	//engine.globalObject().setProperty("make_graphic",engine.newFunction(make_graphic,3));
-	engine->setProcessEventsInterval(100);
-
-	QString init_functions=CControlBus::init_functions();
-	if (init_functions.indexOf("::ERROR::")==0)
+	QString error_msg;
+	bus = new CControlBus(filename,description,code,&error_msg);
+	if (error_msg.isEmpty())
 	{
-		qWarning()<<init_functions;
-	}
-	else
-	{
-		engine->evaluate(init_functions);
+		QScriptEngine *engine=new QScriptEngine(bus);
 
-		if (engine->canEvaluate(code))
+		engine->globalObject().setProperty("call",engine->newFunction(call,2));
+		//make_graphic
+		//engine.globalObject().setProperty("make_graphic",engine.newFunction(make_graphic,3));
+		engine->setProcessEventsInterval(100);
+
+		QString init_functions=CControlBus::init_functions();
+		if (init_functions.indexOf("::ERROR::")==0)
 		{
-			QScriptValue res = engine->evaluate(code);
-			//exception handling
-			if(engine->hasUncaughtException())
-				emit bug(res.toString(),engine->uncaughtExceptionLineNumber());
+			emit error(init_functions);
 		}
 		else
-			emit bug("There was a syntax error: code incomplete");
-	}
-	delete engine;
+		{
+			engine->evaluate(init_functions);
+
+			if (engine->canEvaluate(code))
+			{
+				QScriptValue res = engine->evaluate(code);
+				//exception handling
+				if(engine->hasUncaughtException())
+					emit bug(res.toString(),engine->uncaughtExceptionLineNumber());
+			}
+			else
+				emit bug("There was a syntax error: code incomplete");
+		}
+		delete engine;
+	} else
+		emit error(error_msg);
 	delete bus;
 }
 
 // ВЫЗЫВАЕТСЯ ИЗ ПОТОКА ИНТЕРФЕЙСА!!!!!!!!!!!
 void ScriptThread::stop()
 {
-	bus->stop();
+	QString error_msg=bus->stop();
+	if(!error_msg.isEmpty())
+		emit error(error_msg);
 }
 
