@@ -83,11 +83,11 @@ QDBusError CControlBus::call(QString function, QString service, QList<QScriptVal
 	 * Определять флаг по названию, как то set_ или mes_
 	 * Новая строка данных БУДЕТ начата, если полсе измерительной функции вызвана установочная.
 	 */
-	//TODO: Don;t call if data_file=0, throw error.
 	QMutexLocker locker(&mutex);
 
 	stopped=false;
 
+	//Don;t call if data_file=0, throw error.
 	if (data_file==NULL)
 		return QDBusError(QDBusError::Other,"Experiment was not started or stopped before end of script!");
 
@@ -248,7 +248,7 @@ QString CControlBus::get_help(QString item)
 {
 	//получить справку об экспортируемой функции
 	if (item=="Introduction")
-		return QString::fromUtf8(
+		return trUtf8(
 				"<p><b>Краткая информация о скриптовом языке</b></p>"
 				"<p>Код следует синтаксису ECMAScript. Microsoft JScript и различные реализации JavaScript так же следуют этому стандарту.</p>"
 				"<p>В целом синтаксис схож с синтаксисом C++. Объявление переменных производится оператором <span style=\" font-weight:600;\">var</span>:</p>"
