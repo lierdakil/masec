@@ -19,9 +19,9 @@ vib_control::~vib_control()
 void vib_control::on_btRun_clicked()
 {
 	QFileDialog fd(this,
-			QString::fromUtf8("Сохранить результат"),
+			trUtf8("Сохранить результат"),
 			"",
-			QString::fromUtf8("Файл результата эксперимента (*.red);;Все файлы (*.*)"));
+			trUtf8("Файл результата эксперимента (*.red);;Все файлы (*.*)"));
 	fd.setAcceptMode(QFileDialog::AcceptSave);
 	fd.setDirectory("data");
 	if(fd.exec())
@@ -29,8 +29,8 @@ void vib_control::on_btRun_clicked()
 		scriptthread.code=ui.code->textEdit()->toPlainText();
 		scriptthread.filename=fd.selectedFiles().first();
 		scriptthread.description=QInputDialog::getText(this,
-				QString::fromUtf8("Описание эксперимента"),
-				QString::fromUtf8("Краткое описание проводимого эксперимента"));
+				trUtf8("Описание эксперимента"),
+				trUtf8("Краткое описание проводимого эксперимента"));
 		scriptthread.start();
 	}
 }
@@ -66,7 +66,7 @@ void vib_control::script_bug(QString message, int BugLine)
 
 void vib_control::on_btSaveCode_clicked()
 {
-	QFileDialog fd(0,QString::fromUtf8("Сохранить скрипт"),"",QString::fromUtf8("Скрипт управления (*.fcs)"));
+	QFileDialog fd(0,trUtf8("Сохранить скрипт"),"",trUtf8("Скрипт управления (*.fcs)"));
 	fd.setAcceptMode(QFileDialog::AcceptSave);
 	fd.setDirectory("scripts");
 	fd.setDefaultSuffix("fcs");
@@ -83,7 +83,7 @@ void vib_control::on_btSaveCode_clicked()
 
 void vib_control::on_btLoadCode_clicked()
 {
-	QFileDialog fd(0,QString::fromUtf8("Загрузить скрипт"),"",QString::fromUtf8("Скрипт управления (*.fcs)"));
+	QFileDialog fd(0,trUtf8("Загрузить скрипт"),"",trUtf8("Скрипт управления (*.fcs)"));
 	fd.setAcceptMode(QFileDialog::AcceptOpen);
 	fd.setDirectory("scripts");
 	if(fd.exec())
