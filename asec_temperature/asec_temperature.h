@@ -17,6 +17,7 @@ class vib_temperature : public QWidget
 
 public:
     QStringList result_var;
+    bool can_return;
     vib_temperature(QWidget *parent = 0);
     ~vib_temperature();
     settings wset;
@@ -28,7 +29,7 @@ private slots:
     void on_btSettings_clicked();
 
 public slots:
-    void cont(float temp1, float temp2, float setp);
+    void finished();
     QStringList set_temp(double temp, double ramp, double timeout);
 };
 
