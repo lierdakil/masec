@@ -132,64 +132,15 @@ QDBusError CControlBus::call(QString function, QString service, QList<QScriptVal
 		result_row.clear();
 	}
 
-	//читаем список функций на интерфейсе export
+	//читаем список функций на интерфейсе exports
 	QDBusInterface iface(service,"/","ru.pp.livid.asec.exports");
 
 	if(iface.isValid())
 	{
 		QVariantList list;
 
-		//check argument list
-		QStringList arg_types;
-		for (int i=0;i<arguments.count();++i)
-		{
-			/*
-				int	INT32
-				double	DOUBLE
-				QString	STRING
-				QDBusVariant	VARIANT
-			 */
-			if(arguments.at(i).isBoolean())
-				arg_types<<"bool";
-			else if(arguments.at(i).isNumber())
-				arg_types<<"uchar short ushort int uint qlonglong qulonglong double";//any DBus-enabled numbered type
-			else if(arguments.at(i).isString())
-				arg_types<<"QString";
-			else if(arguments.at(i).isVariant())
-				arg_types<<"QDBusVariant";
-			else
-				return QDBusError(QDBusError::InvalidArgs,QString("%1 : Unsupported argument type").arg(function));
-			//TODO: Not shure if it's all the possibilities...
-		}
-		const QMetaObject *mo = iface.metaObject();
-		for (int i = mo->methodOffset(); i < mo->methodCount(); ++i) {
-			QMetaMethod mm = mo->method(i);
-			QString signature(mm.signature());
-			QStringList parameterTypes;
-
-			for(int j=0;j<mm.parameterTypes().count();++j)
-				parameterTypes<<mm.parameterTypes().at(j);
-
-			if (QString(mm.typeName())=="QStringList") //if not, it's not export function, is it?
-			{
-				if (signature.left(signature.indexOf('('))==function)
-				{
-					if(arguments.count()!=parameterTypes.count())
-						return QDBusError(QDBusError::InvalidArgs,QString("Wrong argument count! DBus:%1 != Script:%2(%3)").arg(signature,function,arg_types.join(",")));
-					//Doesn't really work as expected, but should be in there in case of multiple difinitions
-
-					for(int m=0;m<arguments.count();m++)
-					{
-						if (!arg_types.value(m).contains(parameterTypes.value(m),Qt::CaseSensitive))
-							return  QDBusError(QDBusError::InvalidArgs,QString("Wrong argument type! DBus:%1 != Script:%2(%3)").arg(signature,function,arg_types.join(",")));
-						list<<arguments[m].toVariant();
-					}
-
-					break;
-				}
-			}
-		}
-		//end check
+		for(int m=0;m<arguments.count();++m)
+			list<<arguments[m].toVariant();
 
 		QDBusReply<QStringList> reply=iface.callWithArgumentList(QDBus::BlockWithGui,function,list);
 
@@ -235,38 +186,42 @@ QString CControlBus::init_functions()
 			//for each service in list
 			for(int k=0;k<list.count();++k)
 			{
-				QDBusInterface iface(list.at(k),"/","ru.pp.livid.asec.exports");
+				QString object(list.at(k));
+				object.remove("ru.pp.livid.asec.");
+				result.append(QString("var %1 = {};").arg(object));
 
-				if(iface.isValid())
-				{
-					QString service=list.at(k);
-					QString object(service);
-					object.remove("ru.pp.livid.asec.");
-					const QMetaObject *mo = iface.metaObject();
-
-					result.append(QString("var %1 = {};").arg(object));
-
-					//for each method on interface...
-					for (int i = mo->methodOffset(); i < mo->methodCount(); i++)
-					{
-						QMetaMethod mm = mo->method(i);
-						QString signature(mm.signature());
-						QString name=signature.left(signature.indexOf('('));
-
-						QString typeName=QString::fromAscii(mm.typeName());
-
-						if (typeName=="QStringList") //if not, it's not export function, is it?
-						{
-							QStringList args;
-							for(int n=0;n<mm.parameterNames().count();++n)
-								args<<mm.parameterNames().value(n);
-
-							result.append(code.arg(name,service,args.join(","),object));
-						}
-					}
-				} else {
-					return trUtf8("::ERROR::init_functions::Could not connect to %1%2 on %3!").arg(iface.service(),iface.path(),iface.interface());
-				}
+				QFuncInitBuilder i(list[k]);
+				result+=i.init;
+////				QDBusInterface iface(list.at(k),"/","ru.pp.livid.asec.exports");
+////
+////				if(iface.isValid())
+////				{
+////					QString service=list.at(k);
+////					QString object(service);
+////					object.remove("ru.pp.livid.asec.");
+////					result.append(QString("var %1 = {};").arg(object));
+////
+////					//for each method on interface...
+////					for (int i = mo->methodOffset(); i < mo->methodCount(); i++)
+////					{
+////						QMetaMethod mm = mo->method(i);
+////						QString signature(mm.signature());
+////						QString name=signature.left(signature.indexOf('('));
+////
+////						QString typeName=QString::fromAscii(mm.typeName());
+////
+////						if (typeName=="QStringList") //if not, it's not export function, is it?
+////						{
+////							QStringList args;
+////							for(int n=0;n<mm.parameterNames().count();++n)
+////								args<<mm.parameterNames().value(n);
+////
+////							result.append(code.arg(name,service,args.join(","),object));
+////						}
+////					}
+//				} else {
+//					return trUtf8("::ERROR::init_functions::Could not connect to %1%2 on %3!").arg(iface.service(),iface.path(),iface.interface());
+//				}
 			}
 
 			qDebug()<<result;
@@ -328,42 +283,15 @@ QStringList CControlBus::build_help_index()
 	if (QDBusConnection::sessionBus().interface()->isValid())
 	{
 		QStringList list = QDBusConnection::sessionBus().interface()->registeredServiceNames().value().filter(QRegExp("^ru.pp.livid.asec.(.*)"));
-		QString desc = "%3.%1(%2)";
 		QStringList result("Introduction");
 
 		//for each service in list
 		for(int k=0;k<list.count();++k)
 		{
-			QDBusInterface iface(list.at(k),"/","ru.pp.livid.asec.exports");
-
-			if(iface.isValid())
-			{
-				const QMetaObject *mo = iface.metaObject();
-				QString object(list.at(k));
-				object.remove("ru.pp.livid.asec.");
-				//for each method on interface...
-				for (int i = mo->methodOffset(); i < mo->methodCount(); i++)
-				{
-					QMetaMethod mm = mo->method(i);
-					QString signature(mm.signature());
-					QString name=signature.left(signature.indexOf('('));
-
-					QString typeName=QString::fromAscii(mm.typeName());
-
-					if (typeName=="QStringList") //if not, it's not export function, is it?
-					{
-						QStringList args;
-						for(int n=0;n<mm.parameterTypes().count();++n)
-							args<<mm.parameterTypes().value(n);
-
-						for(int n=0;n<mm.parameterNames().count();++n)
-							args[n].append(" ").append(mm.parameterNames().value(n));
-
-						result<<desc.arg(name,args.join(","),object);
-					}
-				}
-			} else
-				return QStringList(trUtf8("::ERROR::build_help_index::Could not connect to %1%2 on %3").arg(iface.service(),iface.path(),iface.interface()));
+			QHelpIndexBuilder i(list[k]);
+			result<<i.index;
+			//QFuncInitBuilder i(list[k]);
+			//result<<i.init;
 		}
 
 		return result;

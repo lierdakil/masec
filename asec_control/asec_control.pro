@@ -4,7 +4,8 @@ TARGET = asec_control
 QT += core \
     gui \
     script \
-    dbus
+    dbus \
+    xml
 HEADERS += scriptthread.h \
     cgraphiccontrol.h \
     ccontrolbus.h \
