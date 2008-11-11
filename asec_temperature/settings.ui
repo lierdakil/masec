@@ -9,7 +9,7 @@
     <x>0</x>
     <y>0</y>
     <width>684</width>
-    <height>464</height>
+    <height>469</height>
    </rect>
   </property>
   <property name="sizePolicy" >
@@ -34,7 +34,7 @@
       <enum>QTabWidget::Rounded</enum>
      </property>
      <property name="currentIndex" >
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="tbTempCtrl" >
       <attribute name="title" >
@@ -62,7 +62,7 @@
             <property name="orientation" >
              <enum>Qt::Horizontal</enum>
             </property>
-            <property name="sizeHint" >
+            <property name="sizeHint" stdset="0" >
              <size>
               <width>40</width>
               <height>20</height>
@@ -169,7 +169,7 @@
           <item row="0" column="6" >
            <widget class="QLabel" name="label_7" >
             <property name="toolTip" >
-             <string>Интервал времени установки температуры после завершения протяжки уставки</string>
+             <string>Интервал времени установки температуры после завершения протяжки уставки в минутах</string>
             </property>
             <property name="text" >
              <string>Время установки</string>
@@ -894,7 +894,7 @@
          <property name="orientation" >
           <enum>Qt::Vertical</enum>
          </property>
-         <property name="sizeHint" >
+         <property name="sizeHint" stdset="0" >
           <size>
            <width>20</width>
            <height>40</height>
@@ -1114,7 +1114,7 @@
          <item>
           <widget class="QLabel" name="lbt_test" >
            <property name="text" >
-            <string>Время (c)</string>
+            <string>Время (мин)</string>
            </property>
           </widget>
          </item>
@@ -1173,7 +1173,7 @@
          <property name="orientation" >
           <enum>Qt::Vertical</enum>
          </property>
-         <property name="sizeHint" >
+         <property name="sizeHint" stdset="0" >
           <size>
            <width>20</width>
            <height>40</height>
@@ -1191,7 +1191,7 @@
       <enum>Qt::Horizontal</enum>
      </property>
      <property name="standardButtons" >
-      <set>QDialogButtonBox::Cancel|QDialogButtonBox::NoButton|QDialogButtonBox::Ok</set>
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
      </property>
     </widget>
    </item>

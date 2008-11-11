@@ -10,7 +10,11 @@ vib_temperature::vib_temperature(QWidget *parent)
 	new export_adaptor(this);
 	new help_adaptor(this);
 
+	ui.gvTemp->setScene(new QGraphicsScene());
+
 	connect(&temptl,SIGNAL(finished()),this,SLOT(finished()));
+	connect(&temptl,SIGNAL(timedout()),this,SLOT(timedout()));
+	connect(&temptl,SIGNAL(newpoint(float,float,float)),this,SLOT(newpoint(float,float,float)));
 }
 
 vib_temperature::~vib_temperature()
@@ -29,18 +33,39 @@ void vib_temperature::finished()
 	can_return=true;
 }
 
+void vib_temperature::timedout()
+{
+	result_var<<trUtf8("::ERROR::");
+	result_var<<trUtf8("Exceeded temperature setup timeout");
+	can_return=true;
+}
+
 void vib_temperature::on_btSettings_clicked()
 {
 	wset.show();
 }
-//TODO: connect TimeLine.timedout to return error
-//TODO: connect TimeLine.newpoint to draw graphic
+
+void vib_temperature::newpoint(float time, float temp, float setpoint)
+{
+	static float lasttime;
+	static float lasttemp;
+	static float lastsetp;
+	if(time>lasttime)
+	{
+		ui.gvTemp->scene()->addLine(lasttime,lasttemp,time,temp,QPen(Qt::red));
+		ui.gvTemp->scene()->addLine(lasttime,lastsetp,time,setpoint,QPen(Qt::red));
+		ui.gvTemp->fitInView(ui.gvTemp->scene()->sceneRect());
+	}
+	lasttime=time;
+	lasttemp=temp;
+	lastsetp=setpoint;
+}
 
 QStringList vib_temperature::result()
 {
-	while(result_var.count()==0 && !can_return)
+	while(!can_return)
 	{
-		qApp->processEvents();//TODO:Maybe there's a better way?
+		qApp->processEvents(QEventLoop::WaitForMoreEvents);//TODO:Maybe there's a better way?
 	}
 	return result_var;
 }
@@ -51,6 +76,7 @@ QStringList vib_temperature::set_temp(double temp,double ramp, double timeout)
 	{
 		result_var.clear();
 		can_return=false;
+		ui.gvTemp->scene()->clear();
 		temptl.start(wset.tempid,temp,ramp,timeout,wset.getSettime(temp));
 		return result();
 	}

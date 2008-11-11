@@ -6,6 +6,8 @@
 #include <QErrorMessage>
 #include <QtDBus>
 #include <QSettings>
+#include <QGraphicsScene>
+#include <QPainterPath>
 #include "ui_settings.h"
 #include "ctrl/temp.h"
 #include "QTempTimeline.h"
@@ -21,13 +23,20 @@ public:
     double getSettime(double temp);
     QString tempid;
 
+public slots:
+	void finished();
+	void newpoint(float time, float temp, float setpoint);
+
 private:
     Ui::Settings ui_settings;
 	QTempTimer test;
+	QPainterPath *pp_temp;
+	QPainterPath *pp_setp;
 
 private slots:
 	void accept();
 	void on_btTest_clicked();
+	void on_btStopTest_clicked();
 };
 
 #endif /*SETTINGS_H_*/

@@ -12,8 +12,6 @@
 #define MOD_AUTO_PI 5
 #define MOD_AUTO_P 6
 
-//TODO: We need mutex in each function, maybe better in GPIBctrl, by GPIB ID.
-
 class tempctrl: public GPIBctrl
 {
 public:
