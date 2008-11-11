@@ -67,7 +67,10 @@ settings::settings(QWidget *parent)
 	read_settings();
 
 	connect(ui_settings.btStopTest,SIGNAL(clicked()),&test,SLOT(stop()));
-	//TODO connect test::finished, test::timedout, test::newpoint to appropriate local functions
+	connect(&test,SIGNAL(finished()),this,SLOT(finished()));
+	connect(&test,SIGNAL(timedout()),this,SLOT(finished()));
+	connect(&test,SIGNAL(newpoint(float,float,float)),this,SLOT(newpoint(float,float,float)));
+	ui_settings.gvGraph->setScene(new QGraphicsScene());
 }
 
 settings::~settings()
@@ -103,6 +106,33 @@ void settings::accept()
 	QDialog::accept();
 }
 
+void settings::finished()
+{
+	ui_settings.btStopTest->setEnabled(false);
+	ui_settings.btTest->setEnabled(true);
+}
+
+void settings::newpoint(float time, float temp, float setpoint)
+{
+	static float lasttime;
+	static float lasttemp;
+	static float lastsetp;
+	if(time>lasttime)
+	{
+		ui_settings.gvGraph->scene()->addLine(lasttime,lasttemp,time,temp,QPen(Qt::red));
+		ui_settings.gvGraph->scene()->addLine(lasttime,lastsetp,time,setpoint,QPen(Qt::red));
+		ui_settings.gvGraph->fitInView(ui_settings.gvGraph->scene()->sceneRect());
+	}
+	lasttime=time;
+	lasttemp=temp;
+	lastsetp=setpoint;
+}
+
+void settings::on_btStopTest_clicked()
+{
+	test.stop();
+}
+
 void settings::on_btTest_clicked()
 {
 	if (ui_settings.edTempId->text().isEmpty())
@@ -116,14 +146,17 @@ void settings::on_btTest_clicked()
 	temp->setrange(ui_settings.cbRange_test->currentIndex());
 	temp->setmout(ui_settings.sbMout_test->value());
 
-	//TODO: change buttons state
+	ui_settings.btStopTest->setEnabled(true);
+	ui_settings.btTest->setEnabled(false);
+
+	ui_settings.gvGraph->scene()->clear();
 
 	delete temp;
 	test.start(
 			ui_settings.edTempId->text(),
 			ui_settings.sbNewT_test->value(),
 			ui_settings.sbRamp->value(),
-			ui_settings.sbt_test->value(),//TODO: minutes!
-			getSettime(ui_settings.sbNewT_test->value())//TODO:minutes!
+			ui_settings.sbt_test->value(),
+			getSettime(ui_settings.sbNewT_test->value())
 			);
 }
