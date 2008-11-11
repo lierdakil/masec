@@ -69,7 +69,13 @@ CControlBus::CControlBus(QString log_file_name, QString description, QString cod
 CControlBus::~CControlBus()
 {
 	if(!stopped)
-		stop();//TODO: Error handler?
+	{
+		QString error = stop();
+		if(!error.isEmpty())
+		{
+			qWarning()<<error;//TODO: better use signal
+		}
+	}
 	QMutexLocker locker(&mutex);
 	// Закрыть файл, вычистить все лишнее и тд и тп.
 	data_file->write(result_row.join(";").toUtf8());
