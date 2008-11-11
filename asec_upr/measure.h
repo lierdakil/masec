@@ -8,7 +8,6 @@
 #include <QList>
 #include <QPair>
 
-//TODO: Переписать под Qt все ctrl_, используя МИНИМУМ возможностей sicl.
 #include "ctrl/gen.h"
 #include "ctrl/osc.h"
 #include "ctrl/vol.h"
@@ -27,7 +26,7 @@ public:
 	double ra; //Resonance Amplitude
 	double af; //Antiresonance Frequency
 	double aa; //Antiresonance Amplitude
-	QList<QPair<double,double> > curve; //TODO: Make it more like it should be
+	QList<QPair<double,double> > curve;
 private:
 	double epsilon;
 	QGraphicsScene *scene;
