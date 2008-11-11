@@ -57,9 +57,9 @@ public:
     }
 
 public slots:
-	QStringList do_measure(double startf, double stopf, QString filename)
+	QStringList mes_res(double startf, double stopf, QString filename)
 	{
-		return vua->measure(startf, stopf, filename);//TODO: change this behaviour?
+		return vua->measure(startf, stopf, filename);
 	}
 
 	void stop()
@@ -86,7 +86,7 @@ public slots:
 
 	//TODO: QString module_description()
 
-	QString do_measure()
+	QString mes_res()
 	{
 		return trUtf8(
 				"<p>Получить данные о резонансе и антирезонансе. </p>"

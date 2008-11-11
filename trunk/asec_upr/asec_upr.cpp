@@ -42,7 +42,11 @@ QStringList vibupraut::measure(double startf, double stopf, QString filename)
     thread.mulid=ui.edMulId->text();
     thread.wait();
     thread.start();
-    thread.wait();//TODO: Does it not hang?
+    //thread.wait();//TO/DO: Does it not hang?
+    while(thread.isRunning())
+    {
+    	qApp->processEvents(QEventLoop::WaitForMoreEvents);
+    }
     return thread.result;
 }
 
