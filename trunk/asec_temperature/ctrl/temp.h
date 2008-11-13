@@ -64,12 +64,14 @@ public:
 
 	float temp()/*Kelvin*/
 	{
-		float temp=-1;
+		float temp;
 		int status;
+		bool tempok=true;
+		bool statok=true;
 		do {
-			temp=query("KRDG? A").toFloat();
-			status=query("RDGST? A\n").toInt();
-		} while(status!=0 || temp<0);
+			temp=query("KRDG? A").toFloat(&tempok);
+			status=query("RDGST? A\n").toInt(&statok);
+		} while(status!=0 || !tempok || !statok);
 		//TODO: Better make an error handler?
 		return temp;
 	}

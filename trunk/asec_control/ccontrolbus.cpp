@@ -7,14 +7,15 @@
 
 #include "ccontrolbus.h"
 
-CControlBus::CControlBus(QString log_file_name, QString description, QString code, QString *error)
+CControlBus::CControlBus(QString log_file_name, QString description, QString code, bool *success)
 {
 	QMutexLocker locker(&mutex);
 	// Открыть файл, инициализировать все, что нужно и тд и тп
 	data_file=new QFile(log_file_name);
 	if (!data_file->open(QIODevice::WriteOnly))
 	{
-		*error = trUtf8("Could not open file!");
+		*success=false;
+		emit bus_error(trUtf8("CControlBus(): Could not open file!"));
 		return;
 	}
 	description="/* This file is a data file for ASEC\n"
@@ -51,12 +52,14 @@ CControlBus::CControlBus(QString log_file_name, QString description, QString cod
 			}
 		}
 		else
-			*error=trUtf8("::ERROR::stop::No DBus session interface!");
+			*success=false;
+			emit bus_error(trUtf8("CControlBus(): No DBus session interface!"));
 			return;
 	}
 	else
 	{
-		*error=trUtf8("::ERROR::stop::No DBus connection!");
+		*success=false;
+		emit bus_error(trUtf8("CControlBus(): No DBus connection!"));
 		return;
 	}
 	description+=" */\n";
@@ -64,17 +67,15 @@ CControlBus::CControlBus(QString log_file_name, QString description, QString cod
 
 	last_call="";
 	stopped=true;
+	*success=true;
 }
 
 CControlBus::~CControlBus()
 {
 	if(!stopped)
 	{
-		QString error = stop();
-		if(!error.isEmpty())
-		{
-			qWarning()<<error;//TODO: better use signal
-		}
+		bool success;
+		stop(&success);
 	}
 	QMutexLocker locker(&mutex);
 	// Закрыть файл, вычистить все лишнее и тд и тп.
@@ -85,7 +86,7 @@ CControlBus::~CControlBus()
 	delete data_file;
 }
 
-QString CControlBus::stop() //returns error
+void CControlBus::stop(bool *success) //returns error
 {
 	//Так же послать всем сервисам команду stop.
 	if (QDBusConnection::sessionBus().isConnected())
@@ -105,13 +106,22 @@ QString CControlBus::stop() //returns error
 			}
 
 			stopped=true;
-			return QString();
+			*success=true;
+			return;
 		}
 		else
-			return trUtf8("::ERROR::stop::No DBus session interface!");
+		{
+			emit bus_error(trUtf8("stop(): No DBus session interface!"));
+			*success=false;
+			return;
+		}
 	}
 	else
-		return trUtf8("::ERROR::stop::No DBus connection!");
+	{
+		emit bus_error(trUtf8("stop(): No DBus connection!"));
+		*success=false;
+		return;
+	}
 }
 
 QDBusError CControlBus::call(QString function, QString service, QList<QScriptValue> arguments)
@@ -148,6 +158,7 @@ QDBusError CControlBus::call(QString function, QString service, QList<QScriptVal
 		for(int m=0;m<arguments.count();++m)
 			list<<arguments[m].toVariant();
 
+		//TODO: How long does it wait, really?
 		QDBusReply<QStringList> reply=iface.callWithArgumentList(QDBus::BlockWithGui,function,list);
 
 		if(stopped)
@@ -177,7 +188,7 @@ QDBusError CControlBus::call(QString function, QString service, QList<QScriptVal
 		return iface.lastError(); //invalid interface
 }
 
-QString CControlBus::init_functions()
+QString CControlBus::init_functions(bool *success)
 {
 	//прочитать список экспортируемых функций и сгенерировать QScript код их вызова
 
@@ -188,7 +199,6 @@ QString CControlBus::init_functions()
 		{
 			QStringList list = QDBusConnection::sessionBus().interface()->registeredServiceNames().value().filter(QRegExp("^ru.pp.livid.asec.(.*)"));
 			QString result;
-			QString code="%4.%1 = function(%3) { call(\"%1\", \"%2\", %3); }; ";
 			//for each service in list
 			for(int k=0;k<list.count();++k)
 			{
@@ -198,50 +208,26 @@ QString CControlBus::init_functions()
 
 				QFuncInitBuilder i(list[k]);
 				result+=i.init;
-////				QDBusInterface iface(list.at(k),"/","ru.pp.livid.asec.exports");
-////
-////				if(iface.isValid())
-////				{
-////					QString service=list.at(k);
-////					QString object(service);
-////					object.remove("ru.pp.livid.asec.");
-////					result.append(QString("var %1 = {};").arg(object));
-////
-////					//for each method on interface...
-////					for (int i = mo->methodOffset(); i < mo->methodCount(); i++)
-////					{
-////						QMetaMethod mm = mo->method(i);
-////						QString signature(mm.signature());
-////						QString name=signature.left(signature.indexOf('('));
-////
-////						QString typeName=QString::fromAscii(mm.typeName());
-////
-////						if (typeName=="QStringList") //if not, it's not export function, is it?
-////						{
-////							QStringList args;
-////							for(int n=0;n<mm.parameterNames().count();++n)
-////								args<<mm.parameterNames().value(n);
-////
-////							result.append(code.arg(name,service,args.join(","),object));
-////						}
-////					}
-//				} else {
-//					return trUtf8("::ERROR::init_functions::Could not connect to %1%2 on %3!").arg(iface.service(),iface.path(),iface.interface());
-//				}
 			}
-
-			qDebug()<<result;
-
+			*success=true;
 			return result;
 		}
 		else
-			return trUtf8("::ERROR::init_functions::No DBus session interface!");
+		{
+			*success=false;
+			emit bus_error(trUtf8("init_functions(): No DBus session interface!"));
+			return QString();
+		}
 	}
 	else
-		return trUtf8("::ERROR::init_functions::No DBus connection!");
+	{
+		*success=false;
+		emit bus_error(trUtf8("init_functions(): No DBus connection!"));
+		return QString();
+	}
 }
 
-QString CControlBus::get_help(QString item)
+QString CControlBus::get_help(QString item,bool *success)
 {
 	//получить справку об экспортируемой функции
 	if (item=="Introduction")
@@ -261,7 +247,6 @@ QString CControlBus::get_help(QString item)
 		);
 	else
 	{
-		//QString desc = "%1(%2) exported by %3";
 		QString name=item.left(item.indexOf("("));
 		QString service=name.left(name.lastIndexOf("."));
 		name.remove(service+".");
@@ -270,18 +255,24 @@ QString CControlBus::get_help(QString item)
 		if(iface.isValid())
 		{
 			QDBusReply<QString> desc_long = iface.call(name);
-			if (desc_long.isValid())
+			if (desc_long.isValid()) {
+				*success=true;
 				return desc_long.value();
-			else
+			} else {
+				*success=true; // Normal, really.
 				return trUtf8("No help for this item found");
-		} else
-			return trUtf8("::ERROR::get_help::Could not connect to %1%2 on %3").arg(iface.service(),iface.path(),iface.interface());
+			}
+		} else {
+			*success=false;
+			return (trUtf8("get_help(): Could not connect to %1%2 on %3").arg(iface.service(),iface.path(),iface.interface()));
+		}
 	}
 	//По идее, сюда невозможно попасть, все выходы происходят раньше
-	return trUtf8("::ERROR::get_help::Reached end of the function!");
+	*success=false;
+	return (trUtf8("get_help(): Reached end of the function!"));
 }
 
-QStringList CControlBus::build_help_index()
+QStringList CControlBus::build_help_index(bool *success)
 {
 	//прочитать список экспортируемых функций
 
@@ -296,12 +287,12 @@ QStringList CControlBus::build_help_index()
 		{
 			QHelpIndexBuilder i(list[k]);
 			result<<i.index;
-			//QFuncInitBuilder i(list[k]);
-			//result<<i.init;
 		}
 
+		*success=true;
 		return result;
+	} else {
+		*success=false;
+		return QStringList(trUtf8("build_help_index(): No DBus connection!"));
 	}
-	else
-		return QStringList(trUtf8("::ERROR::build_help_index::No DBus connection!"));
 }
