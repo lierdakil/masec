@@ -3,11 +3,16 @@
 
 #include "sicl.h"
 #include <QString>
+#include <QMutex>
+#include <QMutexLocker>
+
+//TODO: We need mutex in each function, maybe better in GPIBctrl, by GPIB ID.
 
 class GPIBctrl
 {
 private:
 	int did;
+	QMutex mutex;
 
 public:
 	GPIBctrl(QString GPIBID)
@@ -27,11 +32,13 @@ public:
 
 	void write(QString string)
 	{
+		QMutexLocker m(&mutex);
 		iprintf(did,string.append("\n").toAscii().data());
 	}
 
 	QString read()
 	{
+		QMutexLocker m(&mutex);
 		char reply[256];
 		iscanf(did,"%s",reply);
 		return QString(reply);
@@ -39,6 +46,7 @@ public:
 
 	QByteArray read_array(int *length)
 	{
+		QMutexLocker m(&mutex);
 		char *res = new char[*length];
 		long unsigned int len;
 		iread(did,(char*)res,*length,0,&len);
