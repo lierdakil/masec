@@ -199,23 +199,24 @@ private:
 
 signals:
 	void new_row(QStringList row);
+	void bus_error(QString error);
 
 public:
 	//common name: ru.pp.livid.asec.* ; interface: ru.pp.livid.asec.exports
 
-	CControlBus(QString log_file_name, QString description, QString code,  QString *error);
+	CControlBus(QString log_file_name, QString description, QString code,  bool *success);
 	~CControlBus();
 
 	//QScript adaptor
-	static QString init_functions();
+	QString init_functions(bool *success);
 
 	//Help functions
-	static QString get_help(QString item);
-	static QStringList build_help_index();
+	static QString get_help(QString item, bool *success);
+	static QStringList build_help_index(bool *success);
 
 	//Flow functions
 	QDBusError call(QString function, QString service, QList<QScriptValue> arguments);
-	QString stop();//To be called from another thread
+	void stop(bool *success);//To be called from another thread
 };
 
 #endif /* VIB_CONTROL_ADAPTOR_H_ */

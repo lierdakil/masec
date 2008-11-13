@@ -1,19 +1,15 @@
 #ifndef CTRL_OSC_H_
 #define CTRL_OSC_H_
 
-#include "gpib.h"
+#include <gpib.h>
+#include <QString>
+#include <QByteArray>
 
 class oscctrl: public GPIBctrl
 {
 public:
 	oscctrl(QString GPIBID) : GPIBctrl(GPIBID)
 	{
-		/*--------------------Oscilloscope initialization
-		ACQuire:MODe PEAKdetect
-		ACQ:STOPAfter SEQuence
-		DATa INIT
-		//HORizontal //?
-		//----------end initializaton*/
 		write("ACQ:MOD PEAK");
 		write("ACQ:STOPA RUNSTOP");
 		write("TRIG:MAI:EDGE:SOU EXT");
@@ -40,12 +36,10 @@ public:
 		write("DAT:STOP 2500");
 		write("DAT:ENC SRI");
 		write("CURV?");
-		int len=13;
-		QByteArray rubbish=read_array(&len);
-		len=2500;
-		QByteArray data = read_array(&len);
-		for (int i=0; i<len; i++)
-			data[i]=( data.at(i)>=0?data.at(i):-data.at(i));//abs
+		read_array(13);//rubbish
+		QByteArray data = read_array(2500);
+		for (int i=0; i<data.count(); i++)
+			data[i]=(data.at(i)>=0?data.at(i):-data.at(i));//abs
 		return data;
 	}
 
@@ -53,7 +47,6 @@ public:
 	{
 		while ( !query("TRIG:STATE?").contains(state,Qt::CaseInsensitive) )
 		{
-			//Sleep(10);
 		}
 	}
 

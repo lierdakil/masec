@@ -109,11 +109,21 @@ void vib_control::on_tabWidget_currentChanged(int index)
 	if (index==1)
 	{
 		ui.cbFunction->clear();
-		ui.cbFunction->addItems(CControlBus::build_help_index());
+		bool success=true;
+		QStringList items=CControlBus::build_help_index(&success);
+		if (success)
+			ui.cbFunction->addItems(items);
+		else
+			script_error(items[0]);
 	}
 }
 
 void vib_control::on_cbFunction_currentIndexChanged(QString item)
 {
-	ui.tbHelp->setHtml(CControlBus::get_help(item));
+	bool success;
+	QString help = CControlBus::get_help(item, &success);
+	if(success)
+		ui.tbHelp->setHtml(help);
+	else
+		script_error(help);
 }

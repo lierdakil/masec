@@ -37,7 +37,7 @@ void QTempTimer::wait(float min, const char* member)
 {
 	dt=min;
 	time+=min;
-	QTimer::singleShot(int(60000*min),this,member);//TODO: is this conversion safe?
+	QTimer::singleShot(int(60000*min),this,member);
 }
 
 QTempTimer::~QTempTimer()

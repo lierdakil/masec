@@ -2,14 +2,14 @@
 
 double settings::getSettime(double temp)
 {
-	for (int n=9;n>=0;n--)
+	//TODO: Разобраться, ибо что-то здесь не так.
+	for (int n=0;n<10;n++)
 	{
 		double ct = ui_settings.tbTempCtrl->findChild<QDoubleSpinBox*>(QString("sbTemp_%1").arg(n))->value();
-		if (temp>=ct)
+		if (temp<=ct)
 			return ui_settings.tbTempCtrl->findChild<QDoubleSpinBox*>(QString("sbTime_%1").arg(n))->value();
 	}
-	//TODO: Generate runtime exception
-	return 0;
+	//qFatal("getSettime failed!");
 }
 
 void settings::read_settings()

@@ -58,8 +58,10 @@ QScriptValue ScriptThread::call(QScriptContext *context, QScriptEngine *engine)
 void ScriptThread::run()
 {
 	QString error_msg;
-	bus = new CControlBus(filename,description,code,&error_msg);
-	if (error_msg.isEmpty())
+	bool success=true;
+	bus = new CControlBus(filename,description,code,&success);
+	connect(bus,SIGNAL(bus_error(QString)), this, SIGNAL(error(QStirng)));
+	if (success)
 	{
 		QScriptEngine *engine=new QScriptEngine(bus);
 
@@ -68,12 +70,8 @@ void ScriptThread::run()
 		//engine.globalObject().setProperty("make_graphic",engine.newFunction(make_graphic,3));
 		engine->setProcessEventsInterval(100);
 
-		QString init_functions=CControlBus::init_functions();
-		if (init_functions.indexOf("::ERROR::")==0)
-		{
-			emit error(init_functions);
-		}
-		else
+		QString init_functions=bus->init_functions(&success);
+		if (success)
 		{
 			engine->evaluate(init_functions);
 
@@ -88,16 +86,15 @@ void ScriptThread::run()
 				emit bug("There was a syntax error: code incomplete");
 		}
 		delete engine;
-	} else
-		emit error(error_msg);
+	}
+	disconnect(bus,SIGNAL(bus_error(QString)), this, SIGNAL(error(QStirng)));
 	delete bus;
 }
 
 // ВЫЗЫВАЕТСЯ ИЗ ПОТОКА ИНТЕРФЕЙСА!!!!!!!!!!!
 void ScriptThread::stop()
 {
-	QString error_msg=bus->stop();
-	if(!error_msg.isEmpty())
-		emit error(error_msg);
+	bool success=true;
+	bus->stop(&success);
 }
 

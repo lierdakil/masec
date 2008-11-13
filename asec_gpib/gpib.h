@@ -6,13 +6,11 @@
 #include <QMutex>
 #include <QMutexLocker>
 
-//TODO: We need mutex in each function, maybe better in GPIBctrl, by GPIB ID.
-
 class GPIBctrl
 {
 private:
 	int did;
-	QMutex mutex;
+	QMutex mutex;//TODO: Better to be GPIBID-wise, than instance-wise.
 
 public:
 	GPIBctrl(QString GPIBID)
@@ -39,27 +37,29 @@ public:
 	QString read()
 	{
 		QMutexLocker m(&mutex);
-		char reply[256];
-		iscanf(did,"%s",reply);
-		return QString(reply);
-	}
-
-	QByteArray read_array(int *length)
-	{
-		QMutexLocker m(&mutex);
-		char *res = new char[*length];
-		long unsigned int len;
-		iread(did,(char*)res,*length,0,&len);
-		*length=len;
-		QByteArray res2(res);
-		delete[] res;
-		return res2;
+		QByteArray r;
+		r.resize(256);
+		iscanf(did,"%s",r.data());
+		QString reply(r); //TODO: Better return QString(r)?
+		reply.remove("\n");//last character is \n
+		return reply;
 	}
 
 	QString query(QString request)
 	{
-		write(request);
+		write(request);//TODO: ipromptf?
 		return read();
+	}
+
+	QByteArray read_array(int maxlength)
+	{
+		QMutexLocker m(&mutex);
+		QByteArray res;
+		res.resize(maxlength);
+		long unsigned int len;
+		iread(did,res.data(),maxlength,0,&len);
+		res.resize(len);
+		return res;
 	}
 };
 
