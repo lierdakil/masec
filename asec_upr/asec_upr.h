@@ -18,7 +18,8 @@ public:
 	double startf;
 	double stopf;
 	QString filename;
-	QGraphicsScene* scene;
+        QGraphicsScene* scene;
+        QGraphicsView* view;
 	QString oscid;
 	QString genid;
 	QString mulid;
@@ -38,7 +39,7 @@ private:
     Ui::vibuprautClass ui;
 
 public:
-	QStringList measure(double startf, double stopf, QString filename);
+	void measure(double startf, double stopf, QString filename);
 	MeasureThread thread;
 };
 
@@ -59,7 +60,9 @@ public:
 public slots:
 	QStringList mes_res(double startf, double stopf, QString filename)
 	{
-		return vua->measure(startf, stopf, filename);
+		vua->measure(startf, stopf, filename);
+
+		return QStringList();
 	}
 
 	void stop()

@@ -3,11 +3,7 @@ DESTDIR = ../build/
 TARGET = asec_upr
 HEADERS += ctrl/vol.h \
     ctrl/osc.h \
-    ctrl/gpib.h \
     ctrl/gen.h \
-    ctrl/sicl.h \
-    sleep.h \
-    sleep.h \
     measure.h \
     asec_upr.h
 SOURCES += measure.cpp \

@@ -31,7 +31,9 @@ public:
 	void write(QString string)
 	{
 		QMutexLocker m(&mutex);
-		iprintf(did,string.append("\n").toAscii().data());
+                //iprintf(did,string.append("\n").toAscii().data());
+                QString str=string.append("\n");
+                iwrite(did,str.toAscii().data(),str.length(),1,NULL);
 	}
 
 	QString read()
@@ -39,9 +41,12 @@ public:
 		QMutexLocker m(&mutex);
 		QByteArray r;
 		r.resize(256);
-		iscanf(did,"%s",r.data());
+                //iscanf(did,"%S",r.data());
+                long unsigned int actual=0;
+                iread(did,r.data(),256,NULL,&actual);
+                r.resize(actual-1);
 		QString reply(r); //TODO: Better return QString(r)?
-		reply.remove("\n");//last character is \n
+                //reply.remove("\n");//last character is \n
 		return reply;
 	}
 

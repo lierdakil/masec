@@ -9,6 +9,11 @@
 
 CControlBus::CControlBus(QString log_file_name, QString description, QString code, bool *success)
 {
+    new CControlBusAdaptor(this);
+    QDBusConnection connection = QDBusConnection::sessionBus();
+    connection.registerObject("/", this);
+    connection.registerService("ru.pp.livid.asec");
+
 	QMutexLocker locker(&mutex);
 	// Открыть файл, инициализировать все, что нужно и тд и тп
 	data_file=new QFile(log_file_name);
@@ -159,26 +164,32 @@ QDBusError CControlBus::call(QString function, QString service, QList<QScriptVal
 			list<<arguments[m].toVariant();
 
 		//TODO: How long does it wait, really?
-		QDBusReply<QStringList> reply=iface.callWithArgumentList(QDBus::BlockWithGui,function,list);
+		reply_wait=true;
+		reply.clear();
+		iface.callWithArgumentList(QDBus::NoBlock,function,list);
 
-		if(stopped)
-			return QDBusError(QDBusError::Other,"Stopped by User");
-
-		if (iface.lastError().isValid())
+		if(iface.lastError().isValid())
+		{
 			return iface.lastError();
+		}
+
+		while(reply_wait)
+		{
+			qApp->processEvents();
+			if(stopped)
+				return QDBusError(QDBusError::Other,"Stopped by User");
+		}
 
 		//Проверка на предмет ошибки, возвращенной вместо списка результатов.
-		if (!reply.isValid())
-			return QDBusError(QDBusError::NoReply,QString("Invalid reply!"));
 
-		if (reply.value().count()==0)
+		if (reply.count()==0)
 			return QDBusError(QDBusError::NoReply,QString("Empty reply!"));
 
-		if (reply.value().at(0)=="::ERROR::")
-			return QDBusError(QDBusError::Other,reply.value().value(1));
+		if (reply.at(0)=="::ERROR::")
+			return QDBusError(QDBusError::Other,reply.value(1));
 
 		//Сохренение материала из возвращенного значения в result_row
-		result_row<<reply.value();
+                result_row<<reply;
 
 		last_call=function.left(function.indexOf('_'));
 
@@ -230,7 +241,9 @@ QString CControlBus::init_functions(bool *success)
 QString CControlBus::get_help(QString item,bool *success)
 {
 	//получить справку об экспортируемой функции
-	if (item=="Introduction")
+        if (item=="Introduction")
+    {
+            *success=true;
 		return trUtf8(
 				"<p><b>Краткая информация о скриптовом языке</b></p>"
 				"<p>Код следует синтаксису ECMAScript. Microsoft JScript и различные реализации JavaScript так же следуют этому стандарту.</p>"
@@ -244,7 +257,8 @@ QString CControlBus::get_help(QString item,bool *success)
 				"}"
 				"</code></p>"
 				"<p>На данный момент ни одна функция не возвращает значений.</p>"
-		);
+                );
+            }
 	else
 	{
 		QString name=item.left(item.indexOf("("));
