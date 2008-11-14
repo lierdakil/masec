@@ -26,17 +26,17 @@ vibupraut::~vibupraut()
     f.setValue("GPIB/oscid", ui.edOscId->text());
 }
 
-QStringList vibupraut::measure(double startf, double stopf, QString filename)
+void vibupraut::measure(double startf, double stopf, QString filename)
 {
     if (ui.graph->scene()!=0)
         delete ui.graph->scene();
 
-    ui.graph->setScene(new QGraphicsScene(ui.graph));
+    thread.view=ui.graph;
 
     thread.startf=startf;
     thread.stopf=stopf;
     thread.filename=filename;
-    thread.scene=ui.graph->scene();
+    //thread.scene=ui.graph->scene();
     thread.oscid=ui.edOscId->text();
     thread.genid=ui.edGenId->text();
     thread.mulid=ui.edMulId->text();
@@ -47,7 +47,8 @@ QStringList vibupraut::measure(double startf, double stopf, QString filename)
     {
     	qApp->processEvents(QEventLoop::WaitForMoreEvents);
     }
-    return thread.result;
+    QDBusInterface iface("ru.pp.livid.asec","/","ru.pp.livid.asec.reply");
+    iface.call("reply_call",thread.result);
 }
 
 void MeasureThread::run()
@@ -64,6 +65,8 @@ void MeasureThread::run()
     }
 
     result.clear();
+    //scene = new QGraphicsScene();
+    scene=0;
     cmeasure mes(oscid,genid,mulid,startf,stopf,0.1,scene);
 
     if(!filename.isEmpty())

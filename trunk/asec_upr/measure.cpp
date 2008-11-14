@@ -66,24 +66,30 @@ QByteArray cmeasure::sweep()
 	ssf = kt*(starti)+fsf;
 	k = (sff-ssf)/data.count();
 
-	//���������� ��������� ������� ������ ������������ - �������� � ����
-	k2=osc->setch1(maxd/2);
-	//���������� ����� �������� �������
-	gen->setsweep(ssf,sff);
+        //���������� ��������� ������� ������ ������������ - �������� � ����
+        //qDebug()<<"1!";
+        k2=osc->setch1(maxd/2);
+        //���������� ����� �������� �������
+        //qDebug()<<"2!";
+        gen->setsweep(ssf,sff);
+        //qDebug()<<"3!";
 
 	//��������� ���������� ������������
-	osc->wait("READY");
+        osc->wait("READY");
+        //qDebug()<<"4!";
 
 	//������ ������ ������ �� �������
 	gen->startsweep();
 	osc->wait("TRIGGER");//�� �����?
 	osc->wait("READY");
 
-	//��������� ������ � �����������
+        //��������� ������ � �����������
+        //qDebug()<<"5!";
 	data = osc->readcurve();
 
 	delete osc;
 
+        //qDebug()<<"6!";
 	return data;
 }
 
@@ -141,28 +147,28 @@ void cmeasure::findresonance()
 		dat = sweep();
 
 		int fmax=0;
-		QPainterPath curve;
-		curve.moveTo(0,-dat[0]);
+                QPainterPath curve;
+                curve.moveTo(0,-dat[0]);
 
 		for (int i=0; i<dat.count();i++)
-		{
+                {
 			if (fmax<dat[i])
 			{
 				fmax=dat[i];
 				xfmax=i;
-			}
-			curve.lineTo(i,-dat[i]);
+                        }
+                        curve.lineTo(i,-dat[i]);
 		}
 
 		if (scene!=0)
-		{
-			scene->addLine(0,0,dat.count(),0,Qt::SolidLine);
+                {
+                        scene->addLine(0,0,dat.count(),0,Qt::SolidLine);
 			scene->addPath(curve,QPen(Qt::blue),Qt::NoBrush);
-			((QGraphicsView*)scene->parent())->fitInView(scene->sceneRect());
+                        //((QGraphicsView*)scene->parent())->fitInView(scene->sceneRect());
 		}
 
 		const int nr=12;//Depth of smoothing in one direction
-		diff.clear();
+                diff.clear();
 
 		QPainterPath diff_c;
 		diff_c.moveTo(0,0);
@@ -171,11 +177,10 @@ void cmeasure::findresonance()
 		{
 			if(i<nr || i>=dat.count()-nr)
 			{
-				diff[i]=0;
+                                diff<<0;
 				diff_c.lineTo(i,0);
 				continue;
 			}
-			diff[i]=0;
 			double a=0;
 			double b=0;
 			for (int k=-nr;k<=nr;k++)
@@ -184,14 +189,14 @@ void cmeasure::findresonance()
 				b+=k*k;
 			}
 
-			diff[i]=a/b*10;
+                        diff<<a/b*10;
 
 			diff_c.lineTo(i,-diff[i]);
 		}
 		if (scene!=0)
 		{
 			scene->addPath(diff_c,QPen(Qt::red),Qt::NoBrush);
-			((QGraphicsView*)scene->parent())->fitInView(scene->sceneRect());
+                        //((QGraphicsView*)scene->parent())->fitInView(scene->sceneRect());
 		}
 
 		float min=255;
@@ -224,9 +229,11 @@ void cmeasure::findresonance()
 			scene->addLine(xmin,0,xmin,-127,Qt::SolidLine);
 			scene->addLine(xmax1,0,xmax1,-127,Qt::SolidLine);
 			scene->addLine(xmax2,0,xmax2,-127,Qt::SolidLine);
-			((QGraphicsView*)scene->parent())->fitInView(scene->sceneRect());
+                        //(QGraphicsView*)scene->parent())->fitInView(scene->sceneRect());
 		}
-	}
+        }
+
+        qDebug()<<"!!";
 
 	for(int i=0; i<dat.count(); i++)
 	{
@@ -254,7 +261,7 @@ void cmeasure::findresonance()
 	if (scene!=0)
 	{
 		scene->addLine((rf-ssf)/k,0,(rf-ssf)/k,-127,Qt::SolidLine);
-		((QGraphicsView*)scene->parent())->fitInView(scene->sceneRect());
+                //((QGraphicsView*)scene->parent())->fitInView(scene->sceneRect());
 	}
 
 #ifdef GOLDEN
@@ -276,7 +283,7 @@ void cmeasure::findresonance()
 	if (scene!=0)
 	{
 		scene->addLine((af-ssf)/k,0,(af-ssf)/k,-127,Qt::SolidLine);
-		((QGraphicsView*)scene->parent())->fitInView(scene->sceneRect());
+                //((QGraphicsView*)scene->parent())->fitInView(scene->sceneRect());
 	}
 }
 

@@ -44,16 +44,17 @@ public:
 	}
 
 	void wait(QString state)
-	{
-		while ( !query("TRIG:STATE?").contains(state,Qt::CaseInsensitive) )
-		{
-		}
+        {
+                while ( query("TRIG:STATE?").split(" ").at(1) != state )
+                {
+
+                }
 	}
 
 	double setch1(unsigned char max)//TODO: Razobrat'sa, 4to ono delaet
 	{
-		double newv = max*0.001;
-		query(QString("CH1:VOL %1").arg(newv));
+                double newv = max*0.001;
+                write(QString("CH1:VOL %1").arg(newv));
 		//51 div = newv V;
 		//1 div = newv/51 V
 		return newv/51;
