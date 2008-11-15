@@ -11,6 +11,7 @@
 #include <QtCore>
 #include "ui_asec_upr.h"
 #include "measure.h"
+#include <replyinterface.h>
 
 class MeasureThread : public QThread
 {
@@ -18,12 +19,10 @@ public:
 	double startf;
 	double stopf;
 	QString filename;
-        QGraphicsScene* scene;
-        QGraphicsView* view;
+	QGraphicsView* view;
 	QString oscid;
 	QString genid;
 	QString mulid;
-	QStringList result;
 	void run();
 };
 
@@ -58,11 +57,15 @@ public:
     }
 
 public slots:
-	QStringList mes_res(double startf, double stopf, QString filename)
+
+	void mes_res(double startf, double stopf)
+	{
+		vua->measure(startf, stopf, QString());
+	}
+
+	void mes_res_file(double startf, double stopf, QString filename)
 	{
 		vua->measure(startf, stopf, filename);
-
-		return QStringList();
 	}
 
 	void stop()
@@ -102,7 +105,3 @@ public slots:
 };
 
 #endif // VIBUPRAUT_H
-/* TODO: Надо разобраться, что работает в результате изменений, что не работает,
- * и что со всем этим делать...
- * Естественно, что, даже скомпилив это дома я не могу проверять работоспособность.
- */

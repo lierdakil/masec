@@ -6,12 +6,18 @@ QT += core \
     script \
     dbus \
     xml
-HEADERS += scriptthread.h \
+HEADERS += qfuncinitbuilder.h \
+    qhelpindexbuilder.h \
+    qmethodfetcher.h \
+    scriptthread.h \
     cgraphiccontrol.h \
     ccontrolbus.h \
     numberedtextview.h \
     asec_control.h
-SOURCES += scripthread.cpp \
+SOURCES += qfuncinitbulder.cpp \
+    qhelpindexbuilder.cpp \
+    qmethodfetcher.cpp \
+    scripthread.cpp \
     ccontrolbus.cpp \
     numberedtextview.cpp \
     main.cpp \

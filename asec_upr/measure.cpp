@@ -1,7 +1,31 @@
 #include "measure.h"
 //TODO: Fix comments...
 
-cmeasure::cmeasure(QString oscstr, QString genstr, QString volstr, float sf, float ff, float epsilon,QGraphicsScene *scene)
+QList<double> sm_diff(QByteArray data, int nr)//nr - Depth of smoothing in one direction
+{
+	QList<double> diff;
+
+	for (int i=0;i<data.count();i++)
+	{
+		if(i<nr || i>=data.count()-nr)
+		{
+			diff<<0;
+			continue;
+		}
+		double a=0;
+		double b=0;
+		for (int k=-nr;k<=nr;k++)
+		{
+			a+=k*data[i+k]-k*data[i+k]/nr;
+			b+=k*k;
+		}
+
+		diff<<a/b*10;
+	}
+	return diff;
+}
+
+cmeasure::cmeasure(QString oscstr, QString genstr, QString volstr, float sf, float ff, float epsilon,QGraphicsView *view)
 {
 	this->oscstr=oscstr;
 	gen = new genctrl(genstr);
@@ -9,7 +33,7 @@ cmeasure::cmeasure(QString oscstr, QString genstr, QString volstr, float sf, flo
 	fsf=sf;
 	fff=ff;
 	this->epsilon=epsilon;
-	this->scene=scene;
+	this->view=view;
 	findresonance();
 }
 
@@ -27,9 +51,6 @@ QByteArray cmeasure::sweep()
 	int maxi=0;
 	int starti, stopi;
 
-	char maxd=0;
-	char mind=127;
-
 	QByteArray data;
 
 	while(!(mini>maxi))
@@ -41,80 +62,94 @@ QByteArray cmeasure::sweep()
 		osc->wait("READY");
 		data = osc->readcurve();
 
-		for (int i=0;i<data.length();i++)
-		{
-			if (maxd<data[i])
+/*		    max
+ *		     _
+ *		    / \
+ *		___/   |   _______
+ *		        \_/
+ *		        min
+ *
+ *         /\     _
+ *		---  \   / -------
+ *            \_/
+ *		    diff_min/
+ *
+ */
+
+		QList<double> diff = sm_diff(data,2);
+
+		double min_diff_val=0;
+		int min_diff_index;
+
+		//find diff_min
+		for (int i=0;i<diff.count();i++)
+			if (diff[i]<min_diff_val)
 			{
-				maxd = data[i];
-				maxi = i;
+				min_diff_val = diff[i];
+				min_diff_index = i;
 			}
 
-			if (mind>data[i])
+		//find diff=0 right from diff_min <=> min
+		for (int i=min_diff_index;i<diff.count()-1;i++)
+			if (diff[i]<=0 && diff[i+1]>0)
 			{
-				mind = data[i];
 				mini = i;
+				break;
 			}
-		}
 
-		starti=maxi-(mini-maxi)-1;
-		stopi=mini+(mini-maxi)+1;
+		//find diff=0 left from diff_min <=> max
+		for (int i=min_diff_index;i>0;i--)
+			if (diff[i]>=0 && diff[i-1]<0)
+			{
+				maxi = i;
+				break;
+			}
+
+		starti=(min_diff_index-maxi)*2;//double interval
+		stopi=(mini-min_diff_index)*2;
 	}
-	//�������������� ����������� �������� �� ������ ����� � �������,
-	//������ � �����
+
+	//calculate coefficents to convert index to frequency
 	double kt = (fff-fsf)/data.count();
 	sff = kt*(stopi)+fsf;
 	ssf = kt*(starti)+fsf;
 	k = (sff-ssf)/data.count();
 
-        //���������� ��������� ������� ������ ������������ - �������� � ����
-        //qDebug()<<"1!";
-        k2=osc->setch1(maxd/2);
-        //���������� ����� �������� �������
-        //qDebug()<<"2!";
-        gen->setsweep(ssf,sff);
-        //qDebug()<<"3!";
+	k2=osc->setch1(data[maxi]);
+	gen->setsweep(ssf,sff);
 
-	//��������� ���������� ������������
-        osc->wait("READY");
-        //qDebug()<<"4!";
-
-	//������ ������ ������ �� �������
+	osc->wait("READY");
 	gen->startsweep();
-	osc->wait("TRIGGER");//�� �����?
+	osc->wait("TRIGGER");
 	osc->wait("READY");
 
-        //��������� ������ � �����������
-        //qDebug()<<"5!";
 	data = osc->readcurve();
 
 	delete osc;
-
-        //qDebug()<<"6!";
 	return data;
 }
 
 float cmeasure::getamplonf(float freq)
 {
 	gen->setfreq(freq);
-	//_sleep(1000); //msec
 	return vol->acquire();
 }
 
 float cmeasure::golden(float a, float b, float epsilon, bool max)
 {
-	//��������� "�������� �������"
+	//Метод золотого сечения
 	const double phi = 1.61803398874989484;
 
-	float x1=b-(b-a)/phi; //��������� ����������
+	float x1=b-(b-a)/phi;
 	float x2=a+(b-a)/phi;
 
-	float y1=getamplonf(x1); //�������� ��������� ����������
-	float y2=getamplonf(x2); //�������� ��������� ����������
+	float y1=getamplonf(x1);
+	float y2=getamplonf(x2);
 
 
-	while ((b-a)>=epsilon*2) //���� �� ���������� ������� ��������
+	while ((b-a)>=epsilon*2)
 	{
-		if ( (y1>y2 && max) || (y1<y2 && !max)) //������ ��������/������� ������� "�������� �������"
+		if ( (y1>y2 && max) || (y1<y2 && !max))
 		{
 			b=x2;
 			x2=x1;
@@ -147,56 +182,37 @@ void cmeasure::findresonance()
 		dat = sweep();
 
 		int fmax=0;
-                QPainterPath curve;
-                curve.moveTo(0,-dat[0]);
+		QPainterPath curve;
+		curve.moveTo(0,-dat[0]);
 
 		for (int i=0; i<dat.count();i++)
-                {
+		{
 			if (fmax<dat[i])
 			{
 				fmax=dat[i];
 				xfmax=i;
-                        }
-                        curve.lineTo(i,-dat[i]);
+			}
+			curve.lineTo(i,-dat[i]);
 		}
 
-		if (scene!=0)
-                {
-                        scene->addLine(0,0,dat.count(),0,Qt::SolidLine);
-			scene->addPath(curve,QPen(Qt::blue),Qt::NoBrush);
-                        //((QGraphicsView*)scene->parent())->fitInView(scene->sceneRect());
+		if (view!=0)
+		{
+			view->scene()->addLine(0,0,dat.count(),0,Qt::SolidLine);
+			view->scene()->addPath(curve,QPen(Qt::blue),Qt::NoBrush);
+			view->fitInView(view->scene()->sceneRect());
 		}
 
-		const int nr=12;//Depth of smoothing in one direction
-                diff.clear();
+		diff=sm_diff(dat,12);
 
 		QPainterPath diff_c;
 		diff_c.moveTo(0,0);
-
-		for (int i=0;i<dat.count();i++)
-		{
-			if(i<nr || i>=dat.count()-nr)
-			{
-                                diff<<0;
-				diff_c.lineTo(i,0);
-				continue;
-			}
-			double a=0;
-			double b=0;
-			for (int k=-nr;k<=nr;k++)
-			{
-				a+=k*dat[i+k]-k*dat[i+k]/nr;
-				b+=k*k;
-			}
-
-                        diff<<a/b*10;
-
+		for (int i=0;i<diff.count();i++)
 			diff_c.lineTo(i,-diff[i]);
-		}
-		if (scene!=0)
+
+		if (view!=0)
 		{
-			scene->addPath(diff_c,QPen(Qt::red),Qt::NoBrush);
-                        //((QGraphicsView*)scene->parent())->fitInView(scene->sceneRect());
+			view->scene()->addPath(diff_c,QPen(Qt::red),Qt::NoBrush);
+			view->fitInView(view->scene()->sceneRect());
 		}
 
 		float min=255;
@@ -224,16 +240,14 @@ void cmeasure::findresonance()
 				xmax2=i;
 			}
 
-		if (scene!=0)
+		if (view!=0)
 		{
-			scene->addLine(xmin,0,xmin,-127,Qt::SolidLine);
-			scene->addLine(xmax1,0,xmax1,-127,Qt::SolidLine);
-			scene->addLine(xmax2,0,xmax2,-127,Qt::SolidLine);
-                        //(QGraphicsView*)scene->parent())->fitInView(scene->sceneRect());
+			view->scene()->addLine(xmin,0,xmin,-127,Qt::SolidLine);
+			view->scene()->addLine(xmax1,0,xmax1,-127,Qt::SolidLine);
+			view->scene()->addLine(xmax2,0,xmax2,-127,Qt::SolidLine);
+			view->fitInView(view->scene()->sceneRect());
 		}
-        }
-
-        qDebug()<<"!!";
+	}
 
 	for(int i=0; i<dat.count(); i++)
 	{
@@ -258,10 +272,10 @@ void cmeasure::findresonance()
 #endif
 	ra=getamplonf(rf);
 
-	if (scene!=0)
+	if (view!=0)
 	{
-		scene->addLine((rf-ssf)/k,0,(rf-ssf)/k,-127,Qt::SolidLine);
-                //((QGraphicsView*)scene->parent())->fitInView(scene->sceneRect());
+		view->scene()->addLine((rf-ssf)/k,0,(rf-ssf)/k,-127,Qt::SolidLine);
+		view->fitInView(view->scene()->sceneRect());
 	}
 
 #ifdef GOLDEN
@@ -280,10 +294,10 @@ void cmeasure::findresonance()
 #endif
 	aa=getamplonf(af);
 
-	if (scene!=0)
+	if (view!=0)
 	{
-		scene->addLine((af-ssf)/k,0,(af-ssf)/k,-127,Qt::SolidLine);
-                //((QGraphicsView*)scene->parent())->fitInView(scene->sceneRect());
+		view->scene()->addLine((af-ssf)/k,0,(af-ssf)/k,-127,Qt::SolidLine);
+		view->fitInView(view->scene()->sceneRect());
 	}
 }
 

@@ -106,13 +106,16 @@ void vib_control::on_btLoadCode_clicked()
 
 void vib_control::on_tabWidget_currentChanged(int index)
 {
-	if (index==1)
+	if (index==0)
 	{
 		ui.cbFunction->clear();
+	}
+	if (index==1)
+	{
 		bool success=true;
-		QStringList items=CControlBus::build_help_index(&success);
+		QStringList items=QStringList("Introduction");//CControlBus::build_help_index(&success);
 		if (success)
-			ui.cbFunction->addItems(items);
+			ui.cbFunction->addItem("Introduction");
 		else
 			script_error(items[0]);
 	}
