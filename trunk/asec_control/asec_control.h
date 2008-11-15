@@ -5,7 +5,6 @@
 #include <QtCore>
 #include "ui_asec_control.h"
 #include "scriptthread.h"
-#include <stdarg.h>
 
 class vib_control : public QWidget
 {

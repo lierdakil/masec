@@ -10,7 +10,8 @@ class GPIBctrl
 {
 private:
 	int did;
-	QMutex mutex;//TODO: Better to be GPIBID-wise, than instance-wise.
+	QMutex mutex;//TODO: o_O When I make it static pointer, compilation fails
+	//TODO: Make mutex at least process-wise... somehow...
 
 public:
 	GPIBctrl(QString GPIBID)
@@ -31,9 +32,9 @@ public:
 	void write(QString string)
 	{
 		QMutexLocker m(&mutex);
-                //iprintf(did,string.append("\n").toAscii().data());
-                QString str=string.append("\n");
-                iwrite(did,str.toAscii().data(),str.length(),1,NULL);
+		//iprintf(did,string.append("\n").toAscii().data());
+		QString str=string.append("\n");
+		iwrite(did,str.toAscii().data(),str.length(),1,NULL);
 	}
 
 	QString read()
@@ -41,18 +42,15 @@ public:
 		QMutexLocker m(&mutex);
 		QByteArray r;
 		r.resize(256);
-                //iscanf(did,"%S",r.data());
-                long unsigned int actual=0;
-                iread(did,r.data(),256,NULL,&actual);
-                r.resize(actual-1);
-		QString reply(r); //TODO: Better return QString(r)?
-                //reply.remove("\n");//last character is \n
-		return reply;
+		long unsigned int actual=0;
+		iread(did,r.data(),256,NULL,&actual);
+		r.resize(actual-1);
+		return QString(r);
 	}
 
 	QString query(QString request)
 	{
-		write(request);//TODO: ipromptf?
+		write(request);
 		return read();
 	}
 

@@ -16,7 +16,7 @@
 class cmeasure
 {
 public:
-	cmeasure(QString oscstr, QString genstr, QString volstr, float sf, float ff, float epsilon=1/*Hz*/,QGraphicsScene *scene=0);
+	cmeasure(QString oscstr, QString genstr, QString volstr, float sf, float ff, float epsilon=1/*Hz*/,QGraphicsView *view=0);
 	~cmeasure();
 	double fsf;//First Run Start Frequency
 	double fff;//First Run Stop Frequency
@@ -29,7 +29,7 @@ public:
 	QList<QPair<double,double> > curve;
 private:
 	double epsilon;
-	QGraphicsScene *scene;
+	QGraphicsView *view;
 	double k, k2;
 	void findresonance();
 	QByteArray sweep();

@@ -10,7 +10,8 @@ SOURCES += measure.cpp \
     main.cpp \
     asec_upr.cpp
 FORMS += asec_upr.ui
-INCLUDEPATH += ../asec_gpib/
+INCLUDEPATH += ../asec_gpib/ \
+	../asec_reply/
 LIBS += ../lib/sicl32.lib
 QT += core \
     gui \

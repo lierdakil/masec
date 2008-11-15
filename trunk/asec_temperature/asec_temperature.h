@@ -11,6 +11,7 @@
 #include "QTempTimeline.h"
 #include "ctrl/temp.h"
 #include <math.h>
+#include <replyinterface.h>
 
 class vib_temperature : public QWidget
 {
@@ -33,7 +34,7 @@ public slots:
     void finished();
     void timedout();
     void newpoint(float time, float temp, float setpoint);
-    QStringList set_temp(double temp, double ramp, double timeout);
+    void set_temp(double temp, double ramp, double timeout);
 };
 
 class export_adaptor : public QDBusAbstractAdaptor
@@ -51,16 +52,16 @@ public:
     }
 
 public slots:
-    QStringList set_temp(double temp, double ramp, double timeout)
+    void set_temp(double temp, double ramp, double timeout)
     {
     	setpoint=temp;
-    	return t->set_temp(setpoint,ramp,timeout);
+    	t->set_temp(setpoint,ramp,timeout);
     }
 
-    QStringList set_temp_step(double step, double ramp, double timeout)
+    void set_temp_step(double step, double ramp, double timeout)
     {
     	setpoint+=step;
-        return t->set_temp(setpoint,ramp,timeout);
+        t->set_temp(setpoint,ramp,timeout);
     }
 
     void stop()

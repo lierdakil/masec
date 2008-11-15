@@ -11,6 +11,8 @@ vibupraut::vibupraut(QWidget *parent)
     connection.registerObject("/", this);
     connection.registerService("ru.pp.livid.asec.upr");
 
+    ui.graph->setScene(new QGraphicsScene());
+
     QSettings f("settings.ini",QSettings::IniFormat);
 
     ui.edGenId->setText(f.value("GPIB/genid","").toString());
@@ -28,27 +30,16 @@ vibupraut::~vibupraut()
 
 void vibupraut::measure(double startf, double stopf, QString filename)
 {
-    if (ui.graph->scene()!=0)
-        delete ui.graph->scene();
-
-    thread.view=ui.graph;
-
     thread.startf=startf;
     thread.stopf=stopf;
     thread.filename=filename;
-    //thread.scene=ui.graph->scene();
     thread.oscid=ui.edOscId->text();
     thread.genid=ui.edGenId->text();
     thread.mulid=ui.edMulId->text();
+    ui.graph->scene()->clear();
+    thread.view=ui.graph;
     thread.wait();
     thread.start();
-    //thread.wait();//TO/DO: Does it not hang?
-    while(thread.isRunning())
-    {
-    	qApp->processEvents(QEventLoop::WaitForMoreEvents);
-    }
-    QDBusInterface iface("ru.pp.livid.asec","/","ru.pp.livid.asec.reply");
-    iface.call("reply_call",thread.result);
 }
 
 void MeasureThread::run()
@@ -64,10 +55,7 @@ void MeasureThread::run()
         return;
     }
 
-    result.clear();
-    //scene = new QGraphicsScene();
-    scene=0;
-    cmeasure mes(oscid,genid,mulid,startf,stopf,0.1,scene);
+    cmeasure mes(oscid,genid,mulid,startf,stopf,0.1,view);
 
     if(!filename.isEmpty())
     {
@@ -77,21 +65,25 @@ void MeasureThread::run()
         for(int i=0;i<mes.curve.count();i++)
         {
             buf.setNum(mes.curve.at(i).first);
+            qDebug()<<buf;
             f.write(buf.toAscii());
             f.write("\t");
             buf.setNum(mes.curve.at(i).second);
+            qDebug()<<buf;
             f.write(buf.toAscii());
             f.write("\n");
         }
         f.close();
     }
 
-    result<<QString("First run start freq, Hz:%1").arg(mes.fsf);
-    result<<QString("First run stop freq, Hz:%1").arg(mes.fff);
-    result<<QString("Second run start freq, Hz:%1").arg(mes.ssf);
-    result<<QString("Second run stop freq, Hz:%1").arg(mes.sff);
-    result<<QString("Resonance freq, Hz:%1").arg(mes.rf);
-    result<<QString("Resonance ampl, V:%1").arg(mes.ra);
-    result<<QString("Antiresonance freq, Hz:%1").arg(mes.af);
-    result<<QString("Antiresonance ampl, V:%1").arg(mes.aa);
+    ReplyInterface reply;
+    reply.data<<QString("First run start freq, Hz:%1").arg(mes.fsf);
+    reply.data<<QString("First run stop freq, Hz:%1").arg(mes.fff);
+    reply.data<<QString("Second run start freq, Hz:%1").arg(mes.ssf);
+    reply.data<<QString("Second run stop freq, Hz:%1").arg(mes.sff);
+    reply.data<<QString("Resonance freq, Hz:%1").arg(mes.rf);
+    reply.data<<QString("Resonance ampl, V:%1").arg(mes.ra);
+    reply.data<<QString("Antiresonance freq, Hz:%1").arg(mes.af);
+    reply.data<<QString("Antiresonance ampl, V:%1").arg(mes.aa);
+    //reply is sent upon destruction
 }

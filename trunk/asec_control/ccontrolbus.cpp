@@ -9,7 +9,7 @@
 
 CControlBus::CControlBus(QString log_file_name, QString description, QString code, bool *success)
 {
-    new CControlBusAdaptor(this);
+    new ReplyAdaptor(this);
     QDBusConnection connection = QDBusConnection::sessionBus();
     connection.registerObject("/", this);
     connection.registerService("ru.pp.livid.asec");
@@ -163,8 +163,7 @@ QDBusError CControlBus::call(QString function, QString service, QList<QScriptVal
 		for(int m=0;m<arguments.count();++m)
 			list<<arguments[m].toVariant();
 
-		//TODO: How long does it wait, really?
-		reply_wait=true;
+		QMutexLocker l(&reply_wait);
 		reply.clear();
 		iface.callWithArgumentList(QDBus::NoBlock,function,list);
 
@@ -173,9 +172,9 @@ QDBusError CControlBus::call(QString function, QString service, QList<QScriptVal
 			return iface.lastError();
 		}
 
-		while(reply_wait)
+		while(!reply_wait.tryLock(100))
 		{
-			qApp->processEvents();
+			qApp->processEvents();//TODO: It's a dirty solution...
 			if(stopped)
 				return QDBusError(QDBusError::Other,"Stopped by User");
 		}
@@ -293,7 +292,7 @@ QStringList CControlBus::build_help_index(bool *success)
 	//Получить список сервисов и отсортировать по ^ru.pp.livid.asec.(.*)
 	if (QDBusConnection::sessionBus().interface()->isValid())
 	{
-		QStringList list = QDBusConnection::sessionBus().interface()->registeredServiceNames().value().filter(QRegExp("^ru.pp.livid.asec.(.*)"));
+		QStringList list = QDBusConnection::sessionBus().interface()->registeredServiceNames().value().filter(QRegExp("^ru.pp.livid.asec.(.+)"));
 		QStringList result("Introduction");
 
 		//for each service in list
