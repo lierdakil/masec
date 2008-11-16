@@ -44,6 +44,19 @@ void vibupraut::measure(double startf, double stopf, QString filename)
 
 void MeasureThread::run()
 {
+#ifdef DEBUG
+	view->scene()->addLine(0,0,5,5,Qt::SolidLine);
+	sleep(60);
+	ReplyInterface reply;
+	reply.data<<QString("First run start freq, Hz:%1").arg(startf);
+	reply.data<<QString("First run stop freq, Hz:%1").arg(stopf);
+	reply.data<<QString("Second run start freq, Hz:%1").arg(startf);
+	reply.data<<QString("Second run stop freq, Hz:%1").arg(startf);
+	reply.data<<QString("Resonance freq, Hz:%1").arg((startf+stopf)/2);
+	reply.data<<QString("Resonance ampl, V:%1").arg(5);
+	reply.data<<QString("Antiresonance freq, Hz:%1").arg((startf+stopf)/2);
+	reply.data<<QString("Antiresonance ampl, V:%1").arg(2);
+#else
     if (oscid.isEmpty() || genid.isEmpty() || mulid.isEmpty())
     {
         if(oscid.isEmpty())
@@ -86,4 +99,5 @@ void MeasureThread::run()
     reply.data<<QString("Antiresonance freq, Hz:%1").arg(mes.af);
     reply.data<<QString("Antiresonance ampl, V:%1").arg(mes.aa);
     //reply is sent upon destruction
+#endif
 }

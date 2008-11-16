@@ -13,10 +13,12 @@
 #include "ctrl/vol.h"
 #include <stdlib.h>
 
-class cmeasure
+class cmeasure : public QObject
 {
+	Q_OBJECT
+
 public:
-	cmeasure(QString oscstr, QString genstr, QString volstr, float sf, float ff, float epsilon=1/*Hz*/,QGraphicsView *view=0);
+	cmeasure(QString oscstr, QString genstr, QString volstr, double sf, double ff, double epsilon=1/*Hz*/,QGraphicsView *view=0);
 	~cmeasure();
 	double fsf;//First Run Start Frequency
 	double fff;//First Run Stop Frequency

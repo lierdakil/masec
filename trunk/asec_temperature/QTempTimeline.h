@@ -19,9 +19,9 @@ class QTempTimer : public QObject
 
 private:
 	tempctrl *temp;
-	float dt; //minutes
-	float time,drawtime;//minutes
-	void wait(float min, const char *member);
+	double dt; //minutes
+	double time,drawtime;//minutes
+	void wait(double min, const char *member);
 
 public:
 	//"input"

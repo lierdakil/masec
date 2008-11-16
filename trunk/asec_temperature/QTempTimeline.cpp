@@ -33,7 +33,7 @@ void QTempTimer::start(QString tempid, float nsetp, float nramp, float ntimeout,
     }
 }
 
-void QTempTimer::wait(float min, const char* member)
+void QTempTimer::wait(double min, const char* member)
 {
 	dt=min;
 	time+=min;
