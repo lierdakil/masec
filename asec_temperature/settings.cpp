@@ -10,6 +10,7 @@ double settings::getSettime(double temp)
 			return ui_settings.tbTempCtrl->findChild<QDoubleSpinBox*>(QString("sbTime_%1").arg(n))->value();
 	}
 	//qFatal("getSettime failed!");
+	return 0;
 }
 
 void settings::read_settings()

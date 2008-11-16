@@ -1,5 +1,6 @@
 #ifndef VIBUPRAUT_H
 #define VIBUPRAUT_H
+#define DEBUG
 
 #include <QtCore/QStringList>
 #include <QtDBus>
@@ -67,7 +68,23 @@ public slots:
 	{
 		vua->measure(startf, stopf, filename);
 	}
+};
 
+class flow_adaptor : public QDBusAbstractAdaptor
+{
+    Q_OBJECT
+    Q_CLASSINFO("D-Bus Interface", QString("ru.pp.livid.asec.flow"))
+
+private:
+	vibupraut *vua;
+
+public:
+	flow_adaptor(vibupraut *v) : QDBusAbstractAdaptor(v), vua(v)
+    {
+
+    }
+
+public slots:
 	void stop()
 	{
 		vua->thread.quit();
@@ -93,6 +110,15 @@ public slots:
 	//TODO: QString module_description()
 
 	QString mes_res()
+	{
+		return trUtf8(
+				"<p>Получить данные о резонансе и антирезонансе. </p>"
+				"<p><code>startf</code> - частота начала пробега в герцах</p>"
+				"<p><code>stopf</code> - частота конца пробега в герцах</p>"
+				);
+	}
+
+	QString mes_res_file()
 	{
 		return trUtf8(
 				"<p>Получить данные о резонансе и антирезонансе. </p>"

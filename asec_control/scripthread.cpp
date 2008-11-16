@@ -73,17 +73,24 @@ void ScriptThread::run()
 		QString init_functions=bus->init_functions(&success);
 		if (success)
 		{
-			engine->evaluate(init_functions);
-
-			if (engine->canEvaluate(code))
+			if (engine->canEvaluate(init_functions))
 			{
-				QScriptValue res = engine->evaluate(code);
+				QScriptValue res = engine->evaluate(init_functions);;
 				//exception handling
 				if(engine->hasUncaughtException())
 					emit bug(res.toString(),engine->uncaughtExceptionLineNumber());
+				else if (engine->canEvaluate(code))
+				{
+					QScriptValue res = engine->evaluate(code);
+					//exception handling
+					if(engine->hasUncaughtException())
+						emit bug(res.toString(),engine->uncaughtExceptionLineNumber());
+				}
+				else
+					emit bug("There was a syntax error: code incomplete");
 			}
 			else
-				emit bug("There was a syntax error: code incomplete");
+				emit bug("There was a syntax error: init code incomplete");
 		}
 		delete engine;
 	}

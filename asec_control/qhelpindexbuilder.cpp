@@ -23,6 +23,9 @@ void QHelpIndexBuilder::new_method(QString name, int argcount)
 {
 	method=object+"."+name+"(";
 	method_args=argcount;
+	method_type="";
+	if(argcount==0)
+		index<<method+")";
 }
 
 void QHelpIndexBuilder::new_arg(QString name, QString type, QString direction)
@@ -38,8 +41,7 @@ void QHelpIndexBuilder::new_arg(QString name, QString type, QString direction)
 		else
 		{
 			method+=")";
-			if(method_type=="as")
-				index<<method;
+			index<<method;
 		}
 	}
 }

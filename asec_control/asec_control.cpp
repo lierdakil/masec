@@ -113,9 +113,9 @@ void vib_control::on_tabWidget_currentChanged(int index)
 	if (index==1)
 	{
 		bool success=true;
-		QStringList items=QStringList("Introduction");//CControlBus::build_help_index(&success);
+		QStringList items=CControlBus::build_help_index(&success);
 		if (success)
-			ui.cbFunction->addItem("Introduction");
+			ui.cbFunction->addItems(items);
 		else
 			script_error(items[0]);
 	}
@@ -123,6 +123,8 @@ void vib_control::on_tabWidget_currentChanged(int index)
 
 void vib_control::on_cbFunction_currentIndexChanged(QString item)
 {
+	if(item.isNull())
+		return;
 	bool success;
 	QString help = CControlBus::get_help(item, &success);
 	if(success)

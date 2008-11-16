@@ -30,7 +30,8 @@ private:
 	QFile *data_file;
 	QString last_call;
 	bool stopped;
-	QMutex mutex;
+	QMutex file_mutex;
+	QMutex result_row_mutex;
 
 signals:
 	void new_row(QStringList row);

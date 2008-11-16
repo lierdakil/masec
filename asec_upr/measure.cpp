@@ -25,7 +25,7 @@ QList<double> sm_diff(QByteArray data, int nr)//nr - Depth of smoothing in one d
 	return diff;
 }
 
-cmeasure::cmeasure(QString oscstr, QString genstr, QString volstr, float sf, float ff, float epsilon,QGraphicsView *view)
+cmeasure::cmeasure(QString oscstr, QString genstr, QString volstr, double sf, double ff, double epsilon,QGraphicsView *view)
 {
 	this->oscstr=oscstr;
 	gen = new genctrl(genstr);

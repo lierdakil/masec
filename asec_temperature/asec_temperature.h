@@ -40,7 +40,7 @@ public slots:
 class export_adaptor : public QDBusAbstractAdaptor
 {
     Q_OBJECT
-    Q_CLASSINFO("D-Bus Interface", QString("ru.pp.livid.export"))
+    Q_CLASSINFO("D-Bus Interface", QString("ru.pp.livid.asec.exports"))
 
         private:
             vib_temperature *t;
@@ -63,7 +63,23 @@ public slots:
     	setpoint+=step;
         t->set_temp(setpoint,ramp,timeout);
     }
+};
 
+class flow_adaptor : public QDBusAbstractAdaptor
+{
+    Q_OBJECT
+    Q_CLASSINFO("D-Bus Interface", QString("ru.pp.livid.asec.flow"))
+
+        private:
+            vib_temperature *t;
+    double setpoint;
+
+public:
+	flow_adaptor(vib_temperature *parent) : QDBusAbstractAdaptor(parent), t(parent)
+    {
+    }
+
+public slots:
     void stop()
     {
         t->temptl.stop();
@@ -73,7 +89,7 @@ public slots:
 class help_adaptor : public QDBusAbstractAdaptor
 {
     Q_OBJECT
-    Q_CLASSINFO("D-Bus Interface", QString("ru.pp.livid.help"))
+    Q_CLASSINFO("D-Bus Interface", QString("ru.pp.livid.asec.help"))
 
         private:
             vib_temperature *t;
@@ -93,8 +109,7 @@ public slots:
                   "при всех прочих значениях тока изменится скачком </p>"
                   "<p><code>timeout</code> - "
                   "максимальное время установлния температуры (в минутах). Если это время "
-                  "будет превышено, выполнение программы прервется. На данный момент в таком случае "
-                  "необходим перезапуск системы.</p>");
+                  "будет превышено, выполнение программы прервется.</p>");
     }
 
     QString set_temp_step()
@@ -105,8 +120,7 @@ public slots:
                   "<p><code>ramp</code> - скорость изменения точки К/мин, минимум 0.1, максимум 100, "
                   "при всех прочих значениях тока изменится скачком </p>"
                   "<p><code>timeout</code> - максимальное время установлния температуры (в минутах). "
-                  "Если это время будет превышено, выполнение программы прервется. На данный момент "
-                  "в таком случае необходим перезапуск системы.</p>");
+                  "Если это время будет превышено, выполнение программы прервется.</p>");
     }
 };
 
