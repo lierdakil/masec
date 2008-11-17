@@ -60,7 +60,8 @@ void ScriptThread::run()
 	QString error_msg;
 	bool success=true;
 	bus = new CControlBus(filename,description,code,&success);
-	connect(bus,SIGNAL(bus_error(QString)), this, SIGNAL(error(QStirng)));
+	connect(bus,SIGNAL(bus_error(QString)), this, SIGNAL(error(QString)));
+	connect(this,SIGNAL(reply_call(QStringList)), bus, SLOT(reply_call(QStringList)));
 	if (success)
 	{
 		QScriptEngine *engine=new QScriptEngine(bus);
@@ -94,7 +95,7 @@ void ScriptThread::run()
 		}
 		delete engine;
 	}
-	disconnect(bus,SIGNAL(bus_error(QString)), this, SIGNAL(error(QStirng)));
+	disconnect(bus,SIGNAL(bus_error(QString)), this, SIGNAL(error(QString)));
 	delete bus;
 }
 

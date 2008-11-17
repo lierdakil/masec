@@ -30,6 +30,7 @@ public:
 signals:
 	void bug(QString message, int BugLine=-1);
 	void error(QString error);
+	void reply_call(QStringList values);
 };
 
 #endif /* SCRIPTTHREAD_H_ */

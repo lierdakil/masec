@@ -34,6 +34,8 @@ public:
 	void startsweep()
 	{
 		write("*TRG");
+		while(query("*OPC?")=="0")
+		{}
 	}
 };
 
