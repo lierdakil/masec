@@ -32,6 +32,8 @@ private:
 	bool stopped;
 	QMutex file_mutex;
 	QMutex result_row_mutex;
+	QEventLoop reply_wait;
+	QStringList reply;
 
 signals:
 	void new_row(QStringList row);
@@ -54,29 +56,12 @@ public:
 	QDBusError call(QString function, QString service, QList<QScriptValue> arguments);
 	void stop(bool *success);//To be called from another thread
 
-	QMutex reply_wait;
-	QStringList reply;
-};
-
-class ReplyAdaptor : public QDBusAbstractAdaptor
-{
-    Q_OBJECT
-    Q_CLASSINFO("D-Bus Interface", QString("ru.pp.livid.asec.reply"))
-
-private:
-	CControlBus *bus;
-
-public:
-	ReplyAdaptor(CControlBus *b):QDBusAbstractAdaptor(b), bus(b)
-	{
-	}
-
 public slots:
-
 	void reply_call(QStringList values)
 	{
-		bus->reply=values;
-		bus->reply_wait.unlock();
+		qDebug()<<2;
+		reply=values;
+		reply_wait.quit();
 	}
 };
 

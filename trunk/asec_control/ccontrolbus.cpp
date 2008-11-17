@@ -15,9 +15,6 @@ CControlBus::CControlBus(QString log_file_name, QString description, QString cod
 		emit bus_error(trUtf8("CControlBus(): No DBus connection!"));
 		return;
 	}
-	new ReplyAdaptor(this);
-	QDBusConnection::sessionBus().registerObject("/", this);
-	QDBusConnection::sessionBus().registerService("ru.pp.livid.asec");
 
 	if (!(QDBusConnection::sessionBus().interface()->isValid()))
 	{
@@ -117,6 +114,8 @@ void CControlBus::stop(bool *success)
 		}
 	}
 
+	reply_wait.quit();
+
 	stopped=true;
 	*success=true;
 }
@@ -133,11 +132,11 @@ QDBusError CControlBus::call(QString function, QString service, QList<QScriptVal
 	stopped=false;
 
 	//Don;t call if data_file=0, throw error.
-	QMutexLocker locker(&file_mutex);
-	QMutexLocker locker_result(&result_row_mutex);
 	if (data_file==NULL)
 		return QDBusError(QDBusError::Other,"Experiment was not started or stopped before end of script!");
 
+	file_mutex.lock();
+	result_row_mutex.lock();
 	if(last_call=="mes" && function.left(function.indexOf("_"))=="set")
 	{
 		data_file->write(result_row.join(";").toUtf8());
@@ -145,8 +144,8 @@ QDBusError CControlBus::call(QString function, QString service, QList<QScriptVal
 		emit new_row(result_row);
 		result_row.clear();
 	}
-	locker.unlock();
-	locker_result.unlock();
+	result_row_mutex.unlock();
+	file_mutex.unlock();
 
 	//читаем список функций на интерфейсе exports
 	QDBusInterface iface(service,"/","ru.pp.livid.asec.exports");
@@ -159,21 +158,13 @@ QDBusError CControlBus::call(QString function, QString service, QList<QScriptVal
 	for(int m=0;m<arguments.count();++m)
 		list<<arguments[m].toVariant();
 
-	QMutexLocker l(&reply_wait);
 	reply.clear();
 	iface.callWithArgumentList(QDBus::NoBlock,function,list);
 
 	if(iface.lastError().isValid())
-	{
 		return iface.lastError();
-	}
 
-	while(!reply_wait.tryLock(100))
-	{
-		qApp->processEvents();//TODO: It's a dirty solution...
-		if(stopped)
-			return QDBusError(QDBusError::Other,"Stopped by User");
-	}
+	reply_wait.exec();
 
 	//Проверка на предмет ошибки, возвращенной вместо списка результатов.
 

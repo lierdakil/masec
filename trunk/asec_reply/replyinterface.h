@@ -7,9 +7,9 @@
 class ReplyInterface
 {
 
-public:
+private:
 	QStringList data;
-
+public:
 	ReplyInterface()
 	{
 	}
@@ -17,7 +17,12 @@ public:
     ~ReplyInterface()
     {
     	QDBusInterface iface("ru.pp.livid.asec","/","ru.pp.livid.asec.reply");
-    	iface.call(QDBus::NoBlock, "reply_call", data);
+    	iface.call(QDBus::NoBlock, "reply", data);
+    }
+
+    void operator<<(QString string)
+    {
+    	data<<string;
     }
 };
 

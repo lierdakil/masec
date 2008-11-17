@@ -17,8 +17,20 @@ class cmeasure : public QObject
 {
 	Q_OBJECT
 
+private:
+	double epsilon;
+	double k, k2;
+	void findresonance();
+	QByteArray sweep();
+	float getamplonf(float freq);
+	float golden(float a, float b, float epsilon, bool max);
+	genctrl* gen;
+	volctrl* vol;
+	oscctrl* osc;
+	QString oscstr;
+
 public:
-	cmeasure(QString oscstr, QString genstr, QString volstr, double sf, double ff, double epsilon=1/*Hz*/,QGraphicsView *view=0);
+	cmeasure(QString oscstr, QString genstr, QString volstr, double sf, double ff, double epsilon/*Hz*/, QWidget *window);
 	~cmeasure();
 	double fsf;//First Run Start Frequency
 	double fff;//First Run Stop Frequency
@@ -29,18 +41,11 @@ public:
 	double af; //Antiresonance Frequency
 	double aa; //Antiresonance Amplitude
 	QList<QPair<double,double> > curve;
-private:
-	double epsilon;
-	QGraphicsView *view;
-	double k, k2;
-	void findresonance();
-	QByteArray sweep();
-	float getamplonf(float freq);
-	float golden(float a, float b, float epsilon, bool max);
-	genctrl* gen;
-	volctrl* vol;
-	oscctrl* osc;
-	QString oscstr;
+
+signals:
+	void path(QList<qreal>,QPen pen);
+	void path(QByteArray,QPen pen);
+	void line(qreal x1, qreal y1,qreal x2, qreal y2, QPen pen);
 };
 
 

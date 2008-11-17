@@ -1,9 +1,10 @@
 #include "measure.h"
+#include "sleep.h"
 //TODO: Fix comments...
 
-QList<double> sm_diff(QByteArray data, int nr)//nr - Depth of smoothing in one direction
+QList<qreal> sm_diff(QByteArray data, int nr)//nr - Depth of smoothing in one direction
 {
-	QList<double> diff;
+	QList<qreal> diff;
 
 	for (int i=0;i<data.count();i++)
 	{
@@ -25,15 +26,17 @@ QList<double> sm_diff(QByteArray data, int nr)//nr - Depth of smoothing in one d
 	return diff;
 }
 
-cmeasure::cmeasure(QString oscstr, QString genstr, QString volstr, double sf, double ff, double epsilon,QGraphicsView *view)
+cmeasure::cmeasure(QString oscstr, QString genstr, QString volstr, double sf, double ff, double epsilon, QWidget *window)
 {
+    connect(this,SIGNAL(path(QList<qreal>,QPen)),window,SLOT(path(QList<qreal>,QPen)),Qt::QueuedConnection);
+    connect(this,SIGNAL(path(QByteArray,QPen)),window,SLOT(path(QByteArray,QPen)),Qt::QueuedConnection);
+    connect(this,SIGNAL(line(qreal,qreal,qreal,qreal,QPen)),window,SLOT(line(qreal,qreal,qreal,qreal,QPen)),Qt::QueuedConnection);
 	this->oscstr=oscstr;
 	gen = new genctrl(genstr);
 	vol = new volctrl(volstr);
 	fsf=sf;
 	fff=ff;
 	this->epsilon=epsilon;
-	this->view=view;
 	findresonance();
 }
 
@@ -58,7 +61,6 @@ QByteArray cmeasure::sweep()
 		gen->setsweep(fsf,fff);
 		osc->wait("READY");
 		gen->startsweep();
-		osc->wait("TRIGGER");
 		osc->wait("READY");
 		data = osc->readcurve();
 
@@ -76,7 +78,7 @@ QByteArray cmeasure::sweep()
  *
  */
 
-		QList<double> diff = sm_diff(data,2);
+		QList<qreal> diff = sm_diff(data,2);
 
 		double min_diff_val=0;
 		int min_diff_index;
@@ -105,10 +107,11 @@ QByteArray cmeasure::sweep()
 				break;
 			}
 
-		starti=(min_diff_index-maxi)*2;//double interval
-		stopi=(mini-min_diff_index)*2;
+//		starti=2*maxi-min_diff_index;//double interval
+//		stopi=2*mini-min_diff_index;
+		starti=2*maxi-mini;
+		stopi=2*mini-maxi;
 	}
-
 	//calculate coefficents to convert index to frequency
 	double kt = (fff-fsf)/data.count();
 	sff = kt*(stopi)+fsf;
@@ -116,17 +119,19 @@ QByteArray cmeasure::sweep()
 	k = (sff-ssf)/data.count();
 
 	k2=osc->setch1(data[maxi]);
+	//qDebug()<<1;
+	sleep(1);//TODO: no idea why it dies without this
 	gen->setsweep(ssf,sff);
-
 	osc->wait("READY");
 	gen->startsweep();
-	osc->wait("TRIGGER");
+	//qDebug()<<4;
 	osc->wait("READY");
+	//qDebug()<<5;
 
-	data = osc->readcurve();
+	QByteArray data2 = osc->readcurve();
 
 	delete osc;
-	return data;
+	return data2;
 }
 
 float cmeasure::getamplonf(float freq)
@@ -175,16 +180,13 @@ void cmeasure::findresonance()
 	int xmin=0,xmax1=0,xfmax=0,xmax2=0;
 
 	QByteArray dat;
-	QList<double> diff;
+	QList<qreal> diff;
 
 	while ((xfmax <= xmax1)||(xfmax >= xmin))
 	{
 		dat = sweep();
 
 		int fmax=0;
-		QPainterPath curve;
-		curve.moveTo(0,-dat[0]);
-
 		for (int i=0; i<dat.count();i++)
 		{
 			if (fmax<dat[i])
@@ -192,28 +194,14 @@ void cmeasure::findresonance()
 				fmax=dat[i];
 				xfmax=i;
 			}
-			curve.lineTo(i,-dat[i]);
 		}
 
-		if (view!=0)
-		{
-			view->scene()->addLine(0,0,dat.count(),0,Qt::SolidLine);
-			view->scene()->addPath(curve,QPen(Qt::blue),Qt::NoBrush);
-			view->fitInView(view->scene()->sceneRect());
-		}
+		emit path(dat,QPen(Qt::blue));
+		emit line(0,0,dat.count(),0,Qt::SolidLine);
 
 		diff=sm_diff(dat,12);
 
-		QPainterPath diff_c;
-		diff_c.moveTo(0,0);
-		for (int i=0;i<diff.count();i++)
-			diff_c.lineTo(i,-diff[i]);
-
-		if (view!=0)
-		{
-			view->scene()->addPath(diff_c,QPen(Qt::red),Qt::NoBrush);
-			view->fitInView(view->scene()->sceneRect());
-		}
+		emit path(diff, QPen(Qt::red));
 
 		float min=255;
 		float max1=0;
@@ -240,13 +228,9 @@ void cmeasure::findresonance()
 				xmax2=i;
 			}
 
-		if (view!=0)
-		{
-			view->scene()->addLine(xmin,0,xmin,-127,Qt::SolidLine);
-			view->scene()->addLine(xmax1,0,xmax1,-127,Qt::SolidLine);
-			view->scene()->addLine(xmax2,0,xmax2,-127,Qt::SolidLine);
-			view->fitInView(view->scene()->sceneRect());
-		}
+		emit line(xmin,0,xmin,-127,Qt::SolidLine);
+		emit line(xmax1,0,xmax1,-127,Qt::SolidLine);
+		emit line(xmax2,0,xmax2,-127,Qt::SolidLine);
 	}
 
 	for(int i=0; i<dat.count(); i++)
@@ -272,11 +256,7 @@ void cmeasure::findresonance()
 #endif
 	ra=getamplonf(rf);
 
-	if (view!=0)
-	{
-		view->scene()->addLine((rf-ssf)/k,0,(rf-ssf)/k,-127,Qt::SolidLine);
-		view->fitInView(view->scene()->sceneRect());
-	}
+	emit line((rf-ssf)/k,0,(rf-ssf)/k,-127,Qt::SolidLine);
 
 #ifdef GOLDEN
 	af = golden(k*xmin+newsf,k*xmax2+newsf,epsilon,false);
@@ -294,10 +274,6 @@ void cmeasure::findresonance()
 #endif
 	aa=getamplonf(af);
 
-	if (view!=0)
-	{
-		view->scene()->addLine((af-ssf)/k,0,(af-ssf)/k,-127,Qt::SolidLine);
-		view->fitInView(view->scene()->sceneRect());
-	}
+	emit line((af-ssf)/k,0,(af-ssf)/k,-127,Qt::SolidLine);
 }
 

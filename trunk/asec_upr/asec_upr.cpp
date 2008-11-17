@@ -13,11 +13,16 @@ vibupraut::vibupraut(QWidget *parent)
 
     ui.graph->setScene(new QGraphicsScene());
 
+    QErrorMessage::qtHandler();
+
     QSettings f("settings.ini",QSettings::IniFormat);
 
     ui.edGenId->setText(f.value("GPIB/genid","").toString());
     ui.edMulId->setText(f.value("GPIB/mulid","").toString());
     ui.edOscId->setText(f.value("GPIB/oscid","").toString());
+
+    thread.window=this;
+    qRegisterMetaType<QList<qreal> >("QList<qreal>");
 }
 
 vibupraut::~vibupraut()
@@ -37,7 +42,6 @@ void vibupraut::measure(double startf, double stopf, QString filename)
     thread.genid=ui.edGenId->text();
     thread.mulid=ui.edMulId->text();
     ui.graph->scene()->clear();
-    thread.view=ui.graph;
     thread.wait();
     thread.start();
 }
@@ -68,7 +72,7 @@ void MeasureThread::run()
         return;
     }
 
-    cmeasure mes(oscid,genid,mulid,startf,stopf,0.1,view);
+    cmeasure mes(oscid,genid,mulid,startf,stopf,0.1,window);
 
     if(!filename.isEmpty())
     {
@@ -89,15 +93,40 @@ void MeasureThread::run()
         f.close();
     }
 
-    ReplyInterface reply;
-    reply.data<<QString("First run start freq, Hz:%1").arg(mes.fsf);
-    reply.data<<QString("First run stop freq, Hz:%1").arg(mes.fff);
-    reply.data<<QString("Second run start freq, Hz:%1").arg(mes.ssf);
-    reply.data<<QString("Second run stop freq, Hz:%1").arg(mes.sff);
-    reply.data<<QString("Resonance freq, Hz:%1").arg(mes.rf);
-    reply.data<<QString("Resonance ampl, V:%1").arg(mes.ra);
-    reply.data<<QString("Antiresonance freq, Hz:%1").arg(mes.af);
-    reply.data<<QString("Antiresonance ampl, V:%1").arg(mes.aa);
-    //reply is sent upon destruction
+    ReplyInterface data;
+    data<<QString("First run start freq, Hz:%1").arg(mes.fsf);
+    data<<QString("First run stop freq, Hz:%1").arg(mes.fff);
+    data<<QString("Second run start freq, Hz:%1").arg(mes.ssf);
+    data<<QString("Second run stop freq, Hz:%1").arg(mes.sff);
+    data<<QString("Resonance freq, Hz:%1").arg(mes.rf);
+    data<<QString("Resonance ampl, V:%1").arg(mes.ra);
+    data<<QString("Antiresonance freq, Hz:%1").arg(mes.af);
+    data<<QString("Antiresonance ampl, V:%1").arg(mes.aa);
 #endif
+}
+
+void vibupraut::path(QList<qreal> data,QPen pen)
+{
+	QPainterPath path;
+	path.moveTo(0,-data[0]);
+	for(int i=1;i<data.count();++i)
+		path.lineTo(i,-data[i]);
+	ui.graph->scene()->addPath(path,pen,Qt::NoBrush);
+	ui.graph->fitInView(ui.graph->scene()->sceneRect());
+}
+
+void vibupraut::path(QByteArray data,QPen pen)
+{
+	QPainterPath path;
+	path.moveTo(0,-data[0]);
+	for(int i=1;i<data.count();++i)
+		path.lineTo(i,-data[i]);
+	ui.graph->scene()->addPath(path,pen,Qt::NoBrush);
+	ui.graph->fitInView(ui.graph->scene()->sceneRect());
+}
+
+void vibupraut::line(qreal x1, qreal y1,qreal x2, qreal y2, QPen pen)
+{
+	ui.graph->scene()->addLine(x1,y1,x2,y2,pen);
+	ui.graph->fitInView(ui.graph->scene()->sceneRect());
 }
