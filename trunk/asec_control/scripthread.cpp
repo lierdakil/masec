@@ -61,7 +61,6 @@ void ScriptThread::run()
 	bool success=true;
 	bus = new CControlBus(filename,description,code,&success);
 	connect(bus,SIGNAL(bus_error(QString)), this, SIGNAL(error(QString)));
-	connect(this,SIGNAL(reply_call(QStringList)), bus, SLOT(reply_call(QStringList)));
 	if (success)
 	{
 		QScriptEngine *engine=new QScriptEngine(bus);
@@ -95,6 +94,10 @@ void ScriptThread::run()
 		}
 		delete engine;
 	}
+	/* For a record, methods are (should be?) automagically
+	 * disconnected when sender or receiver is deleted, so
+	 * there's no need to explicitly disconnect it here.
+	 */
 	disconnect(bus,SIGNAL(bus_error(QString)), this, SIGNAL(error(QString)));
 	delete bus;
 }

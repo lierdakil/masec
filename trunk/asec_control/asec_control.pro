@@ -6,8 +6,7 @@ QT += core \
     script \
     dbus \
     xml
-HEADERS += replyadaptor.h \
-    qfuncinitbuilder.h \
+HEADERS += qfuncinitbuilder.h \
     qhelpindexbuilder.h \
     qmethodfetcher.h \
     scriptthread.h \

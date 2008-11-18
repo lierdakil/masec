@@ -1,4 +1,5 @@
 /*
+ * WARNING! THIS IS DEPRECATED AND WILL BE REMOVED SOON!
  * replyadaptor.h
  *
  *  Created on: 17.11.2008
