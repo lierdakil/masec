@@ -59,7 +59,7 @@ public:
 	void setPID(float P, float I, float D)
 	{
 		if ((P>=0.1)&&(P<=1000)&&(I>=0.1)&&(I<=1000)&&(D>=0)&&(D<=200))
-			write(QString("PID 1, %f, %f, %f").arg(P).arg(I).arg(D));
+			write(QString("PID 1, %1, %2, %3").arg(P).arg(I).arg(D));
 	}
 
 	float temp()/*Kelvin*/
@@ -70,16 +70,16 @@ public:
 		bool statok=true;
 		do {
 			temp=query("KRDG? A").toFloat(&tempok);
-			status=query("RDGST? A\n").toInt(&statok);
+			status=query("RDGST? A").toInt(&statok);
 		} while(status!=0 || !tempok || !statok);
 		//TODO: Better make an error handler?
 		return temp;
 	}
 
-	void readzone(char zonen, float* toptemp, float* P, float* I, float* D, float* mout, char* range)
+	void readzone(char zonen, float* toptemp, float* P, float* I, float* D, float* mout, int* range)
 	{
 		QStringList data=query(QString("ZONE? 1, %1").arg(zonen)).split(",");
-		//iscanf(did,"%f,%f,%f,%f,%f,%d\n", toptemp, P, I, D, mout, range);
+		//iscanf(did,"%f,%f,%f,%f,%f,%d", toptemp, P, I, D, mout, range);
 		*toptemp=data[0].toFloat();
 		*P=data[1].toFloat();
 		*I=data[2].toFloat();
@@ -99,7 +99,7 @@ public:
 
 	void readPID(float* P, float* I, float* D)
 	{
-		QStringList data = query("PID? 1\n").split(",");//P,I,D
+		QStringList data = query("PID? 1").split(",");//P,I,D
 		*P = data[0].toFloat();
 		*I = data[1].toFloat();
 		*D = data[2].toFloat();
@@ -132,7 +132,7 @@ public:
 
 	bool rampdone()
 	{
-		return (query("*STB?\n").toInt() & 128)==128;
+		return (query("*STB?").toInt() & 128)==128;
 	}
 };
 
