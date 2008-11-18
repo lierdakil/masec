@@ -26,11 +26,11 @@ QList<qreal> sm_diff(QByteArray data, int nr)//nr - Depth of smoothing in one di
 	return diff;
 }
 
-cmeasure::cmeasure(QString oscstr, QString genstr, QString volstr, double sf, double ff, double epsilon, QWidget *window)
+cmeasure::cmeasure(QString oscstr, QString genstr, QString volstr, double sf, double ff, double epsilon, QObject *parent)
 {
-    connect(this,SIGNAL(path(QList<qreal>,QPen)),window,SLOT(path(QList<qreal>,QPen)),Qt::QueuedConnection);
-    connect(this,SIGNAL(path(QByteArray,QPen)),window,SLOT(path(QByteArray,QPen)),Qt::QueuedConnection);
-    connect(this,SIGNAL(line(qreal,qreal,qreal,qreal,QPen)),window,SLOT(line(qreal,qreal,qreal,qreal,QPen)),Qt::QueuedConnection);
+    connect(this,SIGNAL(path(QList<qreal>,QPen)),parent,SLOT(path(QList<qreal>,QPen)),Qt::QueuedConnection);
+    connect(this,SIGNAL(path(QByteArray,QPen)),parent,SLOT(path(QByteArray,QPen)),Qt::QueuedConnection);
+    connect(this,SIGNAL(line(qreal,qreal,qreal,qreal,QPen)),parent,SLOT(line(qreal,qreal,qreal,qreal,QPen)),Qt::QueuedConnection);
 	this->oscstr=oscstr;
 	gen = new genctrl(genstr);
 	vol = new volctrl(volstr);

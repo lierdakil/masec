@@ -30,7 +30,7 @@ private:
 	QString oscstr;
 
 public:
-	cmeasure(QString oscstr, QString genstr, QString volstr, double sf, double ff, double epsilon/*Hz*/, QWidget *window);
+	cmeasure(QString oscstr, QString genstr, QString volstr, double sf, double ff, double epsilon/*Hz*/, QObject *parent=0);
 	~cmeasure();
 	double fsf;//First Run Start Frequency
 	double fff;//First Run Stop Frequency

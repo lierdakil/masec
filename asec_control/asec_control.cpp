@@ -10,9 +10,6 @@ vib_control::vib_control(QWidget *parent)
 	connect(&scriptthread,SIGNAL(finished()),this,SLOT(script_finished()));
 	connect(&scriptthread,SIGNAL(bug(QString,int)),this,SLOT(script_bug(QString,int)));
 	connect(&scriptthread,SIGNAL(error(QString)),this,SLOT(script_error(QString)));
-
-	ReplyAdaptor *a = new ReplyAdaptor(this);
-	connect(a,SIGNAL(reply_call(QStringList)),&scriptthread,SIGNAL(reply_call(QStringList)));
 }
 
 vib_control::~vib_control()

@@ -148,23 +148,33 @@ QDBusError CControlBus::call(QString function, QString service, QList<QScriptVal
 	file_mutex.unlock();
 
 	//читаем список функций на интерфейсе exports
-	QDBusInterface iface(service,"/","ru.pp.livid.asec.exports");
+	QDBusInterface exports(service,"/","ru.pp.livid.asec.exports");
+	QDBusInterface flow(service,"/","ru.pp.livid.asec.flow");
 
-	if(!(iface.isValid()))
-		return iface.lastError(); //invalid interface
+	if(exports.lastError().isValid())
+		return exports.lastError();
 
-	QVariantList list;
+	if(flow.lastError().isValid())
+		return flow.lastError();
+
+	QVariantList argumentlist;
 
 	for(int m=0;m<arguments.count();++m)
-		list<<arguments[m].toVariant();
+		argumentlist<<arguments[m].toVariant();
 
 	reply.clear();
-	iface.callWithArgumentList(QDBus::NoBlock,function,list);
 
-	if(iface.lastError().isValid())
-		return iface.lastError();
+	connect(&flow,SIGNAL(finished(QStringList)),SLOT(reply_call(QStringList)));
 
-	reply_wait.exec();
+	if(flow.lastError().isValid())
+		return flow.lastError();
+
+	exports.callWithArgumentList(QDBus::NoBlock,function,argumentlist);
+
+	if(exports.lastError().isValid())
+		return exports.lastError();
+
+	reply_wait.exec();//Run local event loop
 
 	//Проверка на предмет ошибки, возвращенной вместо списка результатов.
 
@@ -181,7 +191,7 @@ QDBusError CControlBus::call(QString function, QString service, QList<QScriptVal
 
 	last_call=function.left(function.indexOf('_'));
 
-	return iface.lastError(); //no error, actually
+	return QDBusError(QDBusError::NoError,""); //no error, actually
 }
 
 QString CControlBus::init_functions(bool *success)

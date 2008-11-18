@@ -6,7 +6,6 @@
 #include <QErrorMessage>
 #include "ui_asec_control.h"
 #include "scriptthread.h"
-#include "replyadaptor.h"
 
 class vib_control : public QWidget
 {

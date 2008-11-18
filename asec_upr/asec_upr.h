@@ -12,25 +12,7 @@
 #include <QtCore>
 #include <QErrorMessage>
 #include "ui_asec_upr.h"
-#include "measure.h"
-#include <replyinterface.h>
-
-class vibupraut;
-
-class MeasureThread : public QThread
-{
-	Q_OBJECT
-
-public:
-	double startf;
-	double stopf;
-	QString filename;
-	vibupraut *window;
-	QString oscid;
-	QString genid;
-	QString mulid;
-	void run();
-};
+#include "measurethread.h"
 
 class vibupraut : public QWidget
 {
@@ -53,6 +35,8 @@ public slots:
 	void path(QList<qreal>,QPen pen);
 	void path(QByteArray,QPen pen);
 	void line(qreal x1, qreal y1,qreal x2, qreal y2, QPen pen);
+signals:
+	void finished(QStringList data);
 };
 
 class export_adaptor : public QDBusAbstractAdaptor
@@ -71,15 +55,15 @@ public:
 
 public slots:
 
-void mes_res(double startf, double stopf)
-{
-	vua->measure(startf, stopf, QString());
-}
+	void mes_res(double startf, double stopf)
+	{
+		vua->measure(startf, stopf, QString());
+	}
 
-void mes_res_file(double startf, double stopf, QString filename)
-{
-	vua->measure(startf, stopf, filename);
-}
+	void mes_res_file(double startf, double stopf, QString filename)
+	{
+		vua->measure(startf, stopf, filename);
+	}
 };
 
 class flow_adaptor : public QDBusAbstractAdaptor
@@ -93,14 +77,18 @@ private:
 public:
 	flow_adaptor(vibupraut *v) : QDBusAbstractAdaptor(v), vua(v)
 	{
-
+		setAutoRelaySignals(true);
+		//or
+		//connect(v,SIGNAL(finished(QStringList)),this,SIGNAL(finished(QStringList)));
 	}
 
 public slots:
-void stop()
-{
-	vua->thread.quit();
-}
+	void stop()
+	{
+		vua->thread.quit();
+	}
+signals:
+	void finished(QStringList data);
 };
 
 class help_adaptor : public QDBusAbstractAdaptor
@@ -121,25 +109,25 @@ public slots:
 
 //TODO: QString module_description()
 
-QString mes_res()
-{
-	return trUtf8(
-			"<p>Получить данные о резонансе и антирезонансе. </p>"
-			"<p><code>startf</code> - частота начала пробега в герцах</p>"
-			"<p><code>stopf</code> - частота конца пробега в герцах</p>"
-	);
-}
+	QString mes_res()
+	{
+		return trUtf8(
+				"<p>Получить данные о резонансе и антирезонансе. </p>"
+				"<p><code>startf</code> - частота начала пробега в герцах</p>"
+				"<p><code>stopf</code> - частота конца пробега в герцах</p>"
+		);
+	}
 
-QString mes_res_file()
-{
-	return trUtf8(
-			"<p>Получить данные о резонансе и антирезонансе. </p>"
-			"<p><code>startf</code> - частота начала пробега в герцах</p>"
-			"<p><code>stopf</code> - частота конца пробега в герцах</p>"
-			"<p><code>filename</code> - имя файла для сохранения вида"
-			"резонансной кривой (если пустое - не сохранять)</p>"
-	);
-}
+	QString mes_res_file()
+	{
+		return trUtf8(
+				"<p>Получить данные о резонансе и антирезонансе. </p>"
+				"<p><code>startf</code> - частота начала пробега в герцах</p>"
+				"<p><code>stopf</code> - частота конца пробега в герцах</p>"
+				"<p><code>filename</code> - имя файла для сохранения вида"
+				"резонансной кривой (если пустое - не сохранять)</p>"
+		);
+	}
 };
 
 #endif // VIBUPRAUT_H
