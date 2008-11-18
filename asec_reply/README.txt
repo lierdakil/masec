@@ -1,1 +1,0 @@
-Use of this interface is depracated and will be removed soon. Use flow_adaptor finished signal instead.
