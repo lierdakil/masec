@@ -59,7 +59,6 @@ public:
 public slots:
 	void reply_call(QStringList values)
 	{
-		qDebug()<<2;
 		reply=values;
 		reply_wait.quit();
 	}
