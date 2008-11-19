@@ -24,6 +24,9 @@ private:
     QwtPlotCurve curve;
     QDBusInterface *X_iface;
     QDBusInterface *Y_iface;
+    void addX(qreal X);
+    void addY(qreal Y);
+    void updateCurve();
 
 public slots:
 	void new_X(QStringList data);

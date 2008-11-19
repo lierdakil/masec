@@ -7,6 +7,7 @@ QPlotWindow::QPlotWindow(bool *success)
 	X_iface=0;
 	Y_iface=0;
 	*success=editparams();
+	curve.attach(ui.qwtPlot);
 }
 
 QPlotWindow::~QPlotWindow()
@@ -37,6 +38,32 @@ bool QPlotWindow::editparams()
 		return false;
 }
 
+void QPlotWindow::addX(qreal X)
+{
+	X_data.append(X);
+	int lenx=X_data.count();
+	int leny=Y_data.count();
+	int len=lenx>leny?lenx:leny;
+	ui.twData->setRowCount(len);
+	ui.twData->item(X_data.count()-1,0)->setText(QString("%1").arg(X));
+}
+
+void QPlotWindow::addY(qreal Y)
+{
+	Y_data.append(Y);
+	int lenx=X_data.count();
+	int leny=Y_data.count();
+	int len=lenx>leny?lenx:leny;
+	ui.twData->setRowCount(len);
+	ui.twData->item(Y_data.count()-1,1)->setText(QString("%1").arg(Y));
+}
+
+void QPlotWindow::updateCurve()
+{
+	curve.setData(X_data,Y_data);
+	ui.qwtPlot->replot();
+}
+
 void QPlotWindow::new_X(QStringList data)
 {
 	int xi = data.indexOf(QRegExp("^"+ui.qwtPlot->axisTitle(QwtPlot::xBottom).text()+":(.*)"));
@@ -50,17 +77,18 @@ void QPlotWindow::new_X(QStringList data)
 		if(X_data.count()==Y_data.count()+1)
 		{
 			//clone last Y
-			Y_data.append(Y_data.last());
+			addY(Y_data.last());
 			//draw plot
-			curve.setData(X_data,Y_data);
+			updateCurve();
 		}
 
 		//add new data
-		X_data.append(val);
+		addX(val);
+
 
 		//if both values are in place, draw plot
 		if(X_data.count()==Y_data.count())
-			curve.setData(X_data,Y_data);
+			updateCurve();
 	}
 }
 
@@ -75,16 +103,16 @@ void QPlotWindow::new_Y(QStringList data)
 		if(Y_data.count()==X_data.count()+1)
 		{
 			//clone last X
-			X_data.append(X_data.last());
+			addX(X_data.last());
 			//draw plot
-			curve.setData(X_data,Y_data);
+			updateCurve();
 		}
 
 		//add new data
-		Y_data.append(val);
+		addY(val);
 
 		//if both values are in place, draw plot
 		if(X_data.count()==Y_data.count())
-			curve.setData(X_data,Y_data);
+			updateCurve();
 	}
 }
