@@ -1,4 +1,5 @@
 TEMPLATE = app
+DESTDIR = ../build
 TARGET = asec_plots
 QT += core \
     gui \
