@@ -109,6 +109,20 @@ public slots:
 
 //TODO: QString module_description()
 
+	QStringList returned_values()
+	{
+		QStringList data;
+		data<<QString("First run start freq, Hz");
+		data<<QString("First run stop freq, Hz");
+		data<<QString("Second run start freq, Hz");
+		data<<QString("Second run stop freq, Hz");
+		data<<QString("Resonance freq, Hz");
+		data<<QString("Resonance ampl, V");
+		data<<QString("Antiresonance freq, Hz");
+		data<<QString("Antiresonance ampl, V");
+		return data;
+	}
+
 	QString mes_res()
 	{
 		return trUtf8(
