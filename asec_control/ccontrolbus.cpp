@@ -164,7 +164,8 @@ QDBusError CControlBus::call(QString function, QString service, QList<QScriptVal
 
 	reply.clear();
 
-	connect(&flow,SIGNAL(finished(QStringList)),SLOT(reply_call(QStringList)));
+	//connect signal of finishing called module to handler of this
+	connect(&flow,SIGNAL(finished(QStringList)),this,SLOT(reply_call(QStringList)));
 
 	if(flow.lastError().isValid())
 		return flow.lastError();
@@ -176,13 +177,19 @@ QDBusError CControlBus::call(QString function, QString service, QList<QScriptVal
 
 	reply_wait.exec();//Run local event loop
 
-	//Проверка на предмет ошибки, возвращенной вместо списка результатов.
+	//since local event loop finished, reply is here, so disconect
+	disconnect(&flow,SIGNAL(finished(QStringList)),this,SLOT(reply_call(QStringList)));
 
+	//Check if loop was stopped by user
+	if(stopped)
+		return QDBusError(QDBusError::Other,trUtf8("Stopped by User"));
+
+	//Check if we received error in results' stead
 	if (reply.count()==0)
-		return QDBusError(QDBusError::NoReply,QString("Empty reply!"));
+		return QDBusError(QDBusError::NoReply,trUtf8("Empty reply!"));
 
 	if (reply.at(0)=="::ERROR::")
-		return QDBusError(QDBusError::Other,reply.value(1));
+		return QDBusError(QDBusError::Other,reply.at(1));
 
 	//Сохренение материала из возвращенного значения в result_row
 	result_row_mutex.lock();
@@ -191,7 +198,7 @@ QDBusError CControlBus::call(QString function, QString service, QList<QScriptVal
 
 	last_call=function.left(function.indexOf('_'));
 
-	return QDBusError(QDBusError::NoError,""); //no error, actually
+	return QDBusError(QDBusError::NoError,"");
 }
 
 QString CControlBus::init_functions(bool *success)
