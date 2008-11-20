@@ -106,6 +106,18 @@ public:
     }
 
 public slots:
+	QStringList returned_values()
+	{
+		QStringList data;
+		data<<QString("Setpoint,K");
+		data<<QString("Temperature 1,K");
+		data<<QString("Temperature 2,K");
+		data<<QString("Ramp,K/min");
+		data<<QString("Timeout,min");
+		data<<QString("Stabilization time,min");
+		return data;
+	}
+
     QString set_temp()
     {
         return trUtf8("<p>Установить температуру. Устанавливается точка и ожидается установление температруры. </p> "
