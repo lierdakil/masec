@@ -36,8 +36,8 @@ public:
 		QMutexLocker m(&mutex);
 		//iprintf(did,string.append("\n").toAscii().data());
 		QString str=string.append("\n");
-		iwrite(did,str.toAscii().data(),str.length(),1,NULL);
 		msleep(SLEEP_TIME);
+		iwrite(did,str.toAscii().data(),str.length(),1,NULL);
 	}
 
 	QString read()
@@ -48,7 +48,7 @@ public:
 		long unsigned int actual=0;
 		iread(did,r.data(),256,NULL,&actual);
 		r.resize(actual-1);
-		msleep(SLEEP_TIME);
+		//msleep(SLEEP_TIME);
 		return QString(r);
 	}
 
@@ -66,7 +66,7 @@ public:
 		long unsigned int len;
 		iread(did,res.data(),maxlength,0,&len);
 		res.resize(len);
-		msleep(SLEEP_TIME);
+		//msleep(SLEEP_TIME);
 		return res;
 	}
 };
