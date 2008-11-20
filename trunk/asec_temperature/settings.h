@@ -9,7 +9,6 @@
 #include <QGraphicsScene>
 #include <QPainterPath>
 #include "ui_settings.h"
-#include "ctrl/temp.h"
 #include "QTempTimeline.h"
 
 class settings : public QDialog

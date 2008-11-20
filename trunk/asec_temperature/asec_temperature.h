@@ -3,15 +3,15 @@
 
 #include <QtGui/QWidget>
 #include <QtDBus>
-#include <QTimeLine>
 #include <QtGlobal>
 #include <QGraphicsScene>
+#include <QErrorMessage>
+#include <math.h>
 #include "ui_asec_temperature.h"
+
+#include "ctrl/temp.h"
 #include "settings.h"
 #include "QTempTimeline.h"
-#include "ctrl/temp.h"
-#include <math.h>
-#include <replyinterface.h>
 
 class vib_temperature : public QWidget
 {
@@ -31,10 +31,12 @@ private slots:
     void on_btSettings_clicked();
 
 public slots:
-    void finished();
+    void temp_set();
     void timedout();
     void newpoint(float time, float temp, float setpoint);
     void set_temp(double temp, double ramp, double timeout);
+signals:
+	void finished(QStringList data);
 };
 
 class export_adaptor : public QDBusAbstractAdaptor
@@ -67,16 +69,17 @@ public slots:
 
 class flow_adaptor : public QDBusAbstractAdaptor
 {
-    Q_OBJECT
-    Q_CLASSINFO("D-Bus Interface", QString("ru.pp.livid.asec.flow"))
+	Q_OBJECT
+	Q_CLASSINFO("D-Bus Interface", QString("ru.pp.livid.asec.flow"))
 
-        private:
-            vib_temperature *t;
-    double setpoint;
+private:
+	vib_temperature *t;
+	double setpoint;
 
 public:
 	flow_adaptor(vib_temperature *parent) : QDBusAbstractAdaptor(parent), t(parent)
     {
+		setAutoRelaySignals(true);
     }
 
 public slots:
@@ -84,6 +87,8 @@ public slots:
     {
         t->temptl.stop();
     }
+signals:
+	void finished(QStringList data);
 };
 
 class help_adaptor : public QDBusAbstractAdaptor

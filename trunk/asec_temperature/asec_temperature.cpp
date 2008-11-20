@@ -4,6 +4,9 @@ vib_temperature::vib_temperature(QWidget *parent)
 : QWidget(parent)
 {
 	ui.setupUi(this);
+
+	QErrorMessage::qtHandler();
+
 	QDBusConnection connection = QDBusConnection::sessionBus();
 	connection.registerService("ru.pp.livid.asec.temp");
 	connection.registerObject("/", this);
@@ -12,7 +15,7 @@ vib_temperature::vib_temperature(QWidget *parent)
 
 	ui.gvTemp->setScene(new QGraphicsScene());
 
-	connect(&temptl,SIGNAL(finished()),this,SLOT(finished()));
+	connect(&temptl,SIGNAL(temp_set()),this,SLOT(temp_set()));
 	connect(&temptl,SIGNAL(timedout()),this,SLOT(timedout()));
 	connect(&temptl,SIGNAL(newpoint(float,float,float)),this,SLOT(newpoint(float,float,float)));
 }
@@ -22,22 +25,24 @@ vib_temperature::~vib_temperature()
 
 }
 
-void vib_temperature::finished()
+void vib_temperature::temp_set()
 {
-	ReplyInterface reply;
-	reply.data<<QString("Setpoint,K:%1").arg(temptl.setp);
-	reply.data<<QString("Temperature 1,K:%1").arg(temptl.temp1);
-	reply.data<<QString("Temperature 2,K:%1").arg(temptl.temp2);
-	reply.data<<QString("Ramp,K/min:%1").arg(temptl.ramp);
-	reply.data<<QString("Timeout,min:%1").arg(temptl.timeout);
-	reply.data<<QString("Stabilization time,min:%1").arg(temptl.settime);
+	QStringList data;
+	data<<QString("Setpoint,K:%1").arg(temptl.setp);
+	data<<QString("Temperature 1,K:%1").arg(temptl.temp1);
+	data<<QString("Temperature 2,K:%1").arg(temptl.temp2);
+	data<<QString("Ramp,K/min:%1").arg(temptl.ramp);
+	data<<QString("Timeout,min:%1").arg(temptl.timeout);
+	data<<QString("Stabilization time,min:%1").arg(temptl.settime);
+	emit finished(data);
 }
 
 void vib_temperature::timedout()
 {
-	ReplyInterface reply;
-	reply.data<<trUtf8("::ERROR::");
-	reply.data<<trUtf8("Exceeded temperature setup timeout");
+	QStringList data;
+	data<<trUtf8("::ERROR::");
+	data<<trUtf8("Exceeded temperature setup timeout or stopped by user");
+	emit finished(data);
 }
 
 void vib_temperature::on_btSettings_clicked()
@@ -53,7 +58,7 @@ void vib_temperature::newpoint(float time, float temp, float setpoint)
 	if(time>lasttime)
 	{
 		ui.gvTemp->scene()->addLine(lasttime,lasttemp,time,temp,QPen(Qt::red));
-		ui.gvTemp->scene()->addLine(lasttime,lastsetp,time,setpoint,QPen(Qt::red));
+		ui.gvTemp->scene()->addLine(lasttime,lastsetp,time,setpoint,QPen(Qt::blue));
 		ui.gvTemp->fitInView(ui.gvTemp->scene()->sceneRect());
 	}
 	lasttime=time;
@@ -71,8 +76,9 @@ void vib_temperature::set_temp(double temp,double ramp, double timeout)
 	}
 	else
 	{
-		ReplyInterface reply;
-		reply.data<<trUtf8("::ERROR::");
-		reply.data<<trUtf8("Не установлен GPIB ID термоконтроллера.");
+		QStringList data;
+		data<<trUtf8("::ERROR::");
+		data<<trUtf8("Не установлен GPIB ID термоконтроллера.");
+		emit finished(data);
 	}
 }

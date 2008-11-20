@@ -3,13 +3,14 @@
 
 #include <QTimer>
 #include <QtDBus>
+#include <QtCore>
 #include <QDebug>
 #include <QGraphicsScene>
 #include <QGraphicsItem>
 #include <QtAlgorithms>
 #include <QGraphicsView>
-#include "ctrl/temp.h"
 #include <math.h>
+#include "ctrl/temp.h"
 
 #define TIMESTEP 0.001
 
@@ -18,7 +19,6 @@ class QTempTimer : public QObject
 	Q_OBJECT
 
 private:
-	tempctrl *temp;
 	double dt; //minutes
 	double time,drawtime;//minutes
 	void wait(double min, const char *member);
@@ -31,6 +31,7 @@ public:
 	double settime;
 	//return vals
 	float temp1,temp2;
+	bool stopped;
 
 public slots:
 	bool stable();//we use this function to check if temperature is stable at the moment
@@ -42,7 +43,7 @@ public slots:
 	void stop();//make it think it timed out
 
 signals:
-	void finished();//temperature stabilized at given setpoint
+	void temp_set();//temperature stabilized at given setpoint
 	void timedout();//temperature could not stabilize in $timeout minutes
 	void newpoint(float time, float temp, float setpoint);
 
