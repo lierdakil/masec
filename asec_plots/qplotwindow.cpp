@@ -45,7 +45,9 @@ void QPlotWindow::addX(qreal X)
 	int leny=Y_data.count();
 	int len=lenx>leny?lenx:leny;
 	ui.twData->setRowCount(len);
-	ui.twData->item(X_data.count()-1,0)->setText(QString("%1").arg(X));
+//	ui.twData->item(lenx-1,0)->setText(QString("%1").arg(X));
+	QTableWidgetItem *newItem = new QTableWidgetItem(QString("%1").arg(X));
+	ui.twData->setItem(lenx-1,0,newItem);
 }
 
 void QPlotWindow::addY(qreal Y)
@@ -55,7 +57,8 @@ void QPlotWindow::addY(qreal Y)
 	int leny=Y_data.count();
 	int len=lenx>leny?lenx:leny;
 	ui.twData->setRowCount(len);
-	ui.twData->item(Y_data.count()-1,1)->setText(QString("%1").arg(Y));
+	QTableWidgetItem *newItem = new QTableWidgetItem(QString("%1").arg(Y));
+	ui.twData->setItem(leny-1,1,newItem);
 }
 
 void QPlotWindow::updateCurve()
