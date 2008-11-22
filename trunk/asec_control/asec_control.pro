@@ -10,7 +10,6 @@ HEADERS += qfuncinitbuilder.h \
     qhelpindexbuilder.h \
     qmethodfetcher.h \
     scriptthread.h \
-    cgraphiccontrol.h \
     ccontrolbus.h \
     numberedtextview.h \
     asec_control.h

@@ -45,6 +45,7 @@ public slots:
 signals:
 	void temp_set();//temperature stabilized at given setpoint
 	void timedout();//temperature could not stabilize in $timeout minutes
+	void stopped();//stopped by user
 	void newpoint(float time, float temp, float setpoint);
 
 public:

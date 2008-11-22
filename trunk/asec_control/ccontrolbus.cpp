@@ -56,7 +56,6 @@ CControlBus::CControlBus(QString log_file_name, QString description, QString cod
 			if(reply.isValid())
 				description+=" * "+reply.value().replace("\n","\n * ")+"\n";
 		}
-		//TODO: описание модуля, экспортируемое самим модулем - в _модулях_
 	}
 
 

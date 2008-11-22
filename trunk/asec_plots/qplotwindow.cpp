@@ -24,9 +24,15 @@ bool QPlotWindow::editparams()
 		ui.qwtPlot->setAxisTitle(QwtPlot::yLeft,params.Y());
 		setWindowTitle(params.name());
 		if(X_iface!=0)
+		{
+			disconnect(X_iface,SIGNAL(finished(QStringList)),this,SLOT(new_X(QStringList)));
 			delete X_iface;
+		}
 		if(Y_iface!=0)
+		{
+			disconnect(Y_iface,SIGNAL(finished(QStringList)),this,SLOT(new_Y(QStringList)));
 			delete Y_iface;
+		}
 		X_iface=new QDBusInterface(params.X_service(),"/","ru.pp.livid.asec.flow");
 		Y_iface=new QDBusInterface(params.Y_service(),"/","ru.pp.livid.asec.flow");
 
