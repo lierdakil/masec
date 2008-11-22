@@ -88,7 +88,7 @@ void QTempTimer::step1()
     	stopped=true;
     	emit timedout();
     } else if(stopped) {
-    	//TODO: emit stopped();
+    	emit stopped();
     } else if ( stable() ) {
     	wait(settime,SLOT(step2()));//wait settime to check if temperature stabilized.
     } else {

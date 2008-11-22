@@ -17,6 +17,7 @@ vib_temperature::vib_temperature(QWidget *parent)
 
 	connect(&temptl,SIGNAL(temp_set()),this,SLOT(temp_set()));
 	connect(&temptl,SIGNAL(timedout()),this,SLOT(timedout()));
+	connect(&temptl,SIGNAL(stopped()),this,SLOT(stopped()));
 	connect(&temptl,SIGNAL(newpoint(float,float,float)),this,SLOT(newpoint(float,float,float)));
 }
 
@@ -41,7 +42,7 @@ void vib_temperature::timedout()
 {
 	QStringList data;
 	data<<trUtf8("::ERROR::");
-	data<<trUtf8("Exceeded temperature setup timeout or stopped by user");
+	data<<trUtf8("Exceeded temperature setup timeout");
 	emit finished(data);
 }
 
@@ -64,6 +65,14 @@ void vib_temperature::newpoint(float time, float temp, float setpoint)
 	lasttime=time;
 	lasttemp=temp;
 	lastsetp=setpoint;
+}
+
+void vib_temperature::stopped()
+{
+	QStringList data;
+	data<<trUtf8("::ERROR::");
+	data<<trUtf8("Stopped by user");
+	emit finished(data);
 }
 
 void vib_temperature::set_temp(double temp,double ramp, double timeout)

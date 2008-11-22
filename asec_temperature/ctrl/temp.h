@@ -137,6 +137,5 @@ public:
 };
 
 //TODO: many error handlers
-//TODO: maybe make overloaded write()s?
 
 #endif /*CTRL_TEMP_H_*/

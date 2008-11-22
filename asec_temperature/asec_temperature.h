@@ -33,6 +33,7 @@ private slots:
 public slots:
     void temp_set();
     void timedout();
+    void stopped();
     void newpoint(float time, float temp, float setpoint);
     void set_temp(double temp, double ramp, double timeout);
 signals:
@@ -106,6 +107,8 @@ public:
     }
 
 public slots:
+	//TODO: QString module_description()
+
 	QStringList returned_values()
 	{
 		QStringList data;
