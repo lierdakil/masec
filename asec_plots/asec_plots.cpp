@@ -5,6 +5,7 @@ asec_plots::asec_plots(QWidget *parent)
 {
 	ui.setupUi(this);
 	QErrorMessage::qtHandler();
+	QDBusConnection::sessionBus();
 }
 
 asec_plots::~asec_plots()
