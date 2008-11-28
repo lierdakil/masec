@@ -22,7 +22,7 @@ settings::~settings()
 
 double settings::getSettime(double temp)
 {
-	//TODO: Разобраться, ибо что-то здесь не так.
+	//TODO: Не понятно, что делать, если T>T_10
 	for (int n=0;n<10;n++)
 	{
 		double ct = ui_settings.tbTempCtrl->findChild<QDoubleSpinBox*>(QString("sbTemp_%1").arg(n))->value();

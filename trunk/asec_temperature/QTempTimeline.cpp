@@ -14,7 +14,7 @@ void QTempTimer::start(QString tempid, float nsetp, float nramp, float ntimeout,
 	timeout=ntimeout;
 	settime=nsettime;
 
-	stopped=false;
+	is_stopped=false;
 
 	tempctrl *temp=(tempctrl*)(qApp->property("temp").toInt());
 
@@ -72,7 +72,7 @@ void QTempTimer::draw_temp()
 	drawtime+=TIMESTEP;
 	//TODO: use system ticks, TIMESTEP isn't reliable anymore.
 	emit newpoint(drawtime,temp->temp(),temp->getsetp());
-	if(!stopped)
+	if(!is_stopped)
 		QTimer::singleShot(int(60000*TIMESTEP),this,SLOT(draw_temp()));
 }
 
@@ -85,9 +85,9 @@ void QTempTimer::step1()
     if(time>=timeout)
     {
     	//delete temp;
-    	stopped=true;
+    	is_stopped=true;
     	emit timedout();
-    } else if(stopped) {
+    } else if(is_stopped) {
     	emit stopped();
     } else if ( stable() ) {
     	wait(settime,SLOT(step2()));//wait settime to check if temperature stabilized.
@@ -103,7 +103,7 @@ void QTempTimer::step2()
 	{
     	//we think that temperature is stable
 //		delete temp;
-		stopped=true;
+		is_stopped=true;
 		emit temp_set();
 	} else {
 		wait(TIMESTEP,SLOT(step1()));//continue cycle
@@ -112,6 +112,6 @@ void QTempTimer::step2()
 
 void QTempTimer::stop()
 {
-	stopped=true;
+	is_stopped=true;
 }
 
