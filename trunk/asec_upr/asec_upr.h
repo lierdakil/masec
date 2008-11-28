@@ -1,6 +1,5 @@
 #ifndef VIBUPRAUT_H
 #define VIBUPRAUT_H
-//#define DEBUG
 
 #include <QtCore/QStringList>
 #include <QtDBus>
