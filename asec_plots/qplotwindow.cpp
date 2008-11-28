@@ -12,7 +12,10 @@ QPlotWindow::QPlotWindow(bool *success)
 
 QPlotWindow::~QPlotWindow()
 {
-
+	disconnect(X_iface,SIGNAL(finished(QStringList)),this,SLOT(new_X(QStringList)));
+	disconnect(Y_iface,SIGNAL(finished(QStringList)),this,SLOT(new_Y(QStringList)));
+	delete X_iface;
+	delete Y_iface;
 }
 
 bool QPlotWindow::editparams()

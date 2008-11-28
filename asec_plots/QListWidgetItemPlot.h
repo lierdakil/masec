@@ -20,6 +20,7 @@ public:
 	QListWidgetItemPlot(QListWidget *view, bool *success);
 	~QListWidgetItemPlot();
 	bool EditItem();
+	bool ShowWindow();
 };
 
 #endif /* QLISTWIDGETITEMPLOT_H_ */

@@ -24,3 +24,9 @@ bool QListWidgetItemPlot::EditItem()
 {
 	return window->editparams();
 }
+
+bool QListWidgetItemPlot::ShowWindow()
+{
+	window->show();
+	return true;
+}
