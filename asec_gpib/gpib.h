@@ -46,9 +46,9 @@ public:
 		QByteArray r;
 		r.resize(256);
 		long unsigned int actual=0;
+		msleep(SLEEP_TIME);
 		iread(did,r.data(),256,NULL,&actual);
 		r.resize(actual-1);
-		//msleep(SLEEP_TIME);
 		return QString(r);
 	}
 
@@ -64,9 +64,9 @@ public:
 		QByteArray res;
 		res.resize(maxlength);
 		long unsigned int len;
+		msleep(SLEEP_TIME);
 		iread(did,res.data(),maxlength,0,&len);
 		res.resize(len);
-		//msleep(SLEEP_TIME);
 		return res;
 	}
 };
