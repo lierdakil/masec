@@ -244,14 +244,27 @@ void cmeasure::findresonance()
 	rf = golden(k*xmax1+newsf,k*xmin+newsf,epsilon,true);
 #else
 	rf=0;
+	//left to right
 	for(int i=xmax1;i<xmin;i++)
 	{
 		if(diff[i]<0)
 		{
-			rf=i;
+			rf=(qreal)i/(qreal)2;
 			break;
 		}
 	}
+	//right to left
+	for(int i=xmin;i>xmax1;i--)
+	{
+		if(diff[i]>0)
+		{
+			rf+=(qreal)i/(qreal)2;
+			break;
+		}
+	}
+	/* rf= median of two points closest to edges of
+	 * segment xmax1-xmin, where diff changes sign.
+	 */
 	rf=k*rf+ssf;
 #endif
 	ra=getamplonf(rf);
@@ -262,14 +275,27 @@ void cmeasure::findresonance()
 	af = golden(k*xmin+newsf,k*xmax2+newsf,epsilon,false);
 #else
 	af=0;
+	//left to right
 	for(int i=xmin;i<xmax2;i++)
 	{
 		if(diff[i]>0)
 		{
-			af=i;
+			af+=(qreal)i/(qreal)2;
 			break;
 		}
 	}
+	//right to left
+	for(int i=xmax2;i>xmin;i--)
+	{
+		if(diff[i]<0)
+		{
+			af+=(qreal)i/(qreal)2;
+			break;
+		}
+	}
+	/* af= median of two points closest to edges of
+	 * segment xmin-xmax2, where diff changes sign.
+	 */
 	af=k*af+ssf;
 #endif
 	aa=getamplonf(af);
