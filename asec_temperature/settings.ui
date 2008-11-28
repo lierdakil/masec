@@ -9,7 +9,7 @@
     <x>0</x>
     <y>0</y>
     <width>684</width>
-    <height>469</height>
+    <height>472</height>
    </rect>
   </property>
   <property name="sizePolicy" >
@@ -1121,7 +1121,7 @@
          <item>
           <widget class="QDoubleSpinBox" name="sbt_test" >
            <property name="minimum" >
-            <double>1.000000000000000</double>
+            <double>0.010000000000000</double>
            </property>
            <property name="maximum" >
             <double>3600.000000000000000</double>
