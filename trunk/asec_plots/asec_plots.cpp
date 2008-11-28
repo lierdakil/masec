@@ -29,3 +29,8 @@ void asec_plots::on_btEditPlot_clicked()
 {
 	((QListWidgetItemPlot*)ui.lwPlots->currentItem())->EditItem();
 }
+
+void asec_plots::on_lwPlots_itemDoubleClicked(QListWidgetItem* item)
+{
+	((QListWidgetItemPlot*)item)->ShowWindow();
+}
