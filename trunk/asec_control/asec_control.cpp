@@ -5,6 +5,7 @@ vib_control::vib_control(QWidget *parent)
 {
 	ui.setupUi(this);
 	QErrorMessage::qtHandler();
+	QDBusConnection::sessionBus();
 
 	connect(&scriptthread,SIGNAL(started()),this,SLOT(script_started()));
 	connect(&scriptthread,SIGNAL(finished()),this,SLOT(script_finished()));
