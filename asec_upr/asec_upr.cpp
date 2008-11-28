@@ -38,6 +38,7 @@ vibupraut::~vibupraut()
 
 void vibupraut::measure(double startf, double stopf, QString filename)
 {
+	thread.wait();
     thread.startf=startf;
     thread.stopf=stopf;
     thread.filename=filename;
@@ -45,7 +46,6 @@ void vibupraut::measure(double startf, double stopf, QString filename)
     thread.genid=ui.edGenId->text();
     thread.mulid=ui.edMulId->text();
     ui.graph->scene()->clear();
-    thread.wait();
     thread.start();
 }
 
