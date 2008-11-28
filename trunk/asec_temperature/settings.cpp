@@ -11,6 +11,7 @@ settings::settings(QWidget *parent)
 	connect(ui_settings.btStopTest,SIGNAL(clicked()),&test,SLOT(stop()));
 	connect(&test,SIGNAL(temp_set()),this,SLOT(finished()));
 	connect(&test,SIGNAL(timedout()),this,SLOT(finished()));
+	connect(&test,SIGNAL(stopped()),this,SLOT(finished()));
 	connect(&test,SIGNAL(newpoint(float,float,float)),this,SLOT(newpoint(float,float,float)));
 	ui_settings.gvGraph->setScene(new QGraphicsScene());
 }
@@ -128,6 +129,7 @@ void settings::newpoint(float time, float temp, float setpoint)
 	}
 	lasttime=time;
 	lasttemp=temp;
+	ui_settings.nlT_test->setProperty("value",temp);
 	lastsetp=setpoint;
 }
 
