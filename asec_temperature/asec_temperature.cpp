@@ -81,6 +81,8 @@ void vib_temperature::set_temp(double temp,double ramp, double timeout)
 	{
 		result_var.clear();
 		ui.gvTemp->scene()->clear();
+		tempctrl *tempctl=(tempctrl*)(qApp->property("temp").toInt());
+		tempctl->ctrlmode(MOD_ZONE);
 		temptl.start(wset.tempid,temp,ramp,timeout,wset.getSettime(temp));
 	}
 	else

@@ -31,7 +31,7 @@ public:
 	double settime;
 	//return vals
 	float temp1,temp2;
-	bool stopped;
+	bool is_stopped;
 
 public slots:
 	bool stable();//we use this function to check if temperature is stable at the moment
