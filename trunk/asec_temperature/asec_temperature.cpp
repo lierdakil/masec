@@ -12,6 +12,7 @@ vib_temperature::vib_temperature(QWidget *parent)
 	connection.registerObject("/", this);
 	new export_adaptor(this);
 	new help_adaptor(this);
+	new flow_adaptor(this);
 
 	ui.gvTemp->setScene(new QGraphicsScene());
 
@@ -69,10 +70,10 @@ void vib_temperature::newpoint(float time, float temp, float setpoint)
 
 void vib_temperature::stopped()
 {
-	QStringList data;
-	data<<trUtf8("::ERROR::");
-	data<<trUtf8("Stopped by user");
-	emit finished(data);
+//	QStringList data;
+//	data<<trUtf8("::ERROR::");
+//	data<<trUtf8("Stopped by user");
+//	emit finished(data);
 }
 
 void vib_temperature::set_temp(double temp,double ramp, double timeout)

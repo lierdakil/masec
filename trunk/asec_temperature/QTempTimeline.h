@@ -12,8 +12,6 @@
 #include <math.h>
 #include "ctrl/temp.h"
 
-#define TIMESTEP 0.001
-
 class QTempTimer : public QObject
 {
 	Q_OBJECT
@@ -30,6 +28,7 @@ public:
 	float timeout;
 	double settime;
 	//return vals
+	int startclock;
 	float temp1,temp2;
 	bool is_stopped;
 

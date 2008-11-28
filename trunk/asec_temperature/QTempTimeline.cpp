@@ -1,4 +1,6 @@
 #include "QTempTimeline.h"
+#include <time.h>
+#define TIMESTEP 0.01
 
 //TODO: Need to move this to parallel thread, since it halts GUI thread too much
 
@@ -28,6 +30,7 @@ void QTempTimer::start(QString tempid, float nsetp, float nramp, float ntimeout,
 
     float setp0=temp->getsetp();
     temp->setpoint(setp);
+    startclock=clock();
     if(ramp>0)
     {
     	wait(fabs(setp-setp0)/ramp,SLOT(rampdone()));//wait until system dragged setpoint.
@@ -40,8 +43,7 @@ void QTempTimer::start(QString tempid, float nsetp, float nramp, float ntimeout,
 
 void QTempTimer::wait(double min, const char* member)
 {
-	dt=min;
-	time+=min;//TODO: use ticks for time
+	time=(clock()-startclock)/60000.0f;
 	QTimer::singleShot(int(60000*min),this,member);
 }
 
@@ -69,7 +71,7 @@ bool QTempTimer::stable()
 void QTempTimer::draw_temp()
 {
 	tempctrl *temp=(tempctrl*)(qApp->property("temp").toInt());
-	drawtime+=TIMESTEP;
+	drawtime=(clock()-startclock)/60000.0f;
 	//TODO: use system ticks, TIMESTEP isn't reliable anymore.
 	emit newpoint(drawtime,temp->temp(),temp->getsetp());
 	if(!is_stopped)
