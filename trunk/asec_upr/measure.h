@@ -28,9 +28,11 @@ private:
 	volctrl* vol;
 	oscctrl* osc;
 	QString oscstr;
+	double volts1;
+	int sm1,sm2;
 
 public:
-	cmeasure(QString oscstr, QString genstr, QString volstr, double sf, double ff, double epsilon/*Hz*/, QObject *parent=0);
+	cmeasure(QString oscstr, QString genstr, QString volstr, double sf, double ff, double epsilon/*Hz*/, double volts1=0.1, int sm1=12, int sm2=24, QObject *parent=0);
 	~cmeasure();
 	double fsf;//First Run Start Frequency
 	double fff;//First Run Stop Frequency

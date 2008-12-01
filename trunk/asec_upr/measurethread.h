@@ -22,6 +22,8 @@ public:
 	QString oscid;
 	QString genid;
 	QString mulid;
+	double volts1;
+	int sm1, sm2;
 	void run();
 signals:
 	void finished(QStringList data);

@@ -20,7 +20,7 @@ void MeasureThread::run()
         return;
     }
 
-    cmeasure mes(oscid,genid,mulid,startf,stopf,0.1,parent());
+    cmeasure mes(oscid,genid,mulid,startf,stopf,0.1,volts1,sm1,sm2,parent());
 
     if(!filename.isEmpty())
     {

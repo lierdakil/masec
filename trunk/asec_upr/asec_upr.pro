@@ -8,7 +8,10 @@ HEADERS += adaptors.h \
     ctrl/gen.h \
     measure.h \
     asec_upr.h
-SOURCES += adaptors.cpp \
+SOURCES += ctrl/vol.cpp \
+    ctrl/gen.cpp \
+    ctrl/osc.cpp \
+    adaptors.cpp \
     measurethread.cpp \
     measure.cpp \
     main.cpp \
