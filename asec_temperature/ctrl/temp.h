@@ -72,7 +72,6 @@ public:
 			temp=query("KRDG? A").toFloat(&tempok);
 			status=query("RDGST? A").toInt(&statok);
 		} while(status!=0 || !tempok || !statok);
-		//TODO: Better make an error handler?
 		return temp;
 	}
 

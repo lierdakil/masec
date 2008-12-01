@@ -22,7 +22,6 @@ public:
 		write("CH1:VOL 0.1");
 		write("CH1:POS 0");
 		write("DAT INIT");
-		//TODO: Try to unite in one request
 	}
 
 	~oscctrl()
@@ -51,7 +50,8 @@ public:
 		}
 	}
 
-	double setch1(unsigned char max)//TODO: Razobrat'sa, 4to ono delaet
+	double setch1(unsigned char max)
+	//TODO: COMMENT: explain what it does
 	{
 		double newv = max*0.002;
 		write(QString("CH1:VOL %1").arg(newv));

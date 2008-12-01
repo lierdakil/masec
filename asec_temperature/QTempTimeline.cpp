@@ -2,7 +2,7 @@
 #include <time.h>
 #define TIMESTEP 0.01
 
-//TODO: Need to move this to parallel thread, since it halts GUI thread too much
+//TODO: (optional) Need to move this to parallel thread, since it halts GUI thread too much
 
 QTempTimer::QTempTimer() : QObject()
 {
@@ -72,7 +72,6 @@ void QTempTimer::draw_temp()
 {
 	tempctrl *temp=(tempctrl*)(qApp->property("temp").toInt());
 	drawtime=(clock()-startclock)/60000.0f;
-	//TODO: use system ticks, TIMESTEP isn't reliable anymore.
 	emit newpoint(drawtime,temp->temp(),temp->getsetp());
 	if(!is_stopped)
 		QTimer::singleShot(int(60000*TIMESTEP),this,SLOT(draw_temp()));

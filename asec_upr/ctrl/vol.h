@@ -10,7 +10,7 @@ public:
 	volctrl(QString GPIBID) : GPIBctrl(GPIBID)
 	{
 		write("*RST");
-		write("SAMP:COUN 5");//TODO: Meybe change sample count?
+		write("SAMP:COUN 5");
 		write("SYST:BEEP:STAT OFF");
 		write("FUNC \"VOLT:AC\"");
 		write("VOLT:AC:RANG:AUTO ON");
