@@ -28,6 +28,7 @@ void vib_control::on_btRun_clicked()
 	fd.setDirectory("data");
 	if(fd.exec())
 	{
+		ui.lbStatus->clear();
 		scriptthread.code=ui.code->textEdit()->toPlainText();
 		scriptthread.filename=fd.selectedFiles().first();
 		scriptthread.description=QInputDialog::getText(this,
