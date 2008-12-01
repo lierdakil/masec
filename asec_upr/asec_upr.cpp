@@ -1,4 +1,5 @@
 #include "asec_upr.h"
+#include "adaptors.h"
 
 vibupraut::vibupraut(QWidget *parent)
     : QWidget(parent)
