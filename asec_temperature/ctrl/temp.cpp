@@ -69,7 +69,7 @@ float tempctrl::temp()/*Kelvin*/
 
 void tempctrl::readzone(char zonen, float* toptemp, float* P, float* I, float* D, float* mout, int* range)
 {
-	QStringList data=query(QString("ZONE? 1, %1").arg(zonen)).split(",");
+	QStringList data=query(QString("ZONE? 1, %1").arg((int)zonen)).split(",");
 	//iscanf(did,"%f,%f,%f,%f,%f,%d", toptemp, P, I, D, mout, range);
 	*toptemp=data[0].toFloat();
 	*P=data[1].toFloat();

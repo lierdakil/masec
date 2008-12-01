@@ -48,7 +48,7 @@ void settings::read_settings()
 
 		for (int n=0;n<=9;n++)
 		{
-			float Temp, P, I, D, mout;
+			float Temp=0, P=0, I=0, D=0, mout=0;
 			int range;
 			temp->readzone(n+1,&Temp,&P,&I,&D,&mout,&range);
 			float time=f.value(QString("TempCtrl/Time_%1").arg(n),0).toDouble();
