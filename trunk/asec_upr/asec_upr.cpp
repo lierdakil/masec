@@ -1,5 +1,6 @@
 #include "asec_upr.h"
 #include "adaptors.h"
+#include <QInputDialog>
 
 vibupraut::vibupraut(QWidget *parent)
     : QWidget(parent)
@@ -83,4 +84,11 @@ void vibupraut::line(qreal x1, qreal y1,qreal x2, qreal y2, QPen pen)
 {
 	ui.graph->scene()->addLine(x1,y1,x2,y2,pen);
 	ui.graph->fitInView(ui.graph->scene()->sceneRect());
+}
+
+void vibupraut::on_btRun_clicked()
+{
+	double sf=QInputDialog::getDouble(this,trUtf8("Начальная частота"),trUtf8("Введите, Hz"),100000);
+	double ff=QInputDialog::getDouble(this,trUtf8("Конечная частота"),trUtf8("Введите, Hz"),200000);
+	measure(sf,ff,"");
 }
