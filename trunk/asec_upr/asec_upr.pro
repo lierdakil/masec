@@ -1,13 +1,15 @@
 TEMPLATE = app
 DESTDIR = ../build/
 TARGET = asec_upr
-HEADERS += measurethread.h \
+HEADERS += adaptors.h \
+    measurethread.h \
     ctrl/vol.h \
     ctrl/osc.h \
     ctrl/gen.h \
     measure.h \
     asec_upr.h
-SOURCES += measurethread.cpp \
+SOURCES += adaptors.cpp \
+    measurethread.cpp \
     measure.cpp \
     main.cpp \
     asec_upr.cpp

@@ -1,4 +1,5 @@
 #include "asec_temperature.h"
+#include "adaptors.h"
 
 vib_temperature::vib_temperature(QWidget *parent)
 : QWidget(parent)
