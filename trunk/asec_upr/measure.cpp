@@ -120,7 +120,7 @@ QByteArray cmeasure::sweep()
 
 	k2=osc->setch1(data[maxi]);
 	//qDebug()<<1;
-	sleep(1);//TODO: no idea why it dies without this
+	sleep(1);//TODO: try to remove it since there are pauses in asec_gpib
 	gen->setsweep(ssf,sff);
 	osc->wait("READY");
 	gen->startsweep();
