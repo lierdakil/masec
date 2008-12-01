@@ -9,7 +9,8 @@ HEADERS += adaptors.h \
     QTempTimeline.h \
     settings.h \
     asec_temperature.h
-SOURCES += adaptors.cpp \
+SOURCES += ctrl/temp.cpp \
+    adaptors.cpp \
     QTempTimeline.cpp \
     settings.cpp \
     main.cpp \
