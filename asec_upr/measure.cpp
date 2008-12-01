@@ -262,7 +262,7 @@ void cmeasure::findresonance()
 
 	gen->sweepoff();
 
-#define GOLDEN
+#define nGOLDEN
 
 #ifdef GOLDEN
 	rf = golden(k*xmax1+ssf,k*xmin+ssf,epsilon,true);
@@ -327,7 +327,7 @@ void cmeasure::findresonance()
 	gen->sweepon();
 	draw_x((af-ssf)/k);
 
-	draw_y(-aa/k2);
-	draw_y(-ra/k2);
+	draw_y(-aa/k2*1.41);
+	draw_y(-ra/k2*1.41);
 }
 

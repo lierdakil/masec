@@ -17,7 +17,6 @@ oscctrl::oscctrl(QString GPIBID) : GPIBctrl(GPIBID)
 	write("TRIG:MAI:TYP EDGE");
 	write("HOR:MAI:SEC 1");
 	write("HOR:MAI:POS 5");
-	write("CH1:VOL 0.2");
 	write("CH1:POS 0");
 	write("DAT INIT");
 }

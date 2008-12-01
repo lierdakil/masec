@@ -34,6 +34,7 @@ public slots:
 	void path(QList<qreal>,QPen pen);
 	void path(QByteArray,QPen pen);
 	void line(qreal x1, qreal y1,qreal x2, qreal y2, QPen pen);
+	void on_btRun_clicked();
 signals:
 	void finished(QStringList data);
 };
