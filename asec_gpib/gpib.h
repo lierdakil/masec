@@ -47,7 +47,9 @@ public:
 		r.resize(256);
 		long unsigned int actual=0;
 		msleep(SLEEP_TIME);
-		iread(did,r.data(),256,NULL,&actual);
+		while(actual<=1)//there's always at least \n
+		//TODO: timeout
+			iread(did,r.data(),256,NULL,&actual);
 		r.resize(actual-1);
 		return QString(r);
 	}

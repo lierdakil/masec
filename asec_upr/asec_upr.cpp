@@ -22,6 +22,9 @@ vibupraut::vibupraut(QWidget *parent)
     ui.edGenId->setText(f.value("GPIB/genid","").toString());
     ui.edMulId->setText(f.value("GPIB/mulid","").toString());
     ui.edOscId->setText(f.value("GPIB/oscid","").toString());
+    ui.sbOscVol->setValue(f.value("UPR/osc_vol",0.1).toDouble());
+    ui.sbSm1->setValue(f.value("UPR/sm1",12).toInt());
+    ui.sbSm2->setValue(f.value("UPR/sm2",24).toInt());
 
     thread.setParent(this);
     qRegisterMetaType<QList<qreal> >("QList<qreal>");
@@ -35,6 +38,9 @@ vibupraut::~vibupraut()
     f.setValue("GPIB/genid", ui.edGenId->text());
     f.setValue("GPIB/mulid", ui.edMulId->text());
     f.setValue("GPIB/oscid", ui.edOscId->text());
+    f.setValue("UPR/osc_vol", ui.sbOscVol->value());
+    f.setValue("UPR/sm1",ui.sbSm1->value());
+    f.setValue("UPR/sm2",ui.sbSm2->value());
 }
 
 void vibupraut::measure(double startf, double stopf, QString filename)
@@ -46,6 +52,9 @@ void vibupraut::measure(double startf, double stopf, QString filename)
     thread.oscid=ui.edOscId->text();
     thread.genid=ui.edGenId->text();
     thread.mulid=ui.edMulId->text();
+    thread.volts1=ui.sbOscVol->value();
+    thread.sm1=ui.sbSm1->value();
+    thread.sm2=ui.sbSm2->value();
     ui.graph->scene()->clear();
     thread.start();
 }

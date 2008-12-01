@@ -2,6 +2,9 @@
 #include "sleep.h"
 //TODO: Fix comments...
 
+#define draw_x(x) emit line(x,0,x,-127,Qt::SolidLine)
+#define draw_y(y) emit line(0,y,2500,y,Qt::SolidLine)
+
 QList<qreal> sm_diff(QByteArray data, int nr)//nr - Depth of smoothing in one direction
 {
 	QList<qreal> diff;
@@ -26,7 +29,7 @@ QList<qreal> sm_diff(QByteArray data, int nr)//nr - Depth of smoothing in one di
 	return diff;
 }
 
-cmeasure::cmeasure(QString oscstr, QString genstr, QString volstr, double sf, double ff, double epsilon, QObject *parent)
+cmeasure::cmeasure(QString oscstr, QString genstr, QString volstr, double sf, double ff, double epsilon, double volts1, int sm1, int sm2, QObject *parent)
 {
     connect(this,SIGNAL(path(QList<qreal>,QPen)),parent,SLOT(path(QList<qreal>,QPen)),Qt::QueuedConnection);
     connect(this,SIGNAL(path(QByteArray,QPen)),parent,SLOT(path(QByteArray,QPen)),Qt::QueuedConnection);
@@ -37,6 +40,9 @@ cmeasure::cmeasure(QString oscstr, QString genstr, QString volstr, double sf, do
 	fsf=sf;
 	fff=ff;
 	this->epsilon=epsilon;
+	this->volts1=volts1;
+	this->sm1=sm1;
+	this->sm2=sm2;
 	findresonance();
 }
 
@@ -49,6 +55,7 @@ cmeasure::~cmeasure()
 QByteArray cmeasure::sweep()
 {
 	osc = new oscctrl((char*)oscstr.toAscii().data());
+	osc->setch1(volts1);
 
 	int mini=0;
 	int maxi=0;
@@ -78,7 +85,11 @@ QByteArray cmeasure::sweep()
  *
  */
 
-		QList<qreal> diff = sm_diff(data,2);
+		emit path(data,QPen(Qt::green));
+
+		QList<qreal> diff = sm_diff(data,sm1);
+
+		emit path(diff,QPen(Qt::darkYellow));
 
 		double min_diff_val=0;
 		int min_diff_index;
@@ -101,7 +112,7 @@ QByteArray cmeasure::sweep()
 
 		//find diff=0 left from diff_min <=> max
 		for (int i=min_diff_index;i>0;i--)
-			if (diff[i]>=0 && diff[i-1]<0)
+			if (diff[i-1]>=0 && diff[i]<0)
 			{
 				maxi = i;
 				break;
@@ -110,7 +121,9 @@ QByteArray cmeasure::sweep()
 //		starti=2*maxi-min_diff_index;//double interval
 //		stopi=2*mini-min_diff_index;
 		starti=2*maxi-mini;
+		draw_x(starti);
 		stopi=2*mini-maxi;
+		draw_x(stopi);
 	}
 	//calculate coefficents to convert index to frequency
 	double kt = (fff-fsf)/data.count();
@@ -118,15 +131,22 @@ QByteArray cmeasure::sweep()
 	ssf = kt*(starti)+fsf;
 	k = (sff-ssf)/data.count();
 
-	k2=osc->setch1(data[maxi]);
-	//qDebug()<<1;
-	sleep(1);//TODO: try to remove it since there are pauses in asec_gpib
+	int max_data=0;
+	for(int i=0;i<data.count();i++)
+		if(data.at(i)>max_data)
+			max_data=data.at(i);
+
+//	double curv=osc->getch1();
+//	double onediv=curv/25.4;
+//	double maxv=max_data*onediv;
+//	double newv=maxv/4;
+	osc->setch1(osc->getch1()*max_data/101.6);
+	k2=osc->getch1()/25.4;
+
 	gen->setsweep(ssf,sff);
 	osc->wait("READY");
 	gen->startsweep();
-	//qDebug()<<4;
 	osc->wait("READY");
-	//qDebug()<<5;
 
 	QByteArray data2 = osc->readcurve();
 
@@ -184,7 +204,10 @@ void cmeasure::findresonance()
 
 	while ((xfmax <= xmax1)||(xfmax >= xmin))
 	{
+		//draw X axis
 		dat = sweep();
+
+		emit line(0,0,dat.count(),0,Qt::SolidLine);
 
 		int fmax=0;
 		for (int i=0; i<dat.count();i++)
@@ -197,9 +220,8 @@ void cmeasure::findresonance()
 		}
 
 		emit path(dat,QPen(Qt::blue));
-		emit line(0,0,dat.count(),0,Qt::SolidLine);
 
-		diff=sm_diff(dat,12);
+		diff=sm_diff(dat,sm2);
 
 		emit path(diff, QPen(Qt::red));
 
@@ -228,9 +250,9 @@ void cmeasure::findresonance()
 				xmax2=i;
 			}
 
-		emit line(xmin,0,xmin,-127,Qt::SolidLine);
-		emit line(xmax1,0,xmax1,-127,Qt::SolidLine);
-		emit line(xmax2,0,xmax2,-127,Qt::SolidLine);
+		draw_x(xmin);
+		draw_x(xmax1);
+		draw_x(xmax2);
 	}
 
 	for(int i=0; i<dat.count(); i++)
@@ -240,8 +262,10 @@ void cmeasure::findresonance()
 
 	gen->sweepoff();
 
+#define GOLDEN
+
 #ifdef GOLDEN
-	rf = golden(k*xmax1+newsf,k*xmin+newsf,epsilon,true);
+	rf = golden(k*xmax1+ssf,k*xmin+ssf,epsilon,true);
 #else
 	rf=0;
 	//left to right
@@ -269,10 +293,10 @@ void cmeasure::findresonance()
 #endif
 	ra=getamplonf(rf);
 
-	emit line((rf-ssf)/k,0,(rf-ssf)/k,-127,Qt::SolidLine);
+	draw_x((rf-ssf)/k);
 
 #ifdef GOLDEN
-	af = golden(k*xmin+newsf,k*xmax2+newsf,epsilon,false);
+	af = golden(k*xmin+ssf,k*xmax2+ssf,epsilon,false);
 #else
 	af=0;
 	//left to right
@@ -300,6 +324,10 @@ void cmeasure::findresonance()
 #endif
 	aa=getamplonf(af);
 
-	emit line((af-ssf)/k,0,(af-ssf)/k,-127,Qt::SolidLine);
+	gen->sweepon();
+	draw_x((af-ssf)/k);
+
+	draw_y(-aa/k2);
+	draw_y(-ra/k2);
 }
 
