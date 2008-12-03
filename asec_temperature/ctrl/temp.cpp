@@ -18,7 +18,7 @@ tempctrl::~tempctrl()
 
 }
 
-void tempctrl::ctrlmode(char mode)
+void tempctrl::ctrlmode(int mode)
 {
 	if ((mode>=1)&&(mode<=6))
 		write(QString("CMODE 1, %1").arg(mode));
@@ -37,10 +37,10 @@ float tempctrl::ramp(float value/*K/min*/)
 	return result;//result==0 means result==INF;
 }
 
-void tempctrl::setzone(char zonenum, float toptemp, float P, float I, float D/*%*/, float mout, char range/*0-3*/)
+void tempctrl::setzone(int zonenum, float toptemp, float P, float I, float D/*%*/, float mout, int range/*0-3*/)
 {
 	if ( (zonenum>=1)&&(zonenum<=10) && (P>=0.1)&&(P<=1000) && (I>=0.1)&&(I<=1000) && (D>=0)&&(D<=200) && (mout>=0)&&(mout<=100) && (range>=0)&&(range<=3) )
-		write(QString("ZONE 1, %1, %2, %3, %4, %5, %6, %7").arg((int)zonenum).arg(toptemp).arg(P).arg(I).arg(D).arg(mout).arg((int)range));
+		write(QString("ZONE 1, %1, %2, %3, %4, %5, %6, %7").arg(zonenum).arg(toptemp).arg(P).arg(I).arg(D).arg(mout).arg(range));
 }
 
 void tempctrl::setpoint(float value)
@@ -67,9 +67,9 @@ float tempctrl::temp()/*Kelvin*/
 	return temp;
 }
 
-void tempctrl::readzone(char zonen, float* toptemp, float* P, float* I, float* D, float* mout, int* range)
+void tempctrl::readzone(int zonen, float* toptemp, float* P, float* I, float* D, float* mout, int* range)
 {
-	QStringList data=query(QString("ZONE? 1, %1").arg((int)zonen)).split(",");
+	QStringList data=query(QString("ZONE? 1, %1").arg(zonen)).split(",");
 	//iscanf(did,"%f,%f,%f,%f,%f,%d", toptemp, P, I, D, mout, range);
 	*toptemp=data[0].toFloat();
 	*P=data[1].toFloat();
@@ -96,7 +96,7 @@ void tempctrl::readPID(float* P, float* I, float* D)
 	*D = data[2].toFloat();
 }
 
-void tempctrl::setrange(char range)
+void tempctrl::setrange(int range)
 {
 	write(QString("RANGE %1").arg(range));
 }
@@ -106,7 +106,7 @@ void tempctrl::setmout(float mout)
 	write(QString("MOUT 1,%1").arg(mout));
 }
 
-char tempctrl::getrange()
+int tempctrl::getrange()
 {
 	return query("RANGE?").toInt();//Range
 }

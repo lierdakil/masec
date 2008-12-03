@@ -17,18 +17,18 @@ class tempctrl: public GPIBctrl
 public:
 	tempctrl(QString GPIBID);
 	~tempctrl();
-	void ctrlmode(char mode);
+	void ctrlmode(int mode);
 	float ramp(float value/*K/min*/);
-	void setzone(char zonenum, float toptemp, float P, float I, float D/*%*/, float mout, char range/*0-3*/);
+	void setzone(int zonenum, float toptemp, float P, float I, float D/*%*/, float mout, int range/*0-3*/);
 	void setpoint(float value);
 	void setPID(float P, float I, float D);
 	float temp();/*Kelvin*/
-	void readzone(char zonen, float* toptemp, float* P, float* I, float* D, float* mout, int* range);
+	void readzone(int zonen, float* toptemp, float* P, float* I, float* D, float* mout, int* range);
 	float getramp();
 	void readPID(float* P, float* I, float* D);
-	void setrange(char range);
+	void setrange(int range);
 	void setmout(float mout);
-	char getrange();
+	int getrange();
 	float getmout();
 	float getsetp();
 	bool rampdone();
