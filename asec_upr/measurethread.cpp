@@ -29,12 +29,10 @@ void MeasureThread::run()
         QString buf;
         for(int i=0;i<mes.curve.count();i++)
         {
-            buf.setNum(mes.curve.at(i).first);
-            qDebug()<<buf;
+            buf.setNum(mes.curve.at(i).first,'f',10);
             f.write(buf.toAscii());
             f.write("\t");
-            buf.setNum(mes.curve.at(i).second);
-            qDebug()<<buf;
+            buf.setNum(mes.curve.at(i).second,'f',10);
             f.write(buf.toAscii());
             f.write("\n");
         }
