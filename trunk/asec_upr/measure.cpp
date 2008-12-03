@@ -54,7 +54,7 @@ cmeasure::~cmeasure()
 
 QByteArray cmeasure::sweep()
 {
-	osc = new oscctrl((char*)oscstr.toAscii().data());
+	osc = new oscctrl(oscstr);
 	osc->setch1(volts1);
 
 	int mini=0;
