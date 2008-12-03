@@ -90,5 +90,6 @@ void vibupraut::on_btRun_clicked()
 {
 	double sf=QInputDialog::getDouble(this,trUtf8("Начальная частота"),trUtf8("Введите, Hz"),100000);
 	double ff=QInputDialog::getDouble(this,trUtf8("Конечная частота"),trUtf8("Введите, Hz"),200000);
-	measure(sf,ff,"");
+	QString file=QInputDialog::getText(this,trUtf8("Конечная частота"),trUtf8("Введите, Hz"));
+	measure(sf,ff,file);
 }
