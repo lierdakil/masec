@@ -17,9 +17,10 @@ vib_temperature::vib_temperature(QWidget *parent)
 
 	ui.gvTemp->setScene(new QGraphicsScene());
 
-	connect(&temptl,SIGNAL(temp_set()),&fix_timer,SLOT(stop()));
-	connect(&temptl,SIGNAL(timedout()),&fix_timer,SLOT(stop()));
-	connect(&temptl,SIGNAL(stopped()),&fix_timer,SLOT(stop()));
+//	Current paradigm supposes fix_timer is run at program start and ended at termination
+//	connect(&temptl,SIGNAL(temp_set()),&fix_timer,SLOT(stop()));
+//	connect(&temptl,SIGNAL(timedout()),&fix_timer,SLOT(stop()));
+//	connect(&temptl,SIGNAL(stopped()),&fix_timer,SLOT(stop()));
 
 	connect(&temptl,SIGNAL(temp_set()),this,SLOT(temp_set()));
 	connect(&temptl,SIGNAL(timedout()),this,SLOT(timedout()));
