@@ -89,11 +89,11 @@ void vib_temperature::fix_range()
 	tempctrl *temp=(tempctrl*)(qApp->property("temp").toInt());
 	switch(temp->getctrlmode())
 	{
-	case MOD_ZONE:
-		temp->setrange(wset.getRange(temp->temp()));
-		break;
 	case MOD_MANUAL:
 		temp->setrange(wset.getRangeManual());
+		break;
+	case MOD_ZONE:
+		temp->setrange(wset.getRange(temp->temp()));
 		break;
 	}
 }
