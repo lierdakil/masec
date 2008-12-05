@@ -25,6 +25,10 @@ bool QPlotWindow::editparams()
 	{
 		ui.qwtPlot->setAxisTitle(QwtPlot::xBottom,params.X());
 		ui.qwtPlot->setAxisTitle(QwtPlot::yLeft,params.Y());
+		QStringList labels;
+		labels<<params.X();
+		labels<<params.Y();
+		ui.twData->setHorizontalHeaderLabels(labels);
 		setWindowTitle(params.name());
 		if(X_iface!=0)
 		{
@@ -39,8 +43,9 @@ bool QPlotWindow::editparams()
 		X_iface=new QDBusInterface(params.X_service(),"/","ru.pp.livid.asec.flow");
 		Y_iface=new QDBusInterface(params.Y_service(),"/","ru.pp.livid.asec.flow");
 
-		connect(X_iface,SIGNAL(finished(QStringList)),SLOT(new_X(QStringList)));
+		//Reverse order, because event stack is popped in reverse order
 		connect(Y_iface,SIGNAL(finished(QStringList)),SLOT(new_Y(QStringList)));
+		connect(X_iface,SIGNAL(finished(QStringList)),SLOT(new_X(QStringList)));
 
 		return true;
 	} else
@@ -85,25 +90,7 @@ void QPlotWindow::new_X(QStringList data)
 	{
 		double val = data.at(xi).split(":").at(1).toDouble();//TODO: error handler?
 
-		//if it's second X in a row
-		if(X_data.count()==Y_data.count()+1)
-		{
-			//clone last Y
-			if(Y_data.count()>0)
-				addY(Y_data.last());
-			else
-				addY(0);
-			//draw plot
-			updateCurve();
-		}
-
-		//add new data
 		addX(val);
-
-
-		//if both values are in place, draw plot
-		if(X_data.count()==Y_data.count())
-			updateCurve();
 	}
 }
 
@@ -115,22 +102,17 @@ void QPlotWindow::new_Y(QStringList data)
 	{
 		double val = data.at(yi).split(":").at(1).toDouble();//TODO: error handler?
 		//if it's second Y in a row
-		if(Y_data.count()==X_data.count()+1)
+		if(Y_data.count()==X_data.count())
 		{
 			//clone last X
 			if(X_data.count()>0)
 				addX(X_data.last());
 			else
 				addX(0);
-			//draw plot
-			updateCurve();
 		}
 
 		//add new data
 		addY(val);
-
-		//if both values are in place, draw plot
-		if(X_data.count()==Y_data.count())
-			updateCurve();
+		updateCurve();
 	}
 }
