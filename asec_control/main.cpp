@@ -3,6 +3,8 @@
 #include <QtGui>
 #include <QApplication>
 
+// TODO: Continue button if module failure occurs
+
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);

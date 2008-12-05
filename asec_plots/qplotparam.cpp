@@ -45,5 +45,5 @@ QString QPlotParam::X_service()
 
 QString QPlotParam::Y_service()
 {
-	return ui.cbX->itemData(ui.cbX->currentIndex()).toString();
+	return ui.cbX->itemData(ui.cbY->currentIndex()).toString();
 }

@@ -100,6 +100,7 @@ void vib_temperature::fix_range()
 
 void vib_temperature::set_temp(double temp,double ramp, double timeout)
 {
+	//TODO: forbid setpoint greater then max(zone_max_temp)
 	if (!wset.tempid.isEmpty())
 	{
 		result_var.clear();
