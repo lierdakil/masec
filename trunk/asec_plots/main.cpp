@@ -8,6 +8,8 @@
 
 // TODO: forbid empty plot_window title
 
+// TODO: Clear graphic button
+
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
