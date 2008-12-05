@@ -17,10 +17,16 @@ vib_temperature::vib_temperature(QWidget *parent)
 
 	ui.gvTemp->setScene(new QGraphicsScene());
 
+	connect(&temptl,SIGNAL(temp_set()),&fix_timer,SLOT(stop()));
+	connect(&temptl,SIGNAL(timedout()),&fix_timer,SLOT(stop()));
+	connect(&temptl,SIGNAL(stopped()),&fix_timer,SLOT(stop()));
+
 	connect(&temptl,SIGNAL(temp_set()),this,SLOT(temp_set()));
 	connect(&temptl,SIGNAL(timedout()),this,SLOT(timedout()));
 	connect(&temptl,SIGNAL(stopped()),this,SLOT(stopped()));
 	connect(&temptl,SIGNAL(newpoint(float,float,float)),this,SLOT(newpoint(float,float,float)));
+
+	connect(&fix_timer, SIGNAL(timeout()), this, SLOT(fix_range()));
 }
 
 vib_temperature::~vib_temperature()
@@ -58,10 +64,10 @@ void vib_temperature::newpoint(float time, float temp, float setpoint)
 	static float lasttime;
 	static float lasttemp;
 	static float lastsetp;
-	if(time>lasttime)
+	if(time>lasttime && lasttime!=0)
 	{
-		ui.gvTemp->scene()->addLine(lasttime,lasttemp,time,temp,QPen(Qt::red));
-		ui.gvTemp->scene()->addLine(lasttime,lastsetp,time,setpoint,QPen(Qt::blue));
+		ui.gvTemp->scene()->addLine(lasttime,-lasttemp,time,-temp,QPen(Qt::red));
+		ui.gvTemp->scene()->addLine(lasttime,-lastsetp,time,-setpoint,QPen(Qt::blue));
 		ui.gvTemp->fitInView(ui.gvTemp->scene()->sceneRect());
 	}
 	lasttime=time;
@@ -77,12 +83,27 @@ void vib_temperature::stopped()
 //	emit finished(data);
 }
 
+void vib_temperature::fix_range()
+{
+	tempctrl *temp=(tempctrl*)(qApp->property("temp").toInt());
+	switch(temp->getctrlmode())
+	{
+	case MOD_ZONE:
+		temp->setrange(wset.getRange(temp->temp()));
+		break;
+	case MOD_MANUAL:
+		temp->setrange(wset.getRangeManual());
+		break;
+	}
+}
+
 void vib_temperature::set_temp(double temp,double ramp, double timeout)
 {
 	if (!wset.tempid.isEmpty())
 	{
 		result_var.clear();
-		ui.gvTemp->scene()->clear();
+		delete ui.gvTemp->scene();
+		ui.gvTemp->setScene(new QGraphicsScene());
 		tempctrl *tempctl=(tempctrl*)(qApp->property("temp").toInt());
 		tempctl->ctrlmode(MOD_ZONE);
 		temptl.start(wset.tempid,temp,ramp,timeout,wset.getSettime(temp));

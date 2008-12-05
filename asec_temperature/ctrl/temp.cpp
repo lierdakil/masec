@@ -24,6 +24,11 @@ void tempctrl::ctrlmode(int mode)
 		write(QString("CMODE 1, %1").arg(mode));
 }
 
+int tempctrl::getctrlmode()
+{
+	return query("CMODE? 1").toInt();
+}
+
 float tempctrl::ramp(float value/*K/min*/)
 {
 	float result=value;

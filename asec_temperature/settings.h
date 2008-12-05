@@ -20,6 +20,8 @@ public:
     ~settings();
     void read_settings();
     double getSettime(double temp);
+    int getRange(double temp);
+    int getRangeManual();
     QString tempid;
 
 public slots:

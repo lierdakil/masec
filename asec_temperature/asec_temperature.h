@@ -26,6 +26,8 @@ public:
     Ui::vib_temperatureClass ui;
     QTempTimer temptl;
     QStringList result();
+private:
+	QTimer fix_timer;
 
 private slots:
     void on_btSettings_clicked();
@@ -34,6 +36,7 @@ public slots:
     void temp_set();
     void timedout();
     void stopped();
+    void fix_range();
     void newpoint(float time, float temp, float setpoint);
     void set_temp(double temp, double ramp, double timeout);
 signals:
