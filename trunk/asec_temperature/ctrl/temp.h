@@ -18,6 +18,7 @@ public:
 	tempctrl(QString GPIBID);
 	~tempctrl();
 	void ctrlmode(int mode);
+	int getctrlmode();
 	float ramp(float value/*K/min*/);
 	void setzone(int zonenum, float toptemp, float P, float I, float D/*%*/, float mout, int range/*0-3*/);
 	void setpoint(float value);

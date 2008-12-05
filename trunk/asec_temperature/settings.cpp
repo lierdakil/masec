@@ -9,6 +9,7 @@ settings::settings(QWidget *parent)
 	read_settings();
 
 	connect(ui_settings.btStopTest,SIGNAL(clicked()),&test,SLOT(stop()));
+
 	connect(&test,SIGNAL(temp_set()),this,SLOT(finished()));
 	connect(&test,SIGNAL(timedout()),this,SLOT(finished()));
 	connect(&test,SIGNAL(stopped()),this,SLOT(finished()));
@@ -32,6 +33,24 @@ double settings::getSettime(double temp)
 	}
 	//qFatal("getSettime failed!");
 	return 0;
+}
+
+int settings::getRange(double temp)
+{
+	//TODO: Не понятно, что делать, если T>T_10
+	for (int n=0;n<10;n++)
+	{
+		double ct = ui_settings.tbTempCtrl->findChild<QDoubleSpinBox*>(QString("sbTemp_%1").arg(n))->value();
+		if (temp<=ct)
+			return ui_settings.tbTempCtrl->findChild<QComboBox*>(QString("sbRange_%1").arg(n))->currentIndex();
+	}
+	//qFatal("getSettime failed!");
+	return 0;
+}
+
+int settings::getRangeManual()
+{
+	return ui_settings.cbRange_test->currentIndex();
 }
 
 void settings::read_settings()
@@ -121,10 +140,10 @@ void settings::newpoint(float time, float temp, float setpoint)
 	static float lasttime;
 	static float lasttemp;
 	static float lastsetp;
-	if(time>lasttime)
+	if(time>lasttime && lasttime!=0)
 	{
-		ui_settings.gvGraph->scene()->addLine(lasttime,lasttemp,time,temp,QPen(Qt::red));
-		ui_settings.gvGraph->scene()->addLine(lasttime,lastsetp,time,setpoint,QPen(Qt::blue));
+		ui_settings.gvGraph->scene()->addLine(lasttime,-lasttemp,time,-temp,QPen(Qt::red));
+		ui_settings.gvGraph->scene()->addLine(lasttime,-lastsetp,time,-setpoint,QPen(Qt::blue));
 		ui_settings.gvGraph->fitInView(ui_settings.gvGraph->scene()->sceneRect());
 	}
 	lasttime=time;
@@ -155,7 +174,8 @@ void settings::on_btTest_clicked()
 	ui_settings.btStopTest->setEnabled(true);
 	ui_settings.btTest->setEnabled(false);
 
-	ui_settings.gvGraph->scene()->clear();
+	delete ui_settings.gvGraph->scene();
+	ui_settings.gvGraph->setScene(new QGraphicsScene());
 
 	//delete temp;
 	test.start(
