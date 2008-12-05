@@ -89,7 +89,10 @@ void QPlotWindow::new_X(QStringList data)
 		if(X_data.count()==Y_data.count()+1)
 		{
 			//clone last Y
-			addY(Y_data.last());
+			if(Y_data.count()>0)
+				addY(Y_data.last());
+			else
+				addY(0);
 			//draw plot
 			updateCurve();
 		}
@@ -115,7 +118,10 @@ void QPlotWindow::new_Y(QStringList data)
 		if(Y_data.count()==X_data.count()+1)
 		{
 			//clone last X
-			addX(X_data.last());
+			if(X_data.count()>0)
+				addX(X_data.last());
+			else
+				addX(0);
 			//draw plot
 			updateCurve();
 		}

@@ -34,7 +34,7 @@ void MeasureThread::run()
             f.write("\t");
             buf.setNum(mes.curve.at(i).second,'f',10);
             f.write(buf.toAscii());
-            f.write("\n");
+            f.write("\r\n");
         }
         f.close();
     }

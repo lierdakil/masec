@@ -3,6 +3,8 @@
 #include <iostream>
 using namespace std;
 
+// TODO: make a bat file
+
 int main(int argc, char *argv[])
 {
 	QFile f(argv[1]);
@@ -18,6 +20,8 @@ int main(int argc, char *argv[])
 				cout<<line.toLocal8Bit().data();
 				line = QString::fromUtf8(f.readLine());
 			}
+		cout<<" * \n";
+		cout<<" * File was parsed with asec_parser,\n * hence it's a tab-delimited ascii-table now\n";
 		cout<<line.toLocal8Bit().data();
 
 		//build header
