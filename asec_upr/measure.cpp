@@ -37,6 +37,7 @@ cmeasure::cmeasure(QString oscstr, QString genstr, QString volstr, double sf, do
 	this->oscstr=oscstr;
 	gen = new genctrl(genstr);
 	vol = new volctrl(volstr);
+	osc = new oscctrl(oscstr);
 	fsf=sf;
 	fff=ff;
 	this->epsilon=epsilon;
@@ -50,11 +51,11 @@ cmeasure::~cmeasure()
 {
 	delete gen;
 	delete vol;
+	delete osc;
 }
 
 QByteArray cmeasure::sweep()
 {
-	osc = new oscctrl(oscstr);
 	osc->setch1(volts1);
 
 	int mini=0;
@@ -149,8 +150,6 @@ QByteArray cmeasure::sweep()
 	osc->wait("READY");
 
 	QByteArray data2 = osc->readcurve();
-
-	delete osc;
 	return data2;
 }
 
