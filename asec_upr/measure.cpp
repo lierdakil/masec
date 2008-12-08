@@ -202,6 +202,7 @@ void cmeasure::findresonance()
 	QByteArray dat;
 	QList<qreal> diff;
 
+	//TODO: Make cycle finite
 	while ((xfmax <= xmax1)||(xfmax >= xmin))
 	{
 		//draw X axis
