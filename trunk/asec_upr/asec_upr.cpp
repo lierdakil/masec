@@ -90,6 +90,6 @@ void vibupraut::on_btRun_clicked()
 {
 	double sf=QInputDialog::getDouble(this,trUtf8("Начальная частота"),trUtf8("Введите, Hz"),100000);
 	double ff=QInputDialog::getDouble(this,trUtf8("Конечная частота"),trUtf8("Введите, Hz"),200000);
-	QString file=QInputDialog::getText(this,trUtf8("Конечная частота"),trUtf8("Введите, Hz"));
+	QString file=QInputDialog::getText(this,trUtf8("Имя файла"),trUtf8("Имя файла для сохранения резонансной кривой (оставьте пустым, чтобы не сохранять)"));
 	measure(sf,ff,file);
 }
