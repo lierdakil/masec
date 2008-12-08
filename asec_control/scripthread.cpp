@@ -17,12 +17,32 @@ QScriptValue ScriptThread::call(QScriptContext *context, QScriptEngine *engine)
 		list<<context->argument(i);
 	}
 
-	QDBusError error=(((CControlBus*)(engine->parent()))->call(name,service,list));
+	CControlBus* bus=(CControlBus*)(engine->parent());
 
-	if (error.isValid())
-		return context->throwError(error.message());
-	else
-		return QScriptValue();
+	bus->is_paused=false;
+
+
+	bool success=bus->call(name,service,list);
+
+	//while call has not returned without error
+	while (!success)
+	{
+		//pause execution
+		bus->is_paused=true;
+		do //wait until execution is resumed
+		{
+			//if user called stopped(), then stop execution
+			//or if bus->call returned false because of it
+			if(bus->stopped)
+				return context->throwError("Stopped by User");
+			//don't eat up all the resources
+			sleep(1);//second
+		} while(bus->is_paused);
+
+		success=bus->call(name,service,list);
+	}
+
+	return QScriptValue();
 }
 
 void ScriptThread::run()
@@ -31,6 +51,8 @@ void ScriptThread::run()
 	bool success=true;
 	bus = new CControlBus(filename,description,code,&success);
 	connect(bus,SIGNAL(bus_error(QString)), this, SIGNAL(error(QString)));
+	connect(bus,SIGNAL(call_error(QString)), this, SIGNAL(error(QString)));
+	connect(bus,SIGNAL(call_error(QString)), this, SIGNAL(paused()));
 	if (success)
 	{
 		QScriptEngine *engine=new QScriptEngine(bus);
@@ -67,6 +89,8 @@ void ScriptThread::run()
 	 * there's no need to explicitly disconnect it here.
 	 */
 	disconnect(bus,SIGNAL(bus_error(QString)), this, SIGNAL(error(QString)));
+	disconnect(bus,SIGNAL(call_error(QString)), this, SIGNAL(error(QString)));
+	disconnect(bus,SIGNAL(call_error(QString)), this, SIGNAL(paused()));
 	delete bus;
 }
 
@@ -77,5 +101,13 @@ void ScriptThread::stop()
 {
 	bool success=true;
 	bus->stop(&success);
+}
+
+/* ATTENTION: ScriptThread::resume() is called from GUI thread,
+ * NOT from ScriptThread. Should be VERY careful with this.
+ */
+void ScriptThread::resume()
+{
+	bus->is_paused=false;
 }
 

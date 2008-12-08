@@ -11,6 +11,7 @@ vib_control::vib_control(QWidget *parent)
 	connect(&scriptthread,SIGNAL(finished()),this,SLOT(script_finished()));
 	connect(&scriptthread,SIGNAL(bug(QString,int)),this,SLOT(script_bug(QString,int)));
 	connect(&scriptthread,SIGNAL(error(QString)),this,SLOT(script_error(QString)));
+	connect(&scriptthread,SIGNAL(paused()),this,SLOT(script_paused()));
 }
 
 vib_control::~vib_control()
@@ -52,10 +53,22 @@ void vib_control::script_started()
 	ui.code->repaint();
 }
 
+void vib_control::script_paused()
+{
+	ui.btResume->setEnabled(true);
+}
+
+void vib_control::on_btResume_clicked()
+{
+	scriptthread.resume();
+	ui.btResume->setEnabled(false);
+}
+
 void vib_control::script_finished()
 {
 	ui.btStop->setEnabled(false);
 	ui.btRun->setEnabled(true);
+	ui.btResume->setEnabled(false);
 }
 
 void vib_control::script_error(QString error)

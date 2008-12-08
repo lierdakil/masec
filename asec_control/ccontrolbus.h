@@ -29,7 +29,6 @@ private:
 	QStringList result_row;
 	QFile *data_file;
 	QString last_call;
-	bool stopped;
 	QMutex file_mutex;
 	QMutex result_row_mutex;
 	QEventLoop reply_wait;
@@ -38,6 +37,7 @@ private:
 signals:
 	void new_row(QStringList row);
 	void bus_error(QString error);
+	void call_error(QString error);
 
 public:
 	//common name: ru.pp.livid.asec.* ; interface: ru.pp.livid.asec.exports
@@ -53,8 +53,11 @@ public:
 	static QStringList build_help_index(bool *success);
 
 	//Flow functions
-	QDBusError call(QString function, QString service, QList<QScriptValue> arguments);
+	bool call(QString function, QString service, QList<QScriptValue> arguments);
 	void stop(bool *success);//To be called from another thread
+
+	bool is_paused;
+	bool stopped;
 
 public slots:
 	void reply_call(QStringList values)

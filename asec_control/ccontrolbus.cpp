@@ -119,7 +119,7 @@ void CControlBus::stop(bool *success)
 	*success=true;
 }
 
-QDBusError CControlBus::call(QString function, QString service, QList<QScriptValue> arguments)
+bool CControlBus::call(QString function, QString service, QList<QScriptValue> arguments)
 {
 	/* Сделать сброс result_row в выходной файл по условию вызова
 	 * установочного модуля после измерительного, очистка, сигнал
@@ -132,7 +132,10 @@ QDBusError CControlBus::call(QString function, QString service, QList<QScriptVal
 
 	//Don;t call if data_file=0, throw error.
 	if (data_file==NULL)
-		return QDBusError(QDBusError::Other,"Experiment was not started or stopped before end of script!");
+	{
+		emit call_error(trUtf8("Experiment was not started or stopped before end of script!"));
+		return false;
+	}
 
 	file_mutex.lock();
 	result_row_mutex.lock();
@@ -151,10 +154,16 @@ QDBusError CControlBus::call(QString function, QString service, QList<QScriptVal
 	QDBusInterface flow(service,"/","ru.pp.livid.asec.flow");
 
 	if(exports.lastError().isValid())
-		return exports.lastError();
+	{
+		emit call_error(exports.lastError().message());
+		return false;
+	}
 
 	if(flow.lastError().isValid())
-		return flow.lastError();
+	{
+		emit call_error(flow.lastError().message());
+		return false;
+	}
 
 	QVariantList argumentlist;
 
@@ -167,12 +176,18 @@ QDBusError CControlBus::call(QString function, QString service, QList<QScriptVal
 	connect(&flow,SIGNAL(finished(QStringList)),this,SLOT(reply_call(QStringList)));
 
 	if(flow.lastError().isValid())
-		return flow.lastError();
+	{
+		emit call_error(flow.lastError().message());
+		return false;
+	}
 
 	exports.callWithArgumentList(QDBus::NoBlock,function,argumentlist);
 
 	if(exports.lastError().isValid())
-		return exports.lastError();
+	{
+		emit call_error(exports.lastError().message());
+		return false;
+	}
 
 	reply_wait.exec();//Run local event loop
 
@@ -181,14 +196,22 @@ QDBusError CControlBus::call(QString function, QString service, QList<QScriptVal
 
 	//Check if loop was stopped by user
 	if(stopped)
-		return QDBusError(QDBusError::Other,trUtf8("Stopped by User"));
+	{
+		return false;
+	}
 
 	//Check if we received error in results' stead
 	if (reply.count()==0)
-		return QDBusError(QDBusError::NoReply,trUtf8("Empty reply!"));
+	{
+		emit call_error(trUtf8("Empty reply received!"));
+		return false;
+	}
 
 	if (reply.at(0)=="::ERROR::")
-		return QDBusError(QDBusError::Other,reply.at(1));
+	{
+		emit call_error(reply.at(1));
+		return false;
+	}
 
 	//Сохренение материала из возвращенного значения в result_row
 	result_row_mutex.lock();
@@ -197,7 +220,7 @@ QDBusError CControlBus::call(QString function, QString service, QList<QScriptVal
 
 	last_call=function.left(function.indexOf('_'));
 
-	return QDBusError(QDBusError::NoError,"");
+	return true;
 }
 
 QString CControlBus::init_functions(bool *success)

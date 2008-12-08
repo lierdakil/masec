@@ -73,6 +73,16 @@
           </widget>
          </item>
          <item>
+          <widget class="QPushButton" name="btResume" >
+           <property name="enabled" >
+            <bool>false</bool>
+           </property>
+           <property name="text" >
+            <string>Продолжить</string>
+           </property>
+          </widget>
+         </item>
+         <item>
           <widget class="QPushButton" name="btStop" >
            <property name="enabled" >
             <bool>false</bool>
