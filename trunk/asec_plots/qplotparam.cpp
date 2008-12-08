@@ -1,4 +1,5 @@
 #include "qplotparam.h"
+#include <QMessageBox>
 
 QPlotParam::QPlotParam(QWidget *parent)
     : QDialog(parent)
@@ -46,4 +47,12 @@ QString QPlotParam::X_service()
 QString QPlotParam::Y_service()
 {
 	return ui.cbX->itemData(ui.cbY->currentIndex()).toString();
+}
+
+void QPlotParam::on_buttonBox_accepted()
+{
+	if (ui.edName->text().isEmpty())
+		QMessageBox::warning(this,trUtf8("Ошибка"), trUtf8("Невозможно создать график с пустым именем"));
+	else
+		accept();
 }

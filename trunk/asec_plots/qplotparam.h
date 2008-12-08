@@ -20,6 +20,9 @@ public:
     QString X_service();
     QString Y_service();
 
+public slots:
+	void on_buttonBox_accepted();
+
 private:
     Ui::QPlotParamClass ui;
 };
