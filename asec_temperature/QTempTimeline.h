@@ -39,7 +39,7 @@ public slots:
 	void rampdone();//first we wait until ramp is done
 	void step1();//now we check every TIMESTEP while temperature stabilizes - main check cycle, should include emit timedout() here
 	void step2();//then we wait $settime and check if it really stabilized
-	void stop();//make it think it timed out
+	void stop();//stop
 
 signals:
 	void temp_set();//temperature stabilized at given setpoint
