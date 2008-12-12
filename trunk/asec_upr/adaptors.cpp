@@ -54,23 +54,25 @@ QStringList help_adaptor::returned_values()
 	return data;
 }
 
+#define mes_res_desc "<p>Получить данные о резонансе и антирезонансе. </p> \
+			<p><code>startf</code> - частота начала пробега в герцах</p> \
+			<p><code>stopf</code> - частота конца пробега в герцах</p>"
+
 QString help_adaptor::mes_res()
 {
-	return trUtf8(
-			"<p>Получить данные о резонансе и антирезонансе. </p>"
-			"<p><code>startf</code> - частота начала пробега в герцах</p>"
-			"<p><code>stopf</code> - частота конца пробега в герцах</p>"
-	);
+	QString desc=trUtf8(mes_res_desc);
+	QString retvals=returned_values().join("<br/>");
+	return trUtf8("%1 <p>Возвращаемые значения:<br/>%2</p>").arg(desc,retvals);
 }
 
 QString help_adaptor::mes_res_file()
 {
-	return trUtf8(
-			"<p>Получить данные о резонансе и антирезонансе. </p>"
-			"<p><code>startf</code> - частота начала пробега в герцах</p>"
-			"<p><code>stopf</code> - частота конца пробега в герцах</p>"
+	QString desc=trUtf8(
+			mes_res_desc
 			"<p><code>filename</code> - имя файла для сохранения вида"
 			"резонансной кривой (если пустое - не сохранять).</p>"
 			"<p>Слеши в имени файла должны быть прямыми.</p>"
 	);
+	QString retvals=returned_values().join("<br/>");
+	return trUtf8("%1 <p>Возвращаемые значения:<br/>%2</p>").arg(desc,retvals);
 }
