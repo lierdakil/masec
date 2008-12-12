@@ -103,15 +103,21 @@ void vib_temperature::set_temp(double temp,double ramp, double timeout)
 	//TODO: forbid setpoint greater then max(zone_max_temp)
 	if (!wset.tempid.isEmpty())
 	{
-		result_var.clear();
-		delete ui.gvTemp->scene();
-		ui.gvTemp->setScene(new QGraphicsScene());
-		tempctrl *tempctl=(tempctrl*)(qApp->property("temp").toInt());
-		tempctl->ctrlmode(MOD_ZONE);
-		temptl.start(wset.tempid,temp,ramp,timeout,wset.getSettime(temp));
-	}
-	else
-	{
+		if(temp<wset.getMaxT())
+		{
+			result_var.clear();
+			delete ui.gvTemp->scene();
+			ui.gvTemp->setScene(new QGraphicsScene());
+			tempctrl *tempctl=(tempctrl*)(qApp->property("temp").toInt());
+			tempctl->ctrlmode(MOD_ZONE);
+			temptl.start(wset.tempid,temp,ramp,timeout,wset.getSettime(temp));
+		} else {
+			QStringList data;
+			data<<trUtf8("::ERROR::");
+			data<<trUtf8("Заданная температура выходит за рамки таблицы зон");
+			emit finished(data);
+		}
+	} else {
 		QStringList data;
 		data<<trUtf8("::ERROR::");
 		data<<trUtf8("Не установлен GPIB ID термоконтроллера.");

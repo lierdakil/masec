@@ -130,3 +130,8 @@ bool tempctrl::rampdone()
 {
 	return (query("*STB?").toInt() & 128)==128;
 }
+
+void tempctrl::rst()
+{
+	write("*RST");
+}

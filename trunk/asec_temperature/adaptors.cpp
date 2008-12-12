@@ -14,14 +14,7 @@ export_adaptor::export_adaptor(vib_temperature *parent) : QDBusAbstractAdaptor(p
 
 void export_adaptor::set_temp(double temp, double ramp, double timeout)
 {
-	setpoint=temp;
-	t->set_temp(setpoint,ramp,timeout);
-}
-
-void export_adaptor::set_temp_step(double step, double ramp, double timeout)
-{
-	setpoint+=step;
-	t->set_temp(setpoint,ramp,timeout);
+	t->set_temp(temp,ramp,timeout);
 }
 
 flow_adaptor::flow_adaptor(vib_temperature *parent) : QDBusAbstractAdaptor(parent), t(parent)
@@ -60,15 +53,4 @@ QString help_adaptor::set_temp()
 			"<p><code>timeout</code> - "
 			"максимальное время установлния температуры (в минутах). Если это время "
 			"будет превышено, выполнение программы прервется.</p>");
-}
-
-QString help_adaptor::set_temp_step()
-{
-	return trUtf8("<p>Изменить температуру на <b>step</b> градусов кельвина. Устанавливается точка "
-			"и ожидается установление температруры. </p> "
-			"<p><code>step</code> - шаг по температуре, К</p> "
-			"<p><code>ramp</code> - скорость изменения точки К/мин, минимум 0.1, максимум 100, "
-			"при всех прочих значениях тока изменится скачком </p>"
-			"<p><code>timeout</code> - максимальное время установлния температуры (в минутах). "
-			"Если это время будет превышено, выполнение программы прервется.</p>");
 }
