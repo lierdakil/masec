@@ -33,6 +33,7 @@ public:
 	float getmout();
 	float getsetp();
 	bool rampdone();
+	void rst();
 };
 
 //TODO: many error handlers

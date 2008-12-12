@@ -18,14 +18,12 @@ class export_adaptor : public QDBusAbstractAdaptor
 
 private:
 	vib_temperature *t;
-	double setpoint;
 
 public:
     export_adaptor(vib_temperature *parent);
 
 public slots:
     void set_temp(double temp, double ramp, double timeout);
-    void set_temp_step(double step, double ramp, double timeout);
 };
 
 class flow_adaptor : public QDBusAbstractAdaptor
@@ -56,7 +54,6 @@ public slots:
 	//TODO: QString module_description();
 	QStringList returned_values();
     QString set_temp();
-    QString set_temp_step();
 };
 
 #endif /* ADAPTORS_H_ */

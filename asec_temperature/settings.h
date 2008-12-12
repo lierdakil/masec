@@ -22,6 +22,7 @@ public:
     double getSettime(double temp);
     int getRange(double temp);
     int getRangeManual();
+    double getMaxT();
     QString tempid;
 
 public slots:

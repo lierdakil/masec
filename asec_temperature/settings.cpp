@@ -46,6 +46,18 @@ int settings::getRange(double temp)
 	return 0;
 }
 
+double settings::getMaxT()
+{
+	double maxt=0;
+	for (int n=0;n<10;n++)
+	{
+		double ct = ui_settings.tbTempCtrl->findChild<QDoubleSpinBox*>(QString("sbTemp_%1").arg(n))->value();
+		if (maxt<ct)
+			maxt=ct;
+	}
+	return maxt;
+}
+
 int settings::getRangeManual()
 {
 	return ui_settings.cbRange_test->currentIndex();
@@ -122,6 +134,7 @@ void settings::accept()
 			temp->setzone(n+1,t,p,i,d,mout,range);
 			f.setValue(QString("TempCtrl/Time_%1").arg(n),time);
 		}
+		temp->rst();
 	}
 
 	QDialog::accept();
