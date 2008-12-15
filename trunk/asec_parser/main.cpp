@@ -3,8 +3,6 @@
 #include <iostream>
 using namespace std;
 
-// TODO: make a bat file
-
 int main(int argc, char *argv[])
 {
 	QFile f(argv[1]);

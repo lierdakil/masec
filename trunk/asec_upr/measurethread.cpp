@@ -39,14 +39,22 @@ void MeasureThread::run()
         f.close();
     }
 
-    QStringList data;
-    data<<QString("First run start freq, Hz:%1").arg(mes.fsf);
-    data<<QString("First run stop freq, Hz:%1").arg(mes.fff);
-    data<<QString("Second run start freq, Hz:%1").arg(mes.ssf);
-    data<<QString("Second run stop freq, Hz:%1").arg(mes.sff);
-    data<<QString("Resonance freq, Hz:%1").arg(mes.rf);
-    data<<QString("Resonance ampl, V:%1").arg(mes.ra);
-    data<<QString("Antiresonance freq, Hz:%1").arg(mes.af);
-    data<<QString("Antiresonance ampl, V:%1").arg(mes.aa);
-    emit finished(data);
+    if(!mes.error)
+    {
+    	QStringList data;
+    	data<<QString("First run start freq, Hz:%1").arg(mes.fsf);
+    	data<<QString("First run stop freq, Hz:%1").arg(mes.fff);
+    	data<<QString("Second run start freq, Hz:%1").arg(mes.ssf);
+    	data<<QString("Second run stop freq, Hz:%1").arg(mes.sff);
+    	data<<QString("Resonance freq, Hz:%1").arg(mes.rf);
+    	data<<QString("Resonance ampl, V:%1").arg(mes.ra);
+    	data<<QString("Antiresonance freq, Hz:%1").arg(mes.af);
+    	data<<QString("Antiresonance ampl, V:%1").arg(mes.aa);
+    	emit finished(data);
+    } else {
+    	QStringList data;
+    	data<<QString("::ERROR::");
+    	data<<mes.err_mesg;
+    	emit finished(data);
+    }
 }

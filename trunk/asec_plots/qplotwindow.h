@@ -32,6 +32,7 @@ public slots:
 	void new_X(QStringList data);
 	void new_Y(QStringList data);
 	bool editparams();
+	void on_btClear_clicked();
 };
 
 #endif // QPLOTWINDOW_H

@@ -42,6 +42,8 @@ public:
 	double ra; //Resonance Amplitude
 	double af; //Antiresonance Frequency
 	double aa; //Antiresonance Amplitude
+	bool error;
+	QString err_mesg;
 	QList<QPair<double,double> > curve;
 
 signals:
