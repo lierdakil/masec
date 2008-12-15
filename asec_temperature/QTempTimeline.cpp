@@ -2,8 +2,6 @@
 #include <time.h>
 #define TIMESTEP 0.01
 
-//TODO: (optional) Need to move this to parallel thread, since it halts GUI thread too much
-
 QTempTimer::QTempTimer() : QObject()
 {
 

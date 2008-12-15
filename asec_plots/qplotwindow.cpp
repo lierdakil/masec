@@ -116,3 +116,11 @@ void QPlotWindow::new_Y(QStringList data)
 		updateCurve();
 	}
 }
+
+void QPlotWindow::on_btClear_clicked()
+{
+	X_data.clear();
+	Y_data.clear();
+	ui.twData->setRowCount(0);
+	updateCurve();
+}

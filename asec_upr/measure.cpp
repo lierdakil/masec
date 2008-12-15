@@ -1,6 +1,5 @@
 #include "measure.h"
 #include "sleep.h"
-//TODO: Fix comments...
 
 #define draw_x(x) emit line(x,0,x,-127,Qt::SolidLine)
 #define draw_y(y) emit line(0,y,2500,y,Qt::SolidLine)
@@ -44,6 +43,7 @@ cmeasure::cmeasure(QString oscstr, QString genstr, QString volstr, double sf, do
 	this->volts1=volts1;
 	this->sm1=sm1;
 	this->sm2=sm2;
+	error=false;
 	findresonance();
 }
 
@@ -201,7 +201,7 @@ void cmeasure::findresonance()
 	QByteArray dat;
 	QList<qreal> diff;
 
-	//TODO: Make cycle finite
+	int cycles=0;
 	while ((xfmax <= xmax1)||(xfmax >= xmin))
 	{
 		//draw X axis
@@ -253,12 +253,21 @@ void cmeasure::findresonance()
 		draw_x(xmin);
 		draw_x(xmax1);
 		draw_x(xmax2);
+		cycles++;
+		if(cycles>4)
+		{
+			error=true;
+			err_mesg=trUtf8("Не удалось получить резонансную кривую");
+		}
 	}
 
 	for(int i=0; i<dat.count(); i++)
 	{
 		curve<<QPair<double,double>(k*i+ssf, dat[i]*k2);
 	}
+
+	if(error)
+		return;
 
 	gen->sweepoff();
 
