@@ -35,3 +35,8 @@ void asec_plots::on_lwPlots_itemDoubleClicked(QListWidgetItem* item)
 {
 	((QListWidgetItemPlot*)item)->ShowWindow();
 }
+
+void asec_plots::closeEvent(QCloseEvent *event)
+{
+	ui.lwPlots->clear();
+}
