@@ -16,6 +16,9 @@ public:
     asec_plots(QWidget *parent = 0);
     ~asec_plots();
 
+protected:
+	 void closeEvent(QCloseEvent *event);
+
 private:
     Ui::asec_plotsClass ui;
 
