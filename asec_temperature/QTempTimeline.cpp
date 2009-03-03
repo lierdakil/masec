@@ -53,10 +53,13 @@ QTempTimer::~QTempTimer()
 void QTempTimer::rampdone()
 {
 	tempctrl *temp=(tempctrl*)(qApp->property("temp").toInt());
-	if (temp->rampdone())
-		wait(TIMESTEP,SLOT(step1()));
-	else
-		wait(TIMESTEP,SLOT(rampdone()));
+	if (!is_stopped)
+	{
+		if (temp->rampdone())
+			wait(TIMESTEP,SLOT(step1()));
+		else
+			wait(TIMESTEP,SLOT(rampdone()));
+	}
 }
 
 bool QTempTimer::stable()
