@@ -14,7 +14,7 @@ public:
     asec_magn(QWidget *parent = 0);
     ~asec_magn();
 
-private:
+public:
 	QMagnTimeline magn_timer;
 
 public slots:
@@ -31,5 +31,7 @@ signals:
 private:
     Ui::asec_magnClass ui;
 };
+
+#include "adaptors.h"
 
 #endif // ASEC_MAGN_H

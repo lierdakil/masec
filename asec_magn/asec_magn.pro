@@ -6,11 +6,13 @@ QT += core \
 CONFIG += qdbus
 HEADERS += QMagnTimeline.h \
     ctrl/magn.h \
-    asec_magn.h
+    asec_magn.h \
+    adaptors.h
 SOURCES += QMagnTimeline.cpp \
     ctrl/magn.cpp \
     main.cpp \
-    asec_magn.cpp
+    asec_magn.cpp \
+    adaptors.cpp
 FORMS += asec_magn.ui
 RESOURCES += 
 INCLUDEPATH += ../asec_gpib/
