@@ -34,7 +34,7 @@ public:
 
 public slots:
 	bool stable();//we use this function to check if temperature is stable at the moment
-	void start(QString tempid, float nsetp, float nramp, float ntimeout, float nsettime);//start temperature setting
+	void start(float nsetp, float nramp, float ntimeout, float nsettime);//start temperature setting
 	void draw_temp();//emit newpoint in separate event thread
 	void rampdone();//first we wait until ramp is done
 	void step1();//now we check every TIMESTEP while temperature stabilizes - main check cycle, should include emit timedout() here
