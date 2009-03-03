@@ -18,6 +18,5 @@ SOURCES += ctrl/temp.cpp \
 FORMS += settings.ui \
     asec_temperature.ui
 RESOURCES += 
-INCLUDEPATH += ../asec_gpib/ \
-    ../asec_reply/
+INCLUDEPATH += ../asec_gpib/
 LIBS += ../lib/sicl32.lib
