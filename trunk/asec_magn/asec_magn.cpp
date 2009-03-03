@@ -10,20 +10,21 @@ asec_magn::asec_magn(QWidget *parent)
 	QDBusConnection connection = QDBusConnection::sessionBus();
 	connection.registerService("ru.pp.livid.asec.temp");
 	connection.registerObject("/", this);
-//	new export_adaptor(this);
-//	new help_adaptor(this);
-//	new flow_adaptor(this);
+	new export_adaptor(this);
+	new help_adaptor(this);
+	new flow_adaptor(this);
 
 	ui.gvField->setScene(new QGraphicsScene());
 
 	connect(&magn_timer,SIGNAL(field_set(float,float,float)),this,SLOT(field_set(float,float,float)));
 	connect(&magn_timer,SIGNAL(quench()),this,SLOT(quench()));
 	connect(&magn_timer,SIGNAL(newpoint(float,float)),this,SLOT(newpoint(float,float)));
+	//TODO: initialize magnet's gpib interface
 }
 
 asec_magn::~asec_magn()
 {
-
+	//TODO: free magnet's gpib interface
 }
 
 void asec_magn::newpoint(float time, float field)
