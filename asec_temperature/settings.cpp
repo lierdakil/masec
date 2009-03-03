@@ -190,7 +190,6 @@ void settings::on_btTest_clicked()
 
 	//delete temp;
 	test.start(
-			ui_settings.edTempId->text(),
 			ui_settings.sbNewT_test->value(),
 			ui_settings.sbRamp->value(),
 			ui_settings.sbt_test->value(),

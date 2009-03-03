@@ -7,7 +7,7 @@ QTempTimer::QTempTimer() : QObject()
 
 }
 
-void QTempTimer::start(QString tempid, float nsetp, float nramp, float ntimeout, float nsettime)
+void QTempTimer::start(float nsetp, float nramp, float ntimeout, float nsettime)
 {
 	setp=nsetp;
 	ramp=nramp;

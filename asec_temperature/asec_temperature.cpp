@@ -109,7 +109,7 @@ void vib_temperature::set_temp(double temp,double ramp, double timeout)
 			ui.gvTemp->setScene(new QGraphicsScene());
 			tempctrl *tempctl=(tempctrl*)(qApp->property("temp").toInt());
 			tempctl->ctrlmode(MOD_ZONE);
-			temptl.start(wset.tempid,temp,ramp,timeout,wset.getSettime(temp));
+			temptl.start(temp,ramp,timeout,wset.getSettime(temp));
 		} else {
 			QStringList data;
 			data<<trUtf8("::ERROR::");
