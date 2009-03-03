@@ -3,6 +3,8 @@
 
 #include <QtGui/QWidget>
 #include "ui_asec_magn.h"
+#include "QMagnTimeline.h"
+#include <QErrorMessage>
 
 class asec_magn : public QWidget
 {
@@ -11,6 +13,20 @@ class asec_magn : public QWidget
 public:
     asec_magn(QWidget *parent = 0);
     ~asec_magn();
+
+private:
+	QMagnTimeline magn_timer;
+
+public slots:
+	void set_field(float field); //method to set field
+
+	void field_set(float reqfield, float field, float settime/*minutes*/);//field reached requested value
+	//void stopped();//stopped by user
+	void quench();//achtung! quench detected!
+	void newpoint(float time, float field);//used to draw points
+
+signals:
+	void finished(QStringList data);
 
 private:
     Ui::asec_magnClass ui;

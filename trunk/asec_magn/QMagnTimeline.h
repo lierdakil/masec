@@ -43,7 +43,7 @@ public slots:
 	void stop();//stop
 
 signals:
-	void field_set(float field);//field reached requested value
+	void field_set(float reqfield, float field, float settime/*minutes*/);//field reached requested value
 	void stopped();//stopped by user
 	void quench();//achtung! quench detected!
 	void newpoint(float time, float field);//used to draw points

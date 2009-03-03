@@ -12,6 +12,11 @@
   <property name="windowTitle" >
    <string>asec_magn</string>
   </property>
+  <layout class="QVBoxLayout" name="verticalLayout" >
+   <item>
+    <widget class="QGraphicsView" name="gvField" />
+   </item>
+  </layout>
  </widget>
  <layoutdefault spacing="6" margin="11" />
  <resources/>

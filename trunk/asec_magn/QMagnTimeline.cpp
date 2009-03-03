@@ -20,7 +20,7 @@ QMagnTimeline::~QMagnTimeline() {
 void QMagnTimeline::wait(double sec, const char* member)
 {
 	time=(clock()-startclock)/1000.0f;
-	QTimer::singleShot(int(1000*min),this,member);
+	QTimer::singleShot(int(1000*sec),this,member);
 }
 
 void QMagnTimeline::start(float field /*kG*/)
@@ -31,7 +31,7 @@ void QMagnTimeline::start(float field /*kG*/)
 	float ramp_rate = magn->rate(); //Amper per second
 	float flds = magn->flds(); //kG per Amper
 	float current_new = field/flds; //kG / kG * A = Amper
-	int ramp_time = fabs(current_old-current_new)/ramp_rate;// A/A*s = seconds
+	double ramp_time = fabs(current_old-current_new)/ramp_rate;// A/A*s = seconds
 
 	time=0;
     drawtime=0;
@@ -48,7 +48,7 @@ void QMagnTimeline::draw_field()
 {
 	magnctrl *magn=(magnctrl*)(qApp->property("magn").toInt());
 	drawtime=(clock()-startclock)/1000.0f;
-	emit newpoint(drawtime,magn->field);
+	emit newpoint(drawtime,magn->field());
 	if(!is_stopped)
 		QTimer::singleShot(int(1000*TIMESTEP),this,SLOT(draw_field()));
 }
@@ -88,7 +88,7 @@ void QMagnTimeline::checkcurr()
 		emit stopped();
 	} else if(fabs(magn->current()-magn->getSetCurrent())<=0.001) {//TODO: What is epsilon?
 		is_stopped=true;
-		emit field_set(magn->field());
+		emit field_set(magn->getSetField(),magn->field(),(clock()-startclock)/60000.0f);
 	} else {
 		wait(TIMESTEP,SLOT(checkcurr()));
 	}

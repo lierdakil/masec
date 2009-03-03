@@ -16,6 +16,8 @@ class magnctrl : GPIBctrl
 {
 	magnctrl(QString GPIBID);
 	~magnctrl();
+
+public:
 	void setField(float value);
 	bool isRampDone();
 	//tests OPST RAMP register or OSB //TODO: decide

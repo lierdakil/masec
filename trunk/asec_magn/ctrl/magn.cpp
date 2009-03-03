@@ -5,12 +5,14 @@
  *      Author: kazei
  */
 
+#include "magn.h"
+
 magnctrl::magnctrl(QString GPIBID) : GPIBctrl(GPIBID)
 {
 
 }
 
-~magnctrl()
+magnctrl::~magnctrl()
 {
 
 }
