@@ -17,8 +17,7 @@ SOURCES += ctrl/vol.cpp \
     main.cpp \
     asec_upr.cpp
 FORMS += asec_upr.ui
-INCLUDEPATH += ../asec_gpib/ \
-    ../asec_reply/
+INCLUDEPATH += ../asec_gpib/
 LIBS += ../lib/sicl32.lib
 QT += core \
     gui \
