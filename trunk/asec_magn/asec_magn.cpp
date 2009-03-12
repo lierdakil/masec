@@ -1,4 +1,5 @@
 #include "asec_magn.h"
+#include <QInputDialog>
 
 asec_magn::asec_magn(QWidget *parent)
     : QWidget(parent)
@@ -44,6 +45,12 @@ void asec_magn::on_edGPID_returnPressed()
     QString GPID = ui.edGPID->text();
     if (!GPID.isEmpty())
         qApp->setProperty("magn",QVariant(int(new magnctrl(GPID))));
+}
+
+void asec_magn::on_btSetField_clicked()
+{
+    float field=QInputDialog::getDouble(this,trUtf8("Магнитное поле"),trUtf8("Введите, Гс"),0);
+    set_field(field);
 }
 
 void asec_magn::newpoint(float time, float field)

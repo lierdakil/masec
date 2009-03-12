@@ -25,6 +25,7 @@ public slots:
 	void quench();//achtung! quench detected!
 	void newpoint(float time, float field);//used to draw points
 	void on_edGPID_returnPressed();
+        void on_btSetField_clicked();
 
 signals:
 	void finished(QStringList data);
