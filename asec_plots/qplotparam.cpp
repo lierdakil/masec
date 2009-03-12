@@ -9,13 +9,18 @@ QPlotParam::QPlotParam(QWidget *parent)
 	foreach(QString service, list)
 	{
 		QDBusInterface iface(service,"/","ru.pp.livid.asec.help");
-		QDBusReply<QStringList> rv = iface.call("returned_values");
-		//TODO: Error handlers
-		foreach(QString value, rv.value())
-		{
-			ui.cbX->addItem(value,service);
-			ui.cbY->addItem(value,service);
-		}
+                if(iface.isValid())
+                {
+                    QDBusReply<QStringList> rv = iface.call("returned_values");
+                    if(rv.isValid())
+                    {
+                        foreach(QString value, rv.value())
+                        {
+                            ui.cbX->addItem(value,service);
+                            ui.cbY->addItem(value,service);
+                        }
+                    }
+                }
 	}
 }
 

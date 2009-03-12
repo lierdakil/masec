@@ -51,7 +51,7 @@ private:
 public:
     help_adaptor(vib_temperature *parent);
 public slots:
-	//TODO: QString module_description();
+        QString module_description();
 	QStringList returned_values();
     QString set_temp();
 };
