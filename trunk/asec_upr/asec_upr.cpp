@@ -46,7 +46,7 @@ vibupraut::~vibupraut()
 
 void vibupraut::measure(double startf, double stopf, QString filename)
 {
-	thread.wait();
+    thread.wait();
     thread.startf=startf;
     thread.stopf=stopf;
     thread.filename=filename;
@@ -62,34 +62,34 @@ void vibupraut::measure(double startf, double stopf, QString filename)
 
 void vibupraut::path(QList<qreal> data,QPen pen)
 {
-	QPainterPath path;
-	path.moveTo(0,-data[0]);
-	for(int i=1;i<data.count();++i)
-		path.lineTo(i,-data[i]);
-	ui.graph->scene()->addPath(path,pen,Qt::NoBrush);
-	ui.graph->fitInView(ui.graph->scene()->sceneRect());
+    QPainterPath path;
+    path.moveTo(0,-data[0]);
+    for(int i=1;i<data.count();++i)
+        path.lineTo(i,-data[i]);
+    ui.graph->scene()->addPath(path,pen,Qt::NoBrush);
+    ui.graph->fitInView(ui.graph->scene()->sceneRect());
 }
 
 void vibupraut::path(QByteArray data,QPen pen)
 {
-	QPainterPath path;
-	path.moveTo(0,-data[0]);
-	for(int i=1;i<data.count();++i)
-		path.lineTo(i,-data[i]);
-	ui.graph->scene()->addPath(path,pen,Qt::NoBrush);
-	ui.graph->fitInView(ui.graph->scene()->sceneRect());
+    QPainterPath path;
+    path.moveTo(0,-data[0]);
+    for(int i=1;i<data.count();++i)
+        path.lineTo(i,-data[i]);
+    ui.graph->scene()->addPath(path,pen,Qt::NoBrush);
+    ui.graph->fitInView(ui.graph->scene()->sceneRect());
 }
 
 void vibupraut::line(qreal x1, qreal y1,qreal x2, qreal y2, QPen pen)
 {
-	ui.graph->scene()->addLine(x1,y1,x2,y2,pen);
-	ui.graph->fitInView(ui.graph->scene()->sceneRect());
+    ui.graph->scene()->addLine(x1,y1,x2,y2,pen);
+    ui.graph->fitInView(ui.graph->scene()->sceneRect());
 }
 
 void vibupraut::on_btRun_clicked()
 {
-	double sf=QInputDialog::getDouble(this,trUtf8("Начальная частота"),trUtf8("Введите, Hz"),100000);
-	double ff=QInputDialog::getDouble(this,trUtf8("Конечная частота"),trUtf8("Введите, Hz"),200000);
-	QString file=QInputDialog::getText(this,trUtf8("Имя файла"),trUtf8("Имя файла для сохранения резонансной кривой (оставьте пустым, чтобы не сохранять)"));
-	measure(sf,ff,file);
+    double sf=QInputDialog::getDouble(this,trUtf8("Начальная частота"),trUtf8("Введите, Hz"),100000);
+    double ff=QInputDialog::getDouble(this,trUtf8("Конечная частота"),trUtf8("Введите, Hz"),200000);
+    QString file=QInputDialog::getText(this,trUtf8("Имя файла"),trUtf8("Имя файла для сохранения резонансной кривой (оставьте пустым, чтобы не сохранять)"));
+    measure(sf,ff,file);
 }
