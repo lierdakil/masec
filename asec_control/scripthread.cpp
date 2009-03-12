@@ -35,6 +35,8 @@ QScriptValue ScriptThread::call(QScriptContext *context, QScriptEngine *engine)
 			//or if bus->call returned false because of it
 			if(bus->stopped)
 				return context->throwError("Stopped by User");
+                        if(bus->is_unrecoverable)
+                            return context->throwError("There was an unrecoverable error!");
 			//don't eat up all the resources
 			sleep(1);//second
 		} while(bus->is_paused);

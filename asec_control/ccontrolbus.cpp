@@ -129,6 +129,7 @@ bool CControlBus::call(QString function, QString service, QList<QScriptValue> ar
 	 */
 
 	stopped=false;
+        is_unrecoverable=false;//reset unrecoverable flag
 
 	//Don;t call if data_file=0, throw error.
 	if (data_file==NULL)
@@ -210,6 +211,9 @@ bool CControlBus::call(QString function, QString service, QList<QScriptValue> ar
 	if (reply.at(0)=="::ERROR::")
 	{
 		emit call_error(reply.at(1));
+                if(reply.count()>=3)//since it's an optional parameter
+                    if(reply.at(2)=="::UNRECOVERABLE::")
+                        is_unrecoverable=true;
 		return false;
 	}
 

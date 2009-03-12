@@ -58,6 +58,7 @@ public:
 
 	bool is_paused;
 	bool stopped;
+        bool is_unrecoverable;
 
 public slots:
 	void reply_call(QStringList values)
