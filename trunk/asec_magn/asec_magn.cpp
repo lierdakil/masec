@@ -8,7 +8,7 @@ asec_magn::asec_magn(QWidget *parent)
 	QErrorMessage::qtHandler();
 
 	QDBusConnection connection = QDBusConnection::sessionBus();
-	connection.registerService("ru.pp.livid.asec.temp");
+	connection.registerService("ru.pp.livid.asec.magn");
 	connection.registerObject("/", this);
 	new export_adaptor(this);
 	new help_adaptor(this);
@@ -20,11 +20,30 @@ asec_magn::asec_magn(QWidget *parent)
 	connect(&magn_timer,SIGNAL(quench()),this,SLOT(quench()));
 	connect(&magn_timer,SIGNAL(newpoint(float,float)),this,SLOT(newpoint(float,float)));
 	//TODO: initialize magnet's gpib interface
+	QSettings f("settings.ini",QSettings::IniFormat);
+	QString GPID = f.value("GPIB/magnid","").toString();
+	if (!GPID.isEmpty())
+	{
+		ui.edGPID->setText(GPID);
+		qApp->setProperty("magn",QVariant(int(new magnctrl(GPID))));
+	}
 }
 
 asec_magn::~asec_magn()
 {
-	//TODO: free magnet's gpib interface
+	QSettings f("settings.ini",QSettings::IniFormat);
+	f.setValue("GPIB/magnid", ui.edGPID->text());
+	if (qApp->property("magn").isValid())
+		delete (magnctrl*)(qApp->property("magn").toInt());
+}
+
+void asec_magn::on_edGPID_returnPressed()
+{
+	if (qApp->property("magn").isValid())
+		delete (magnctrl*)(qApp->property("magn").toInt());
+	QString GPID = ui.edGPID->text();
+	if (!GPID.isEmpty())
+		qApp->setProperty("magn",QVariant(int(new magnctrl(GPID))));
 }
 
 void asec_magn::newpoint(float time, float field)

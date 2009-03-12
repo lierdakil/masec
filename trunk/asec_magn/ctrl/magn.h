@@ -14,13 +14,12 @@
 
 class magnctrl : GPIBctrl
 {
+public:
 	magnctrl(QString GPIBID);
 	~magnctrl();
 
-public:
 	void setField(float value);
 	bool isRampDone();
-	//tests OPST RAMP register or OSB //TODO: decide
 	float getSetField();
 	float getSetCurrent();
 	float field();

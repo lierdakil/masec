@@ -24,6 +24,7 @@ public slots:
 	//void stopped();//stopped by user
 	void quench();//achtung! quench detected!
 	void newpoint(float time, float field);//used to draw points
+	void on_edGPID_returnPressed();
 
 signals:
 	void finished(QStringList data);
