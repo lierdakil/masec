@@ -1,7 +1,7 @@
 #ifndef CTRL_GPIB_H_
 #define CTRL_GPIB_H_
 
-#include "sicl.h"
+#include "sicl.h" //TODO: Maybe it's better to migrate to VISA after all...
 #include <QString>
 #include <QMutex>
 #include <QMutexLocker>
@@ -23,6 +23,9 @@ public:
 
 		did = iopen(GPIBID.toAscii().data());
 		itimeout(did,600000);
+                //TODO: A proper initialization, IDN querying
+                //TODO: Also, need to handle hardware and driver errors here.
+                //TODO: Maybe it's better to use dedicated open() procedure
 	}
 
 	~GPIBctrl()
