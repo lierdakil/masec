@@ -40,6 +40,12 @@ QStringList help_adaptor::returned_values()
 	return data;
 }
 
+QString help_adaptor::module_description()
+{
+    return trUtf8("Модуль управления источником питания для сверхпроводящего \n"
+                  "соленоида LakeShore Model 625");
+}
+
 QString help_adaptor::set_field()
 {
 	QString desc=trUtf8("<p>Установить магнитное плое. Задается уставка и ожидается установление поля. </p> "

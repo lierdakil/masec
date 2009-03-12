@@ -16,8 +16,8 @@ class export_adaptor : public QDBusAbstractAdaptor
     Q_OBJECT
     Q_CLASSINFO("D-Bus Interface", QString("ru.pp.livid.asec.exports"))
 
-private:
-	asec_magn *m;
+        private:
+            asec_magn *m;
 
 public:
     export_adaptor(asec_magn *parent);
@@ -28,16 +28,16 @@ public slots:
 
 class flow_adaptor : public QDBusAbstractAdaptor
 {
-	Q_OBJECT
-	Q_CLASSINFO("D-Bus Interface", QString("ru.pp.livid.asec.flow"))
-private:
-	asec_magn *m;
+    Q_OBJECT
+    Q_CLASSINFO("D-Bus Interface", QString("ru.pp.livid.asec.flow"))
+        private:
+            asec_magn *m;
 public:
-	flow_adaptor(asec_magn *parent);
+    flow_adaptor(asec_magn *parent);
 public slots:
     void stop();
 signals:
-	void finished(QStringList data);
+    void finished(QStringList data);
 };
 
 class help_adaptor : public QDBusAbstractAdaptor
@@ -45,13 +45,13 @@ class help_adaptor : public QDBusAbstractAdaptor
     Q_OBJECT
     Q_CLASSINFO("D-Bus Interface", QString("ru.pp.livid.asec.help"))
 
-private:
-	asec_magn *m;
+        private:
+            asec_magn *m;
 public:
     help_adaptor(asec_magn *parent);
 public slots:
-	//TODO: QString module_description();
-	QStringList returned_values();
+    QString module_description();
+    QStringList returned_values();
     QString set_field();
 };
 

@@ -44,6 +44,11 @@ QStringList help_adaptor::returned_values()
 	return data;
 }
 
+QString help_adaptor::module_description()
+{
+    return trUtf8("Модуль управления ПИД-регулятором температуры LakeShore 331");
+}
+
 QString help_adaptor::set_temp()
 {
 	QString desc=trUtf8("<p>Установить температуру. Устанавливается точка и ожидается установление температруры. </p> "

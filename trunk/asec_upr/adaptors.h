@@ -13,51 +13,51 @@
 
 class export_adaptor : public QDBusAbstractAdaptor
 {
-	Q_OBJECT
-	Q_CLASSINFO("D-Bus Interface", QString("ru.pp.livid.asec.exports"))
+    Q_OBJECT
+    Q_CLASSINFO("D-Bus Interface", QString("ru.pp.livid.asec.exports"))
 
-private:
-	vibupraut *vua;
+        private:
+            vibupraut *vua;
 
 public:
-	export_adaptor(vibupraut *v);
+    export_adaptor(vibupraut *v);
 public slots:
-	void mes_res(double startf, double stopf);
-	void mes_res_file(double startf, double stopf, QString filename);
+    void mes_res(double startf, double stopf);
+    void mes_res_file(double startf, double stopf, QString filename);
 };
 
 class flow_adaptor : public QDBusAbstractAdaptor
 {
-	Q_OBJECT
-	Q_CLASSINFO("D-Bus Interface", QString("ru.pp.livid.asec.flow"))
+    Q_OBJECT
+    Q_CLASSINFO("D-Bus Interface", QString("ru.pp.livid.asec.flow"))
 
-private:
-	vibupraut *vua;
+        private:
+            vibupraut *vua;
 
 public:
-	flow_adaptor(vibupraut *v);
+    flow_adaptor(vibupraut *v);
 public slots:
-	void stop();
+    void stop();
 signals:
-	void finished(QStringList data);
+    void finished(QStringList data);
 };
 
 class help_adaptor : public QDBusAbstractAdaptor
 {
-	Q_OBJECT
-	Q_CLASSINFO("D-Bus Interface", QString("ru.pp.livid.asec.help"))
+    Q_OBJECT
+    Q_CLASSINFO("D-Bus Interface", QString("ru.pp.livid.asec.help"))
 
-private:
-	vibupraut *vua;
+        private:
+            vibupraut *vua;
 
 public:
-	help_adaptor(vibupraut *v);
+    help_adaptor(vibupraut *v);
 
 public slots:
-//TODO: QString module_description();
-	QStringList returned_values();
-	QString mes_res();
-	QString mes_res_file();
+    QString module_description();
+    QStringList returned_values();
+    QString mes_res();
+    QString mes_res_file();
 };
 
 #endif /* ADAPTORS_H_ */
