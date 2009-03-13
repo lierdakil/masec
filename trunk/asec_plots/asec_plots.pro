@@ -17,5 +17,5 @@ FORMS += qplotparam.ui \
     qplotwindow.ui \
     asec_plots.ui
 RESOURCES += 
-INCLUDEPATH += C:\Qwt-2-svn\mingw\include
-LIBS += C:\Qwt-2-svn\mingw\lib\libqwtd5.a
+INCLUDEPATH += C:\Qwt-5.1.2-svn\include
+LIBS += C:\Qwt-5.1.2-svn\lib\libqwtd5.a
