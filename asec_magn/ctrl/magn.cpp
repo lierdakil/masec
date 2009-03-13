@@ -55,7 +55,7 @@ bool magnctrl::isQuench()
 float magnctrl::flds()//in kG, yes?
 {
 	QStringList data=query("FLDS?").split(",");
-	int units=data[0].toInt();
+        //TODO: int units=data[0].toInt();
 	//TODO: check units, yes?
 	float value=data[1].toFloat();
 	return value;
