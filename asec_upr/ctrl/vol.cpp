@@ -27,7 +27,7 @@ double volctrl::acquire()
 	QStringList list = query("READ?").split(",");
 	for (int i=0;i<list.count();i++)
 	{
-		res+=list[i].toDouble();
+                res+=list[i].toDouble();//TODO:error handler
 	}
 	res/=list.count();
 	return res;
