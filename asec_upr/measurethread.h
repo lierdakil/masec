@@ -9,24 +9,56 @@
 #define MEASURETHREAD_H_
 
 #include <QtCore>
-#include "measure.h"
+#include <QPen>
+#include <QGraphicsScene>
+#include <QErrorMessage>
+#include "ctrl/gen.h"
+#include "ctrl/vol.h"
+#include "ctrl/osc.h"
 
 class MeasureThread : public QThread
 {
-	Q_OBJECT
+    Q_OBJECT
+
+private:
+    double epsilon;
+    double k, k2;
+    void findresonance();
+    QByteArray sweep();
+    float getamplonf(float freq);
+    float golden(float a, float b, float epsilon, bool max);
+    genctrl* gen;
+    volctrl* vol;
+    oscctrl* osc;
+    QString oscstr;
+    double fsf;//First Run Start Frequency
+    double fff;//First Run Stop Frequency
+    double ssf;//Second Run Start Frequency
+    double sff;//Second Run Stop Frequency
+    double rf; //Resonance Frequency
+    double ra; //Resonance Amplitude
+    double af; //Antiresonance Frequency
+    double aa; //Antiresonance Amplitude
+    bool error;
+    QString err_mesg;
+    QList<QPair<double,double> > curve;
 
 public:
-	double startf;
-	double stopf;
-	QString filename;
-	QString oscid;
-	QString genid;
-	QString mulid;
-	double volts1;
-	int sm1, sm2;
-	void run();
+    double startf;
+    double stopf;
+    QString filename;
+    QString oscid;
+    QString genid;
+    QString mulid;
+    double volts1;
+    int sm1, sm2;
+    void run();
+
 signals:
-	void finished(QStringList data);
+    void path(QList<qreal>,QPen pen);
+    void path(QByteArray,QPen pen);
+    void line(qreal x1, qreal y1,qreal x2, qreal y2, QPen pen);
+    void finished(QStringList data);
 };
 
 #endif /* MEASURETHREAD_H_ */

@@ -7,7 +7,7 @@
 
 #include "vol.h"
 
-volctrl::volctrl(QString GPIBID) : GPIBctrl(GPIBID)
+volctrl::volctrl(QString GPIBID) : GPIBctrl(GPIBID,"HEWLETT-PACKARD,34401A,0,11-5-2",30000)
 {
 	write("*RST");
 	write("SAMP:COUN 5");

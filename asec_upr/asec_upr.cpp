@@ -31,6 +31,9 @@ vibupraut::vibupraut(QWidget *parent)
     qRegisterMetaType<QList<qreal> >("QList<qreal>");
 
     connect(&thread,SIGNAL(finished(QStringList)),this,SIGNAL(finished(QStringList)));
+    connect(&thread,SIGNAL(path(QList<qreal>,QPen)),this,SLOT(path(QList<qreal>,QPen)),Qt::QueuedConnection);
+    connect(&thread,SIGNAL(path(QByteArray,QPen)),this,SLOT(path(QByteArray,QPen)),Qt::QueuedConnection);
+    connect(&thread,SIGNAL(line(qreal,qreal,qreal,qreal,QPen)),this,SLOT(line(qreal,qreal,qreal,qreal,QPen)),Qt::QueuedConnection);
 }
 
 vibupraut::~vibupraut()

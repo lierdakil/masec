@@ -7,7 +7,7 @@
 
 #include "gen.h"
 
-genctrl::genctrl(QString GPIBID) : GPIBctrl(GPIBID)
+genctrl::genctrl(QString GPIBID) : GPIBctrl(GPIBID,"HEWLETT-PACKARD,33120A,0,10.0-5.0-1.0",15000)
 {
 	write("APPL:SIN 1, 5.0");
 	write("SWE:TIME 10");

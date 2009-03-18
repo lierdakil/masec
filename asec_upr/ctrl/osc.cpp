@@ -6,7 +6,7 @@
  */
 #include "osc.h"
 
-oscctrl::oscctrl(QString GPIBID) : GPIBctrl(GPIBID)
+oscctrl::oscctrl(QString GPIBID) : GPIBctrl(GPIBID,"TEKTRONIX,TDS 2012,0,CF:91.1CT FV:v2.12 TDS2CM:CMV:v1.04")
 {
 	write("ACQ:MOD PEAK");
 	write("ACQ:STOPA RUNSTOP");
@@ -34,6 +34,8 @@ QByteArray oscctrl::readcurve()
 	write("CURV?");
 	read_array(13);//rubbish
 	QByteArray data = read_array(2500);
+        read();//This actually reads one char -- a separator.
+        //Not shure why wasn't this needed with SICL, but with VISA it's required
 	for (int i=0; i<data.count(); i++)
 		data[i]=(data.at(i)>=0?data.at(i):-data.at(i));//abs
 	return data;
@@ -51,7 +53,8 @@ void oscctrl::wait(QString state)
 double oscctrl::getch1()
 {
 	bool success;
-	double vol = query("CH1:VOL?").split(" ").at(1).toDouble(&success);
+        QString reply=query("CH1:VOL?");
+        double vol = reply.split(" ").at(1).toDouble(&success);
 	if (success)
 		return vol;
 	else
