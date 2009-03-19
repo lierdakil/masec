@@ -26,7 +26,7 @@ asec_magn::asec_magn(QWidget *parent)
     if (!GPID.isEmpty())
     {
         ui.edGPID->setText(GPID);
-        qApp->setProperty("magn",QVariant(int(new magnctrl(GPID))));
+        qApp->setProperty("magnid",GPID);
     }
 }
 
@@ -34,17 +34,12 @@ asec_magn::~asec_magn()
 {
     QSettings f("settings.ini",QSettings::IniFormat);
     f.setValue("GPIB/magnid", ui.edGPID->text());
-    if (qApp->property("magn").isValid())
-        delete (magnctrl*)(qApp->property("magn").toInt());
 }
 
 void asec_magn::on_edGPID_returnPressed()
 {
-    if (qApp->property("magn").isValid())
-        delete (magnctrl*)(qApp->property("magn").toInt());
     QString GPID = ui.edGPID->text();
-    if (!GPID.isEmpty())
-        qApp->setProperty("magn",QVariant(int(new magnctrl(GPID))));
+    qApp->setProperty("magnid",GPID);
 }
 
 void asec_magn::on_btSetField_clicked()
@@ -69,6 +64,7 @@ void asec_magn::newpoint(float time, float field)
 void asec_magn::set_field(float field) //method to set field
 {
     //TODO: check limits
+    ui.btSetField->setEnabled(false);
     delete ui.gvField->scene();
     ui.gvField->setScene(new QGraphicsScene);
     magn_timer.start(field);
@@ -81,6 +77,7 @@ void asec_magn::field_set(float reqfield, float field, float settime/*minutes*/)
     data<<QString("Current Field,K:%1").arg(field);
     data<<QString("Stabilization time,min:%1").arg(settime);
     emit finished(data);
+    ui.btSetField->setEnabled(true);
 }
 
 void asec_magn::quench()
@@ -90,4 +87,5 @@ void asec_magn::quench()
     data<<trUtf8("Magnet quench detected!");
     data<<QString("::UNRECOVERABLE::");
     emit finished(data);
+    QErrorMessage::qtHandler()->showMessage(trUtf8("Quench detected!"));
 }

@@ -16,4 +16,4 @@ SOURCES += QMagnTimeline.cpp \
 FORMS += asec_magn.ui
 RESOURCES += 
 INCLUDEPATH += ../asec_gpib/
-LIBS += ../lib/sicl32.lib
+LIBS += ../lib/visa32.lib

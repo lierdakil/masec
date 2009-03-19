@@ -7,7 +7,7 @@
 
 #include "magn.h"
 
-magnctrl::magnctrl(QString GPIBID) : GPIBctrl(GPIBID)
+magnctrl::magnctrl(QString GPIBID) : GPIBctrl(GPIBID,"LSCI,MODEL625,6251143,1.1/1.0")
 {
 
 }
