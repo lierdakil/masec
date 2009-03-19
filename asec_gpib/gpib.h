@@ -95,6 +95,15 @@ public:
             throw e;
         }
 
+        err=viClear(did);
+        if (err<VI_SUCCESS)
+        {
+            VISAException e(err,did);
+            viClose(did);
+            viClose(defaultRM);
+            throw e;
+        }
+
         err=viSetAttribute(did, VI_ATTR_TMO_VALUE, timeout);
         if (err<VI_SUCCESS)
         {
@@ -104,13 +113,13 @@ public:
             throw e;
         }
 
-        //        try{
-        //            write("*RST");
-        //        } catch (VISAException e) {
-        //            viClose(did);
-        //            viClose(defaultRM);
-        //            throw e;//rethrow
-        //        }
+        try{
+            write("*CLS");
+        } catch (VISAException e) {
+            viClose(did);
+            viClose(defaultRM);
+            throw e;//rethrow
+        }
 
         QString _IDN;
         try {
@@ -166,6 +175,7 @@ public:
 
     QString query(QString request)
     {
+        read();
         write(request);
         return read();
     }

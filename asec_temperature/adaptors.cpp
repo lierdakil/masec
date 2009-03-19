@@ -14,7 +14,7 @@ export_adaptor::export_adaptor(vib_temperature *parent) : QDBusAbstractAdaptor(p
 
 void export_adaptor::set_temp(double temp, double ramp, double timeout)
 {
-	t->set_temp(temp,ramp,timeout);
+        t->set_temp_zone(temp,ramp,timeout);
 }
 
 flow_adaptor::flow_adaptor(vib_temperature *parent) : QDBusAbstractAdaptor(parent), t(parent)
