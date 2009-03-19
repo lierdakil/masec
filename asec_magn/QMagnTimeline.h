@@ -30,8 +30,9 @@ public:
 private:
 	double time,drawtime;//minutes
 	int startclock;
-	bool is_stopped;
+        bool is_running;
 	void wait(double sec, const char* member);
+        magnctrl *magn;
 
 public slots:
 	void start(float field);//start field setting
