@@ -7,7 +7,7 @@
 
 #include "temp.h"
 
-tempctrl::tempctrl(QString GPIBID) : GPIBctrl(GPIBID)
+tempctrl::tempctrl(QString GPIBID) : GPIBctrl(GPIBID,"LSCI,MODEL331S,333585,061404", 10000)
 {
 	write("CSET 1, A, 1, 1, 2");
 	write(QString("*SRE %1").arg(128));
