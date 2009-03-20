@@ -24,9 +24,9 @@ vib_temperature::vib_temperature(QWidget *parent)
     //	connect(&temptl,SIGNAL(stopped()),&fix_timer,SLOT(stop()));
 
     connect(&temptl,SIGNAL(temp_set()),this,SLOT(temp_set()));
-    connect(&temptl,SIGNAL(timedout()),this,SLOT(timedout()));
     connect(&temptl,SIGNAL(stopped()),this,SLOT(stopped()));
     connect(&temptl,SIGNAL(newpoint(float,float,float)),this,SLOT(newpoint(float,float,float)));
+    connect(&temptl,SIGNAL(error(QString)),this,SLOT(error(QString)));
 
     connect(&fix_timer, SIGNAL(timeout()), this, SLOT(fix_range()));
 
@@ -68,11 +68,11 @@ void vib_temperature::temp_set()
     ui.btTest->setEnabled(true);
 }
 
-void vib_temperature::timedout()
+void vib_temperature::error(QString message)
 {
     QStringList data;
     data<<trUtf8("::ERROR::");
-    data<<trUtf8("Exceeded temperature setup timeout");
+    data<<message;
     emit finished(data);
     ui.btStopTest->setEnabled(false);
     ui.btTest->setEnabled(true);

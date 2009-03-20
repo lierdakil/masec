@@ -10,6 +10,7 @@
 #include <QtAlgorithms>
 #include <QGraphicsView>
 #include <math.h>
+#include <gpibexceptions.h>
 #include "ctrl/temp.h"
 
 class QTempTimer : public QObject
@@ -21,9 +22,13 @@ private:
 	double time,drawtime;//minutes
 	void wait(double min, const char *member);
         tempctrl *temp;
+        bool is_stopped;
+        bool stop_requested;
 
 private slots:
         void start(float nsetp, float nramp, float ntimeout, float nsettime);//start temperature setting
+        void raiseError(QString message); //stops timeline and raises error via error(QString) signal
+        bool stable();//we use this function to check if temperature is stable at the moment
 
 public:
 	//"input"
@@ -34,10 +39,8 @@ public:
 	//return vals
 	int startclock;
 	float temp1,temp2;
-	bool is_stopped;
 
 public slots:
-	bool stable();//we use this function to check if temperature is stable at the moment
         void start_zone(float nsetp, float nramp, float ntimeout, float nsettime);
         void start_manual(float nsetp, float nramp, float ntimeout, float nsettime, float P, float I, float D, int range, double mout);
 	void draw_temp();//emit newpoint in separate event thread
@@ -48,8 +51,8 @@ public slots:
 
 signals:
 	void temp_set();//temperature stabilized at given setpoint
-	void timedout();//temperature could not stabilize in $timeout minutes
 	void stopped();//stopped by user
+        void error(QString message);//error occured
 	void newpoint(float time, float temp, float setpoint);
 
 public:

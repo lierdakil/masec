@@ -45,6 +45,6 @@ void genctrl::setsweep(float sf, float ff)
 void genctrl::startsweep()
 {
 	write("*TRG");
-	while(query("*OPC?")=="0")
+        while(queryString("*OPC?")=="0")
 	{}
 }

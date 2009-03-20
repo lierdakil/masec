@@ -31,8 +31,11 @@ private:
 	double time,drawtime;//minutes
 	int startclock;
         bool is_running;
-	void wait(double sec, const char* member);
+        bool stop_requested;
         magnctrl *magn;
+
+	void wait(double sec, const char* member);
+        void raiseError(QString message);
 
 public slots:
 	void start(float field);//start field setting
@@ -47,6 +50,7 @@ signals:
 	void field_set(float reqfield, float field, float settime/*minutes*/);//field reached requested value
 	void stopped();//stopped by user
 	void quench();//achtung! quench detected!
+        void error(QString message);//An ordianry error
 	void newpoint(float time, float field);//used to draw points
 };
 

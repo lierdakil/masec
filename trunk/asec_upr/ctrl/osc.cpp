@@ -32,9 +32,9 @@ QByteArray oscctrl::readcurve()
     write("DAT:STOP 2500");
     write("DAT:ENC SRI");
     write("CURV?");
-    read_array(13);//rubbish
-    QByteArray data = read_array(2500);
-    read();//This actually reads one char -- a separator.
+    readArray(13);//rubbish
+    QByteArray data = readArray(2500);
+    readString();//clears the rest of the buffer
     //Not shure why wasn't this needed with SICL, but with VISA it's required
     for (int i=0; i<data.count(); i++)
         data[i]=(data.at(i)>=0?data.at(i):-data.at(i));//abs
@@ -43,22 +43,17 @@ QByteArray oscctrl::readcurve()
 
 void oscctrl::wait(QString state)
 {
-    while ( query("TRIG:STATE?").split(" ").at(1) != state ) //TODO: error handler
+    QStringList reply;
+    do
     {
-
-    }
+        //sleep?
+    } while ( queryString("TRIG:STATE?",":TRIG:STATE") != state );
 }
 
 
 double oscctrl::getch1()
 {
-    bool success;
-    QString reply=query("CH1:VOL?");
-    double vol = reply.split(" ").at(1).toDouble(&success);//TODO: error handler
-    if (success)
-        return vol;
-    else
-        return -1;
+    return queryFloat("CH1:VOL?",":CH1:VOL");
 }
 
 void oscctrl::setch1(double vol)

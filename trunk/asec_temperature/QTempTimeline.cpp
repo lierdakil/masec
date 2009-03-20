@@ -7,31 +7,53 @@ QTempTimer::QTempTimer() : QObject()
     temp=NULL;
 }
 
+void QTempTimer::raiseError(QString message)
+{
+    is_stopped=true;
+    delete temp;
+    temp=0;
+    emit error(message);
+}
+
 void QTempTimer::start_manual(float nsetp, float nramp, float ntimeout, float nsettime, float P, float I, float D, int range, double mout)
 {
-    temp=new tempctrl(qApp->property("tempid").toString());
-    temp->ctrlmode(MOD_MANUAL);
-    temp->setPID(P,I,D);
-    temp->setrange(range);
-    temp->setmout(mout);
-    start(nsetp, nramp, ntimeout, nsettime);
+    try{
+        temp=new tempctrl(qApp->property("tempid").toString());
+        temp->ctrlmode(MOD_MANUAL);
+        temp->setPID(P,I,D);
+        temp->setrange(range);
+        temp->setmout(mout);
+        start(nsetp, nramp, ntimeout, nsettime);
+    } catch (GPIBGenericException e) {
+        raiseError(e.report());
+    } catch (std::exception e) {
+        raiseError(QString::fromUtf8("Caught unexpected exception '%1'").arg(e.what()));
+    }
 }
 
 void QTempTimer::start_zone(float nsetp, float nramp, float ntimeout, float nsettime)
 {
-    temp=new tempctrl(qApp->property("tempid").toString());
-    temp->ctrlmode(MOD_ZONE);
-    start(nsetp, nramp, ntimeout, nsettime);
+    try{
+        temp=new tempctrl(qApp->property("tempid").toString());
+        temp->ctrlmode(MOD_ZONE);
+        start(nsetp, nramp, ntimeout, nsettime);
+    } catch (GPIBGenericException e) {
+        raiseError(e.report());
+    } catch (std::exception e) {
+        raiseError(QString::fromUtf8("Caught unexpected exception '%1'").arg(e.what()));
+    }
 }
 
 void QTempTimer::start(float nsetp, float nramp, float ntimeout, float nsettime)
 {
+    //this function is called from within try...catch
     setp=nsetp;
     ramp=nramp;
     timeout=ntimeout;
     settime=nsettime;
 
     is_stopped=false;
+    stop_requested=false;
 
     ramp=temp->ramp(ramp);
 
@@ -56,6 +78,7 @@ void QTempTimer::start(float nsetp, float nramp, float ntimeout, float nsettime)
 
 void QTempTimer::wait(double min, const char* member)
 {
+    //only called from within try...catch
     time=(clock()-startclock)/60000.0f;
     QTimer::singleShot(int(60000*min),this,member);
 }
@@ -67,17 +90,24 @@ QTempTimer::~QTempTimer()
 
 void QTempTimer::rampdone()
 {
-    if (!is_stopped)
-    {
+    if (is_stopped)
+        return;
+
+    try{
         if (temp->rampdone())
             wait(TIMESTEP,SLOT(step1()));
         else
             wait(TIMESTEP,SLOT(rampdone()));
+    } catch (GPIBGenericException e) {
+        raiseError(e.report());
+    } catch (std::exception e) {
+        raiseError(QString::fromUtf8("Caught unexpected exception '%1'").arg(e.what()));
     }
 }
 
 bool QTempTimer::stable()
 {
+    //only called directly from within try...catch
     //two consequent values of temperature are near setp
     //TODO: Maybe there's a better algorithm to detect that temperature is stable?
     return ( fabs(temp1-setp)<=0.5 && fabs(temp2-setp)<=0.5 );
@@ -87,50 +117,72 @@ void QTempTimer::draw_temp()
 {
     if(is_stopped)
         return;
-    drawtime=(clock()-startclock)/60000.0f;
-    emit newpoint(drawtime,temp->temp(),temp->getsetp());
-    QTimer::singleShot(int(60000*TIMESTEP),this,SLOT(draw_temp()));
+
+    try{
+        drawtime=(clock()-startclock)/60000.0f;
+        emit newpoint(drawtime,temp->temp(),temp->getsetp());
+        QTimer::singleShot(int(60000*TIMESTEP),this,SLOT(draw_temp()));
+    } catch (GPIBGenericException e) {
+        raiseError(e.report());
+    } catch (std::exception e) {
+        raiseError(QString::fromUtf8("Caught unexpected exception '%1'").arg(e.what()));
+    }
 }
 
 void QTempTimer::step1()
 {
-    temp1=temp2;
-    temp2=temp->temp();
+    if(is_stopped)
+        return;
 
-    if(time>=timeout)
-    {
-        delete temp;
-        temp=0;
-        is_stopped=true;
-        emit timedout();
-    } else if(is_stopped) {
-        delete temp;
-        temp=0;
-        emit stopped();
-    } else if ( stable() ) {
-        wait(settime,SLOT(step2()));//wait settime to check if temperature stabilized.
-    } else {
-        wait(TIMESTEP,SLOT(step1()));//continue cycle
+    try{
+        temp1=temp2;
+        temp2=temp->temp();
+
+        if(time>=timeout)
+        {
+            raiseError(trUtf8("Exceeded temperature setup timeout"));
+        } else if(stop_requested) {
+            is_stopped=true;
+            delete temp;
+            temp=0;
+            emit stopped();
+        } else if ( stable() ) {
+            wait(settime,SLOT(step2()));//wait settime to check if temperature stabilized.
+        } else {
+            wait(TIMESTEP,SLOT(step1()));//continue cycle
+        }
+    } catch (GPIBGenericException e) {
+        raiseError(e.report());
+    } catch (std::exception e) {
+        raiseError(QString::fromUtf8("Caught unexpected exception '%1'").arg(e.what()));
     }
 }
 
 void QTempTimer::step2()
 {
-    if ( stable() )
-    {
-        //we think that temperature is stable
-        //		delete temp;
-        is_stopped=true;
-        delete temp;
-        temp=0;
-        emit temp_set();
-    } else {
-        wait(TIMESTEP,SLOT(step1()));//continue cycle
+    if(is_stopped)
+        return;
+
+    try{
+        if ( stable() )
+        {
+            //we think that temperature is stable
+            is_stopped=true;
+            delete temp;
+            temp=0;
+            emit temp_set();
+        } else {
+            wait(TIMESTEP,SLOT(step1()));//continue cycle
+        }
+    } catch (GPIBGenericException e) {
+        raiseError(e.report());
+    } catch (std::exception e) {
+        raiseError(QString::fromUtf8("Caught unexpected exception '%1'").arg(e.what()));
     }
 }
 
 void QTempTimer::stop()
 {
-    is_stopped=true;
+    stop_requested=true;
 }
 
