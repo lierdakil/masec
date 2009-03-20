@@ -1,5 +1,4 @@
 #include "gpibctrl.h"
-#include "gpibexceptions.h"
 #include "sleep.h"
 #define SLEEP_TIME 20
 

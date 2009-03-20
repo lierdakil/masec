@@ -18,5 +18,7 @@ SOURCES += ctrl/temp.cpp \
 FORMS += settings.ui \
     asec_temperature.ui
 RESOURCES += 
-INCLUDEPATH += ../asec_gpib/
-LIBS += ../lib/visa32.lib
+INCLUDEPATH += ../asec_gpib \
+        ../visa
+LIBS += -L../build \
+    -lasec_gpib

@@ -1,7 +1,7 @@
 #ifndef CTRL_TEMP_H_
 #define CTRL_TEMP_H_
 
-#include <gpib.h>
+#include <gpibctrl.h>
 #include <QString>
 #include <QStringList>
 

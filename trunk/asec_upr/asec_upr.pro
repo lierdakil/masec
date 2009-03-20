@@ -15,8 +15,10 @@ SOURCES += ctrl/vol.cpp \
     main.cpp \
     asec_upr.cpp
 FORMS += asec_upr.ui
-INCLUDEPATH += ../asec_gpib/
-LIBS += ../lib/visa32.lib
+INCLUDEPATH += ../asec_gpib/ \
+    ../visa/
+LIBS += -L../build/ \
+    -lasec_gpib
 QT += core \
     gui \
     dbus

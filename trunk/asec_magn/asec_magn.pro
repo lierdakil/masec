@@ -15,5 +15,7 @@ SOURCES += QMagnTimeline.cpp \
     adaptors.cpp
 FORMS += asec_magn.ui
 RESOURCES += 
-INCLUDEPATH += ../asec_gpib/
-LIBS += ../lib/visa32.lib
+INCLUDEPATH += ../asec_gpib \
+        ../visa
+LIBS += -L../build \
+    -lasec_gpib

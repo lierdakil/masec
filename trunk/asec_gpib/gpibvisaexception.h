@@ -2,7 +2,7 @@
 #define GPIBVISAEXCEPTION_H
 
 #include "gpibgenericexception.h"
-#include "visa.h"
+#include <visa.h>
 
 class ASEC_GPIBSHARED_EXPORT GPIBVISAException : public GPIBGenericException
 {

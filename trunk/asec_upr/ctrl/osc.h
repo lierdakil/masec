@@ -1,7 +1,7 @@
 #ifndef CTRL_OSC_H_
 #define CTRL_OSC_H_
 
-#include <gpib.h>
+#include <gpibctrl.h>
 #include <QString>
 #include <QByteArray>
 #include <QStringList>

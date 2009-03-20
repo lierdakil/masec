@@ -4,6 +4,7 @@
 QT -= gui
 TARGET = asec_gpib
 TEMPLATE = lib
+DESTDIR = ../build
 DEFINES += ASEC_GPIB_LIBRARY
 SOURCES += gpibctrl.cpp \
     gpibgenericexception.cpp \
@@ -14,7 +15,7 @@ HEADERS += gpibctrl.h \
     gpibgenericexception.h \
     gpibvisaexception.h \
     gpibidnexception.h \
-    gpibexceptions.h \
-    visa.h
+    gpibexceptions.h
 LIBS = -L../visa \
-    -lvisa
+    -lvisa32
+INCLUDEPATH += ../visa
