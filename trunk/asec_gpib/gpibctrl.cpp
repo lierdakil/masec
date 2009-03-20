@@ -1,6 +1,7 @@
 #include "gpibctrl.h"
 #include "gpibexceptions.h"
-
+#include "sleep.h"
+#define SLEEP_TIME 20
 
 GPIBctrl::GPIBctrl(QString GPIBID, QString IDN, int timeout)
 {
@@ -9,13 +10,13 @@ GPIBctrl::GPIBctrl(QString GPIBID, QString IDN, int timeout)
     err=viOpenDefaultRM(&defaultRM);
     if (err<VI_SUCCESS)
     {
-        throw GenericException("There was an error opening default RM session");
+        throw GPIBGenericException("There was an error opening default RM session");
     }
 
     err=viOpen(defaultRM, GPIBID.replace(",","::").append("::INSTR").toAscii().data(), VI_EXCLUSIVE_LOCK, 0, &did);//TODO: timeout?
     if (err<VI_SUCCESS)
     {
-        VISAException e(err,defaultRM);
+        GPIBVISAException e(err,defaultRM);
         viClose(defaultRM);
         throw e;
     }
@@ -23,7 +24,7 @@ GPIBctrl::GPIBctrl(QString GPIBID, QString IDN, int timeout)
     err=viClear(did);
     if (err<VI_SUCCESS)
     {
-        VISAException e(err,did);
+        GPIBVISAException e(err,did);
         viClose(did);
         viClose(defaultRM);
         throw e;
@@ -32,7 +33,7 @@ GPIBctrl::GPIBctrl(QString GPIBID, QString IDN, int timeout)
     err=viSetAttribute(did, VI_ATTR_TMO_VALUE, timeout);
     if (err<VI_SUCCESS)
     {
-        VISAException e(err,did);
+        GPIBVISAException e(err,did);
         viClose(did);
         viClose(defaultRM);
         throw e;
@@ -40,7 +41,7 @@ GPIBctrl::GPIBctrl(QString GPIBID, QString IDN, int timeout)
 
     try{
         write("*CLS");
-    } catch (VISAException e) {
+    } catch (GPIBVISAException e) {
         viClose(did);
         viClose(defaultRM);
         throw e;//rethrow
@@ -49,7 +50,7 @@ GPIBctrl::GPIBctrl(QString GPIBID, QString IDN, int timeout)
     QString _IDN;
     try {
         _IDN=query("*IDN?");
-    } catch (VISAException e) {
+    } catch (GPIBVISAException e) {
         viClose(did);
         viClose(defaultRM);
         throw e;//rethrow
@@ -59,7 +60,7 @@ GPIBctrl::GPIBctrl(QString GPIBID, QString IDN, int timeout)
     {
         viClose(did);
         viClose(defaultRM);
-        throw IDNException(GPIBID, _IDN, IDN);
+        throw GPIBIDNException(GPIBID, _IDN, IDN);
     }
 }
 
@@ -77,7 +78,7 @@ void GPIBctrl::write(QString string)
     msleep(SLEEP_TIME);
     ViStatus err=viWrite(did,ViBuf(str.toAscii().data()),str.length(), NULL);
     if(err<VI_SUCCESS)
-        throw VISAException(err,did);
+        throw GPIBVISAException(err,did);
 }
 
 QString GPIBctrl::read()
@@ -86,11 +87,11 @@ QString GPIBctrl::read()
     msleep(SLEEP_TIME);//If we read too fast, sometimes devices fail to answer in time
 
     char strres [256];
-    unsigned long actual=0;
+    ViUInt32 actual=0;
     ViStatus err=viRead(did,ViBuf(strres),256,&actual);
 
     if(err<VI_SUCCESS)
-        throw VISAException(err,did);
+        throw GPIBVISAException(err,did);
 
     strres[actual]=0;
 
@@ -109,11 +110,11 @@ QByteArray GPIBctrl::read_array(int maxlength)
     QMutexLocker m(&mutex);
     QByteArray res;
     res.resize(maxlength);
-    unsigned long len;
+    ViUInt32 len;
     msleep(SLEEP_TIME);
     ViStatus err = viRead(did,ViBuf(res.data()),maxlength,&len);
     if(err<VI_SUCCESS)
-        throw VISAException(err,did);
+        throw GPIBVISAException(err,did);
     res.resize(len);
     return res;
 }

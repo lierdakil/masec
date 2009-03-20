@@ -14,4 +14,7 @@ HEADERS += gpibctrl.h \
     gpibgenericexception.h \
     gpibvisaexception.h \
     gpibidnexception.h \
-    gpibexceptions.h
+    gpibexceptions.h \
+    visa.h
+LIBS = -L../visa \
+    -lvisa

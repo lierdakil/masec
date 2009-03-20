@@ -4,6 +4,7 @@
 #include "asec_gpib_global.h"
 
 #include <QString>
+#include <QtDebug>
 
 class ASEC_GPIBSHARED_EXPORT GPIBGenericException
 {
