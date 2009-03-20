@@ -19,10 +19,18 @@ public:
     ~GPIBctrl();
 
     void write(QString string);
-    QString read();
-    QString query(QString request);
 
-    QByteArray read_array(int maxlength);
+    QByteArray readArray(int maxlength);
+    QString readString();
+
+    QString queryString(QString request, QString preamble=QString());
+    float queryFloat(QString request, QString preamble=QString());
+    int queryInt(QString request, QString preamble=QString());
+
+    QStringList queryStringList(QString request, QChar separator, int count=0, QString preamble=QString());
+    QList<float> queryFloatList(QString request, QChar separator, int count=0, QString preamble=QString());
+    QList<int> queryIntList(QString request, QChar separator, int count=0, QString preamble=QString());
+    QVariantList queryVariantList(QString request, QChar separator, QString fmt, QString preamble=QString());
 };
 
 #endif // GPIBCTRL_H

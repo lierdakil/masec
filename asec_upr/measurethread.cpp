@@ -251,20 +251,13 @@ void MeasureThread::findresonance()
         draw_x(xmax2);
         cycles++;
         if(cycles>4)
-        {
-            error=true;
-            err_mesg=trUtf8("Could not acquire resonance qurve");
-            break;
-        }
+            throw GPIBGenericException(trUtf8("Could not acquire resonance qurve"));
     }
 
     for(int i=0; i<dat.count(); i++)
     {
         curve<<QPair<double,double>(k*i+ssf, dat[i]*k2);
     }
-
-    if(error)
-        return;
 
     gen->sweepoff();
 
@@ -337,17 +330,6 @@ void MeasureThread::findresonance()
 
 void MeasureThread::run()
 {
-    if (oscid.isEmpty() || genid.isEmpty() || mulid.isEmpty())
-    {
-        if(oscid.isEmpty())
-            qWarning()<<"Oscilloscope GPIB ID is empty";
-        if(genid.isEmpty())
-            qWarning()<<"Generator GPIB ID is empty";
-        if(mulid.isEmpty())
-            qWarning()<<"Multimeter GPIB ID is empty";
-        return;
-    }
-
     epsilon=0.1;
     fsf=startf;
     fff=stopf;
@@ -355,46 +337,45 @@ void MeasureThread::run()
     gen=0;
     vol=0;
     osc=0;
-    error=false;
 
     curve.clear();
 
     try{
+        //---------Main block-------------
+        if (oscid.isEmpty() || genid.isEmpty() || mulid.isEmpty())
+        {
+            if(oscid.isEmpty())
+                throw GPIBGenericException(trUtf8("Oscilloscope GPIB ID is empty"));
+            if(genid.isEmpty())
+                throw GPIBGenericException(trUtf8("Generator GPIB ID is empty"));
+            if(mulid.isEmpty())
+                throw GPIBGenericException(trUtf8("Multimeter GPIB ID is empty"));
+            return;
+        }
+
         gen = new genctrl(genid);
         vol = new volctrl(mulid);
         osc = new oscctrl(oscid);
+
         findresonance();
-    } catch (GPIBGenericException e) {
-        error=true;
-        err_mesg=e.report();
-    } catch(...) {
-        error=true;
-        err_mesg="Unexpected Exception";
-    }
 
-    delete gen;
-    delete vol;
-    delete osc;
-
-    if(!filename.isEmpty() && !error)
-    {
-        QFile f(filename);
-        f.open(QFile::WriteOnly);
-        QString buf;
-        for(int i=0;i<curve.count();i++)
+        if(!filename.isEmpty())
         {
-            buf.setNum(curve.at(i).first,'f',10);
-            f.write(buf.toAscii());
-            f.write("\t");
-            buf.setNum(curve.at(i).second,'f',10);
-            f.write(buf.toAscii());
-            f.write("\r\n");
+            QFile f(filename);
+            f.open(QFile::WriteOnly);
+            QString buf;
+            for(int i=0;i<curve.count();i++)
+            {
+                buf.setNum(curve.at(i).first,'f',10);
+                f.write(buf.toAscii());
+                f.write("\t");
+                buf.setNum(curve.at(i).second,'f',10);
+                f.write(buf.toAscii());
+                f.write("\r\n");
+            }
+            f.close();
         }
-        f.close();
-    }
 
-    if(!error)
-    {
         QStringList data;
         data<<QString("First run start freq, Hz:%1").arg(fsf);
         data<<QString("First run stop freq, Hz:%1").arg(fff);
@@ -405,10 +386,20 @@ void MeasureThread::run()
         data<<QString("Antiresonance freq, Hz:%1").arg(af);
         data<<QString("Antiresonance ampl, V:%1").arg(aa);
         emit finished(data);
-    } else {
+        //------END main block-------------------
+    } catch (GPIBGenericException e) {
         QStringList data;
         data<<QString("::ERROR::");
-        data<<err_mesg;
+        data<<e.report();
+        emit finished(data);
+    } catch(std::exception e) {
+        QStringList data;
+        data<<QString("::ERROR::");
+        data<<trUtf8("Caught unexpected exception %1").arg(e.what());
         emit finished(data);
     }
+
+    delete gen;
+    delete vol;
+    delete osc;
 }

@@ -23,6 +23,14 @@ void QMagnTimeline::wait(double sec, const char* member)
     QTimer::singleShot(int(1000*sec),this,member);
 }
 
+void QMagnTimeline::raiseError(QString message)
+{
+    is_running=false;
+    delete magn;
+    magn=0;
+    emit error(message);
+}
+
 void QMagnTimeline::start(float field /*kG*/)
 {
     try{
@@ -46,8 +54,9 @@ void QMagnTimeline::start(float field /*kG*/)
         magn->setField(field);
         wait(ramp_time,SLOT(rampdone()));
     }catch(GPIBGenericException e){
-        qDebug()<<e.report();
-        stop();
+        raiseError(e.report());
+    }catch(std::exception e) {
+        raiseError(QString("Caught unexpected exception '%1'").arg(e.what()));
     }
 }
 
@@ -55,15 +64,24 @@ void QMagnTimeline::draw_field()
 {
     if(!is_running)
         return;
-    drawtime=(clock()-startclock)/1000.0f;
-    emit newpoint(drawtime,magn->field());
-    QTimer::singleShot(int(1000*TIMESTEP),this,SLOT(draw_field()));
+
+    try {
+        drawtime=(clock()-startclock)/1000.0f;
+        emit newpoint(drawtime,magn->field());
+        QTimer::singleShot(int(1000*TIMESTEP),this,SLOT(draw_field()));
+    }catch(GPIBGenericException e){
+        raiseError(e.report());
+    }catch(std::exception e) {
+        raiseError(QString("Caught unexpected exception '%1'").arg(e.what()));
+    }
 }
 
 void QMagnTimeline::check_quench()
 {
-    if(is_running)
-    {
+    if(!is_running)
+        return;
+
+    try {
         if (magn->isQuench())
         {
             is_running=false;
@@ -73,40 +91,58 @@ void QMagnTimeline::check_quench()
         } else {
             QTimer::singleShot(int(1000*TIMESTEP),this,SLOT(check_quench()));
         }
+    }catch(GPIBGenericException e){
+        raiseError(e.report());
+    }catch(std::exception e) {
+        raiseError(QString("Caught unexpected exception '%1'").arg(e.what()));
     }
 }
 
 void QMagnTimeline::rampdone()
 {
-    if (is_running)
-    {
+    if (!is_running)
+        return;
+
+    try {
         if (magn->isRampDone())
             wait(TIMESTEP,SLOT(checkcurr()));
         else
             wait(TIMESTEP,SLOT(rampdone()));
-    } else {
-        emit stopped();
+    }catch(GPIBGenericException e){
+        raiseError(e.report());
+    }catch(std::exception e) {
+        raiseError(QString("Caught unexpected exception '%1'").arg(e.what()));
     }
 }
 
 void QMagnTimeline::checkcurr()
 {
     if(!is_running)
-    {
-        emit stopped();
-    } else if(fabs(magn->current()-magn->getSetCurrent())<=1) {//TODO: What is epsilon?
-        emit field_set(magn->getSetField(),magn->field(),(clock()-startclock)/60000.0f);
-        is_running=false;
-        delete magn;
-        magn=0;
-    } else {
-        wait(TIMESTEP,SLOT(checkcurr()));
+        return;
+
+    try {
+        if(stop_requested)
+        {
+            is_running=false;
+            delete magn;
+            magn=0;
+            emit stopped();
+        } else if(fabs(magn->current()-magn->getSetCurrent())<=1) {//TODO: What is epsilon?
+            emit field_set(magn->getSetField(),magn->field(),(clock()-startclock)/60000.0f);
+            is_running=false;
+            delete magn;
+            magn=0;
+        } else {
+            wait(TIMESTEP,SLOT(checkcurr()));
+        }
+    }catch(GPIBGenericException e){
+        raiseError(e.report());
+    }catch(std::exception e) {
+        raiseError(QString("Caught unexpected exception '%1'").arg(e.what()));
     }
 }
 
 void QMagnTimeline::stop()
 {
-    is_running=false;
-    delete magn;
-    magn=0;
+    stop_requested=true;
 }

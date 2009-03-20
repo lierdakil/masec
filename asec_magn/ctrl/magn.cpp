@@ -19,49 +19,50 @@ magnctrl::~magnctrl()
 
 void magnctrl::setField(float value)
 {
-	write(QString("SETF %1").arg(value));
+    write(QString("SETF %1").arg(value));
 }
 
 bool magnctrl::isRampDone()
 {
-	return (query("OPST?").toInt() & 2) == 2;
+    return (queryInt("OPST?") & 2) == 2;
 }
 
 float magnctrl::getSetField()
 {
-	return query("SETF?").toFloat();
+    return queryFloat("SETF?");
 }
 
 float magnctrl::getSetCurrent()
 {
-	return query("SETI?").toFloat();
+    return queryFloat("SETI?");
 }
 
 float magnctrl::field()
 {
-	return query("RDGI?").toFloat();
+    return queryFloat("RDGI?");
 }
 
 float magnctrl::current()
 {
-	return query("RDGI?").toFloat();
+    return queryFloat("RDGI?");
 }
 
 bool magnctrl::isQuench()
 {
-	return (query("ERST?").split(",").at(1).toInt() & 32) == 32;
+    //TODO: count
+    return (queryIntList("ERST?",',').at(1) & 32) == 32;
 }
 
 float magnctrl::flds()//in kG, yes?
 {
-	QStringList data=query("FLDS?").split(",");
-        //TODO: int units=data[0].toInt();
-	//TODO: check units, yes?
-	float value=data[1].toFloat();
-	return value;
+    QVariantList data=queryVariantList("FLDS?",',',"int,float");
+    //TODO: int units=data[0].toInt();
+    //TODO: check units, yes?
+    float value=data[1].toDouble();
+    return value;
 }
 
 float magnctrl::rate()
 {
-	return query("RATE?").toFloat();
+    return queryFloat("RATE?");
 }

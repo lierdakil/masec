@@ -1,6 +1,8 @@
 #ifndef GPIBVISAEXCEPTION_H
 #define GPIBVISAEXCEPTION_H
 
+#include "asec_gpib_global.h"
+
 #include "gpibgenericexception.h"
 #include <visa.h>
 

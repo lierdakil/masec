@@ -33,10 +33,10 @@ private slots:
 
 public slots:
     void temp_set();
-    void timedout();
     void stopped();
     void fix_range();
     void newpoint(float time, float temp, float setpoint);
+    void error(QString message);
     void set_temp_zone(double temp, double ramp, double timeout);
 signals:
     void finished(QStringList data);
