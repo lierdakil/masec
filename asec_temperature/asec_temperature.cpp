@@ -44,8 +44,8 @@ vib_temperature::vib_temperature(QWidget *parent)
 
         ui.nlT->setProperty("value",temp.temp());
         ui.sbNewT_test->setValue(temp.getsetp());
-    } catch (GenericException e) {
-        qDebug()<<e.Report();
+    } catch (GPIBGenericException e) {
+        qDebug()<<e.report();
     }
 }
 

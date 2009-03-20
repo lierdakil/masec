@@ -4,7 +4,8 @@
 #include "asec_gpib_global.h"
 
 #include <QtCore>
-#include "visa.h"
+#include <visa.h>
+#include "gpibexceptions.h"
 
 class ASEC_GPIBSHARED_EXPORT GPIBctrl {
 public:

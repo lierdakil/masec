@@ -45,8 +45,8 @@ void QMagnTimeline::start(float field /*kG*/)
 
         magn->setField(field);
         wait(ramp_time,SLOT(rampdone()));
-    }catch(GenericException e){
-        qDebug()<<e.Report();
+    }catch(GPIBGenericException e){
+        qDebug()<<e.report();
         stop();
     }
 }

@@ -357,14 +357,16 @@ void MeasureThread::run()
     osc=0;
     error=false;
 
+    curve.clear();
+
     try{
         gen = new genctrl(genid);
         vol = new volctrl(mulid);
         osc = new oscctrl(oscid);
         findresonance();
-    } catch (GenericException e) {
+    } catch (GPIBGenericException e) {
         error=true;
-        err_mesg=e.Report();
+        err_mesg=e.report();
     } catch(...) {
         error=true;
         err_mesg="Unexpected Exception";

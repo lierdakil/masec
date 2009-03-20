@@ -78,8 +78,8 @@ void settings::read_settings()
                 this->findChild<QDoubleSpinBox*>(QString("sbTime_%1").arg(n))->setValue(time);
             }
         }
-    } catch (GenericException e) {
-        qDebug()<<e.Report();
+    } catch (GPIBGenericException e) {
+        qDebug()<<e.report();
         return;
     }
 }

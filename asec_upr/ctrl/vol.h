@@ -1,8 +1,8 @@
 #ifndef CTRL_VOL_H_
 #define CTRL_VOL_H_
 
-#include "gpib.h"
 #include <QStringList>
+#include <gpibctrl.h>
 
 class volctrl: public GPIBctrl
 {

@@ -1,7 +1,7 @@
 #ifndef CTRL_GEN_H_
 #define CTRL_GEN_H_
 
-#include "gpib.h"
+#include <gpibctrl.h>
 
 class genctrl: public GPIBctrl
 {
