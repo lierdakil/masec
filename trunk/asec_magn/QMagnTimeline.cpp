@@ -45,6 +45,7 @@ void QMagnTimeline::start(float field /*kG*/)
         time=0;
         drawtime=0;
         is_running=true;
+        stop_requested=false;
 
         QTimer::singleShot(int(1000*TIMESTEP),this,SLOT(draw_field()));
         QTimer::singleShot(int(1000*TIMESTEP),this,SLOT(check_quench()));
