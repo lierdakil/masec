@@ -3,7 +3,7 @@
 
 #include <QtGui>
 #include <QtCore>
-#include <QErrorMessage>
+//#include <QErrorMessage>
 #include <QTimer>
 #include "ui_asec_control.h"
 #include "scriptthread.h"
