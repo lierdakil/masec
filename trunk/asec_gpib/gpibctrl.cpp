@@ -100,8 +100,6 @@ QByteArray GPIBctrl::readArray(int maxlength)
 
 QString GPIBctrl::readString()
 {
-    QMutexLocker m(&mutex);
-
     QString res;
     QByteArray buf;
     do{
@@ -110,7 +108,7 @@ QString GPIBctrl::readString()
     } while(buf.count()==256 && buf[buf.length()-1]!='\n');
 
     //We do not want terminator
-    res.chop(res.length()-1);
+    res.chop(1);
 
     return res;
 }
