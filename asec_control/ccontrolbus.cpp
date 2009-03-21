@@ -113,10 +113,19 @@ void CControlBus::stop(bool *success)
 		}
 	}
 
-	reply_wait.quit();
+        //TODO: a race condition is very much possible here!
+        if(reply_wait!=NULL)
+            if(reply_wait->isRunning())
+                reply_wait->quit();
 
 	stopped=true;
 	*success=true;
+}
+
+void CControlBus::reply_call(QStringList values)
+{
+    reply=values;
+    reply_wait->quit();
 }
 
 bool CControlBus::call(QString function, QString service, QList<QScriptValue> arguments)
@@ -173,6 +182,12 @@ bool CControlBus::call(QString function, QString service, QList<QScriptValue> ar
 
 	reply.clear();
 
+        //creates event loop which will wait for reply from
+        //flow interface
+        if(reply_wait==NULL)
+            reply_wait=new QEventLoop(this);
+        //should we throw error if loop already initialized?
+
 	//connect signal of finishing called module to handler of this
 	connect(&flow,SIGNAL(finished(QStringList)),this,SLOT(reply_call(QStringList)));
 
@@ -190,7 +205,15 @@ bool CControlBus::call(QString function, QString service, QList<QScriptValue> ar
 		return false;
 	}
 
-	reply_wait.exec();//Run local event loop
+        reply_wait->exec();//Run local event loop
+        reply_wait->quit();
+
+        //after event loop finished, we do not need it anymore
+        QEventLoop *ptemp=reply_wait;
+        reply_wait=0;
+        delete ptemp;
+        //Cheat with temporary holder is used in order to signalize
+        //other threads and to avoid race conditions
 
 	//since local event loop finished, reply is here, so disconect
 	disconnect(&flow,SIGNAL(finished(QStringList)),this,SLOT(reply_call(QStringList)));
