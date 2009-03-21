@@ -39,7 +39,7 @@ float magnctrl::getSetCurrent()
 
 float magnctrl::field()
 {
-    return queryFloat("RDGI?");
+    return queryFloat("RDGF?");
 }
 
 float magnctrl::current()

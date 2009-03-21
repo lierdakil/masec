@@ -23,6 +23,7 @@ public slots:
 	void field_set(float reqfield, float field, float settime/*minutes*/);//field reached requested value
 	//void stopped();//stopped by user
 	void quench();//achtung! quench detected!
+        void error(QString message);
 	void newpoint(float time, float field);//used to draw points
 	void on_edGPID_returnPressed();
         void on_btSetField_clicked();
