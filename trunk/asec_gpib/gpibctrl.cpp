@@ -212,7 +212,7 @@ QVariantList GPIBctrl::queryVariantList(QString request, QChar separator, QStrin
             res<<item;
         } else if(fmtlist.at(i)=="float") {
             bool ok;
-            int item = list.at(i).toInt(&ok);
+            float item = list.at(i).toFloat(&ok);
             if(!ok)
                 throw GPIBInvalidReplyException(request,list.join(separator),QString("Variant list of '%1' format").arg(fmt));
             res<<item;
