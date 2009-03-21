@@ -31,7 +31,7 @@ private:
 	QString last_call;
 	QMutex file_mutex;
 	QMutex result_row_mutex;
-	QEventLoop reply_wait;
+        QEventLoop *reply_wait;
 	QStringList reply;
 
 signals:
@@ -61,11 +61,7 @@ public:
         bool is_unrecoverable;
 
 public slots:
-	void reply_call(QStringList values)
-	{
-		reply=values;
-		reply_wait.quit();
-	}
+        void reply_call(QStringList values);
 };
 
 #endif /* VIB_CONTROL_ADAPTOR_H_ */
