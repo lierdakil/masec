@@ -47,13 +47,13 @@ void oscctrl::wait(QString state)
     do
     {
         //sleep?
-    } while ( queryString("TRIG:STATE?",":TRIG:STATE") != state );
+    } while ( queryString("TRIG:STATE?",":TRIGGER:STATE") != state );
 }
 
 
 double oscctrl::getch1()
 {
-    return queryFloat("CH1:VOL?",":CH1:VOL");
+    return queryFloat("CH1:VOL?",":CH1:VOLTS");
 }
 
 void oscctrl::setch1(double vol)
