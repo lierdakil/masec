@@ -14,23 +14,23 @@
 
 class QFuncInitBuilder : public QMethodFetcher
 {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
-	QString init;
-	QString method_name;
-	QString method_args;
-	QString method_type;
-	QString object;
-	int method_args_count;
-	QString code;
+    QString init;
+    QString method_name;
+    QString method_args;
+    QString method_type;
+    QString object;
+    int method_args_count;
+    QString code;
 
-	QFuncInitBuilder(QString service);
-	~QFuncInitBuilder();
+    QFuncInitBuilder(QString service);
+    ~QFuncInitBuilder();
 
 protected:
-	void new_method(QString name, int argcount);
-	void new_arg(QString name, QString type, QString direction);
+    void new_method(QString name, int argcount);
+    void new_arg(QString name, QString type, QString direction);
 };
 
 #endif /* QFUNCINITBUILDER_H_ */
