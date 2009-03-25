@@ -16,6 +16,7 @@ SOURCES += QMagnTimeline.cpp \
 FORMS += asec_magn.ui
 RESOURCES += 
 INCLUDEPATH += ../asec_gpib \
-        ../visa
+        ../visa \
+        /usr/include
 LIBS += -L../build \
     -lasec_gpib

@@ -14,7 +14,8 @@ QMagnTimeline::QMagnTimeline() {
 }
 
 QMagnTimeline::~QMagnTimeline() {
-
+    is_running=false;
+    delete magn;
 }
 
 void QMagnTimeline::wait(double sec, const char* member)
@@ -26,15 +27,20 @@ void QMagnTimeline::wait(double sec, const char* member)
 void QMagnTimeline::raiseError(QString message)
 {
     is_running=false;
-    delete magn;
+    magnctrl* tmp=magn;
     magn=0;
+    delete tmp;
     emit error(message);
 }
 
 void QMagnTimeline::start(float field /*kG*/)
 {
     try{
-        magn=new magnctrl(qApp->property("magnid").toString());
+        if(magn==0)
+        {
+            magn=new magnctrl(qApp->property("magnid").toString());
+            QTimer::singleShot(int(1000*TIMESTEP),this,SLOT(check_quench()));
+        }
 
         float current_old = magn->getSetCurrent(); //Amper
         float ramp_rate = magn->rate(); //Amper per second
@@ -48,7 +54,6 @@ void QMagnTimeline::start(float field /*kG*/)
         stop_requested=false;
 
         QTimer::singleShot(int(1000*TIMESTEP),this,SLOT(draw_field()));
-        QTimer::singleShot(int(1000*TIMESTEP),this,SLOT(check_quench()));
 
         startclock=clock();
 
@@ -79,15 +84,13 @@ void QMagnTimeline::draw_field()
 
 void QMagnTimeline::check_quench()
 {
-    if(!is_running)
+    if (magn==0)
         return;
 
     try {
         if (magn->isQuench())
         {
             is_running=false;
-            delete magn;
-            magn=0;
             emit quench();
         } else {
             QTimer::singleShot(int(1000*TIMESTEP),this,SLOT(check_quench()));
@@ -125,14 +128,10 @@ void QMagnTimeline::checkcurr()
         if(stop_requested)
         {
             is_running=false;
-            delete magn;
-            magn=0;
             emit stopped();
         } else if(fabs(magn->current()-magn->getSetCurrent())<=1) {//TODO: What is epsilon?
             emit field_set(magn->getSetField(),magn->field(),(clock()-startclock)/60000.0f);
             is_running=false;
-            delete magn;
-            magn=0;
         } else {
             wait(TIMESTEP,SLOT(checkcurr()));
         }

@@ -50,6 +50,7 @@ CControlBus::CControlBus(QString log_file_name, QString description, QString cod
     for(int k=0;k<list.count();++k)
     {
         QDBusInterface iface(list.value(k),"/","ru.pp.livid.asec.help");
+
         if (iface.isValid())
         {
             description+=" * "+list.value(k)+"\n";
@@ -57,6 +58,14 @@ CControlBus::CControlBus(QString log_file_name, QString description, QString cod
             if(reply.isValid())
                 description+=" * "+reply.value().replace("\n","\n * ")+"\n";
         }
+
+        QDBusInterface* flow=new QDBusInterface(list.value(k),"/","ru.pp.livid.asec.flow");
+        if(flow->isValid())
+        {
+            flow_interfaces << flow;
+            connect(flow,SIGNAL(critical(QString,QString)),SLOT(critical_call(QString,QString)));
+        } else
+            delete flow;
     }
 
 
@@ -75,6 +84,11 @@ CControlBus::~CControlBus()
         bool success;
         stop(&success);
     }
+
+    foreach(QDBusInterface* flow, flow_interfaces)
+        delete flow;
+
+    //TODO: diconnect critical?
     QMutexLocker locker(&file_mutex);
     QMutexLocker locker_result(&result_row_mutex);
     // Закрыть файл, вычистить все лишнее и тд и тп.
@@ -102,15 +116,12 @@ void CControlBus::stop(bool *success)
         return;
     }
 
-    QStringList list = QDBusConnection::sessionBus().interface()->registeredServiceNames().value().filter(QRegExp("^ru.pp.livid.asec.(.*)"));
-    //for each service in list
-    for(int k=0;k<list.count();++k)
+    //for each registered flow interface
+    foreach(QDBusInterface* flow, flow_interfaces)
     {
-        QDBusInterface iface(list.at(k),"/","ru.pp.livid.asec.flow");
-
-        if(iface.isValid())
+        if(flow->isValid())
         {
-            iface.call("stop");
+            flow->call("stop");
         }
     }
 
@@ -122,13 +133,28 @@ void CControlBus::stop(bool *success)
     *success=true;
 }
 
+bool CControlBus::is_stopped()
+{
+    return stopped;
+}
+
 void CControlBus::reply_call(QStringList values)
 {
     reply=values;
     reply_wait->quit();
 }
 
-bool CControlBus::call(QString function, QString service, QList<QScriptValue> arguments)
+void CControlBus::critical_call(QString module, QString message)
+{
+    QStringList reply_t;
+    reply_t<<"::ERROR::";
+    reply_t<<tr("There was critical error in module %1 with message '%2'").arg(module,message);
+    reply_t<<"::UNRECOVERABLE::";
+    reply=reply_t;
+    reply_wait->quit();
+}
+
+int CControlBus::call(QString function, QString service, QList<QScriptValue> arguments)
 {
     /* Сделать сброс result_row в выходной файл по условию вызова
          * установочного модуля после измерительного, очистка, сигнал
@@ -138,13 +164,12 @@ bool CControlBus::call(QString function, QString service, QList<QScriptValue> ar
          */
 
     stopped=false;
-    is_unrecoverable=false;//reset unrecoverable flag
 
     //Don;t call if data_file=0, throw error.
     if (data_file==NULL)
     {
         emit call_error(trUtf8("Experiment was not started or stopped before end of script!"));
-        return false;
+        return R_CALL_ERROR;
     }
 
     file_mutex.lock();
@@ -161,18 +186,30 @@ bool CControlBus::call(QString function, QString service, QList<QScriptValue> ar
 
     //читаем список функций на интерфейсе exports
     QDBusInterface exports(service,"/","ru.pp.livid.asec.exports");
-    QDBusInterface flow(service,"/","ru.pp.livid.asec.flow");
+    QDBusInterface* flow=0;
+    //find corresponding flow interface among registered
+    foreach(QDBusInterface* flow_i, flow_interfaces)
+    {
+        if(flow_i->isValid() && flow_i->service()==service)
+            flow=flow_i;
+    }
+
+    if(flow==0)//No corresponding flow interface found
+    {
+        emit call_error(tr("Unable to find flow interface on %1").arg(service));
+        return R_CALL_ERROR;
+    }
 
     if(exports.lastError().isValid())
     {
         emit call_error(exports.lastError().message());
-        return false;
+        return R_CALL_ERROR;
     }
 
-    if(flow.lastError().isValid())
+    if(flow->lastError().isValid())
     {
-        emit call_error(flow.lastError().message());
-        return false;
+        emit call_error(flow->lastError().message());
+        return R_CALL_ERROR;
     }
 
     QVariantList argumentlist;
@@ -183,12 +220,16 @@ bool CControlBus::call(QString function, QString service, QList<QScriptValue> ar
     reply.clear();
 
     //connect signal of finishing called module to handler of this
-    connect(&flow,SIGNAL(finished(QStringList)),this,SLOT(reply_call(QStringList)));
-
-    if(flow.lastError().isValid())
+    if(!connect(flow,SIGNAL(finished(QStringList)),this,SLOT(reply_call(QStringList))))
     {
-        emit call_error(flow.lastError().message());
-        return false;
+        emit call_error(tr("Could not connect reply_call"));
+        return R_CALL_ERROR;
+    }
+
+    if(flow->lastError().isValid())
+    {
+        emit call_error(flow->lastError().message());
+        return R_CALL_ERROR;
     }
 
     exports.callWithArgumentList(QDBus::NoBlock,function,argumentlist);
@@ -196,7 +237,7 @@ bool CControlBus::call(QString function, QString service, QList<QScriptValue> ar
     if(exports.lastError().isValid())
     {
         emit call_error(exports.lastError().message());
-        return false;
+        return R_CALL_ERROR;
     }
 
     //creates event loop which will wait for reply from
@@ -215,19 +256,24 @@ bool CControlBus::call(QString function, QString service, QList<QScriptValue> ar
     //other threads and to avoid race conditions
 
     //since local event loop finished, reply is here, so disconect
-    disconnect(&flow,SIGNAL(finished(QStringList)),this,SLOT(reply_call(QStringList)));
+    //TODO: does it really disconnect here?
+    if(!disconnect(flow,SIGNAL(finished(QStringList)),this,SLOT(reply_call(QStringList))))
+    {
+        emit call_error(tr("Could not disconnect reply_call"));
+        return R_CALL_ERROR;
+    }
 
     //Check if loop was stopped by user
     if(stopped)
     {
-        return false;
+        return R_CALL_STOPPED;
     }
 
     //Check if we received error in results' stead
     if (reply.count()==0)
     {
         emit call_error(trUtf8("Empty reply received!"));
-        return false;
+        return R_CALL_ERROR;
     }
 
     if (reply.at(0)=="::ERROR::")
@@ -235,8 +281,9 @@ bool CControlBus::call(QString function, QString service, QList<QScriptValue> ar
         emit call_error(reply.at(1));
         if(reply.count()>=3)//since it's an optional parameter
             if(reply.at(2)=="::UNRECOVERABLE::")
-                is_unrecoverable=true;
-        return false;
+                return R_CALL_ERROR_UNRECOVERABLE;
+        //else if not unrecoverable
+        return R_CALL_ERROR;
     }
 
     //Сохренение материала из возвращенного значения в result_row
@@ -246,7 +293,7 @@ bool CControlBus::call(QString function, QString service, QList<QScriptValue> ar
 
     last_call=function.left(function.indexOf('_'));
 
-    return true;
+    return R_CALL_SUCCESS;
 }
 
 QString CControlBus::init_functions(bool *success)
@@ -296,8 +343,10 @@ QString CControlBus::get_help(QString item,bool *success)
         *success=true;
         return trUtf8(
                 "<p><b>Краткая информация о скриптовом языке</b></p>"
-                "<p>Код следует синтаксису ECMAScript. Microsoft JScript и различные реализации JavaScript так же следуют этому стандарту.</p>"
-                "<p>В целом синтаксис схож с синтаксисом C++. Объявление переменных производится оператором <span style=\" font-weight:600;\">var</span>:</p>"
+                "<p>Код следует синтаксису ECMAScript. Microsoft JScript и различные реализации"
+                "JavaScript так же следуют этому стандарту.</p>"
+                "<p>В целом синтаксис схож с синтаксисом C++. Объявление переменных производится"
+                "оператором <span style=\" font-weight:600;\">var</span>:</p>"
                 "<p><code>var i;</code></p>"
                 "<p>Циклы строятся по полной аналогии с C++:</p>"
                 "<p><code>"

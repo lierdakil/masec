@@ -21,58 +21,56 @@
 #include "qhelpindexbuilder.h"
 #include "qfuncinitbuilder.h"
 
+//CControlBus::call return codes
+#define R_CALL_SUCCESS 0
+#define R_CALL_STOPPED 1
+#define R_CALL_ERROR 2
+#define R_CALL_ERROR_UNRECOVERABLE 3
+
 class CControlBus : public QObject
 {
-	Q_OBJECT
+    Q_OBJECT
 
 private:
-	QStringList result_row;
-	QFile *data_file;
-	QString last_call;
-	QMutex file_mutex;
-	QMutex result_row_mutex;
-        QEventLoop *reply_wait;
-	QStringList reply;
+    QStringList result_row;
+    QFile *data_file;
+    QString last_call;
+    QMutex file_mutex;
+    QMutex result_row_mutex;
+    QEventLoop *reply_wait;
+    QStringList reply;
+    QList<QDBusInterface*> flow_interfaces;
+    bool stopped;
 
 signals:
-        void new_row(QStringList row);//TODO: Obsolete
-	void bus_error(QString error);
-	void call_error(QString error);
+    void new_row(QStringList row);//TODO: Obsolete
+    void bus_error(QString error);
+    void call_error(QString error);
 
 public:
-	//common name: ru.pp.livid.asec.* ; interface: ru.pp.livid.asec.exports
+    //common name: ru.pp.livid.asec.* ; interface: ru.pp.livid.asec.exports
 
-	CControlBus(QString log_file_name, QString description, QString code,  bool *success);
-	~CControlBus();
+    CControlBus(QString log_file_name, QString description, QString code,  bool *success);
+    ~CControlBus();
 
-	//QScript adaptor
-	QString init_functions(bool *success);
+    //QScript adaptor
+    QString init_functions(bool *success);
 
-	//Help functions
-	static QString get_help(QString item, bool *success);
-	static QStringList build_help_index(bool *success);
+    //Help functions
+    static QString get_help(QString item, bool *success);
+    static QStringList build_help_index(bool *success);
 
-	//Flow functions
-	bool call(QString function, QString service, QList<QScriptValue> arguments);
-	void stop(bool *success);//To be called from another thread
+    //Flow functions
+    int call(QString function, QString service, QList<QScriptValue> arguments);
+    void stop(bool *success);//To be called from another thread
 
-	bool is_paused;
-	bool stopped;
-        bool is_unrecoverable;
+    bool is_stopped();
+    bool is_paused; //This variable is used as an invariant between static ScriptThread::call()
+    //and ScriptThread::resume()
 
 public slots:
-        void reply_call(QStringList values);
+    void reply_call(QStringList values);
+    void critical_call(QString module, QString message);
 };
 
 #endif /* VIB_CONTROL_ADAPTOR_H_ */
-
-/* Пришел в голову такой вопрос: может, имеет смысл табнуть строки,
- * меньшие по длине, с начала?
- * Будут ли столбцы соблюдаться?
- * Пример: I от H, T
- * 	H	T	I
- * 		T	I
- * 		T	I
- * ...
- * В общем случае, наверное, не будут... но самый разумный код говорит что будут...
- */
