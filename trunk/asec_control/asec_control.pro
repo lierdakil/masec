@@ -16,7 +16,7 @@ HEADERS += qfuncinitbuilder.h \
 SOURCES += qfuncinitbulder.cpp \
     qhelpindexbuilder.cpp \
     qmethodfetcher.cpp \
-    scripthread.cpp \
+    scriptthread.cpp \
     ccontrolbus.cpp \
     numberedtextview.cpp \
     main.cpp \

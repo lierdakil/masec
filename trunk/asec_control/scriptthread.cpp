@@ -21,30 +21,31 @@ QScriptValue ScriptThread::call(QScriptContext *context, QScriptEngine *engine)
 
     bus->is_paused=false;
 
-
-    bool success;
+    int call_result;
 
     //while call has not returned without error
     do
     {
-        success=bus->call(name,service,list);
-        
-        if(success)
-            break;
-        //pause execution
-        bus->is_paused=true;
-        do //wait until execution is resumed
+        call_result=bus->call(name,service,list);
+
+        if(call_result==R_CALL_ERROR)
         {
-            //if user called stopped(), then stop execution
-            //or if bus->call returned false because of it
-            if(bus->stopped)
-                return context->throwError("Stopped by User");
-            if(bus->is_unrecoverable)
-                return context->throwError("There was an unrecoverable error!");
-            //don't eat up all the resources
-            sleep(1);//second
-        } while(bus->is_paused);
-    } while (!success);
+            //pause execution
+            bus->is_paused=true;
+            do //wait until execution is resumed
+            {
+                //if user called stopped(), then stop execution
+                if(bus->is_stopped())
+                    return context->throwError("Stopped by User");
+                //don't eat up all the resources
+                sleep(1);//second
+            } while(bus->is_paused);
+        }
+        else if(call_result==R_CALL_ERROR_UNRECOVERABLE)
+            return context->throwError("There was an unrecoverable error!");
+        else if(call_result==R_CALL_STOPPED)
+            return context->throwError("Stopped by User");
+    } while (call_result!=R_CALL_SUCCESS);
 
     return QScriptValue();
 }
@@ -95,7 +96,10 @@ void ScriptThread::run()
     disconnect(bus,SIGNAL(bus_error(QString)), this, SIGNAL(error(QString)));
     disconnect(bus,SIGNAL(call_error(QString)), this, SIGNAL(error(QString)));
     disconnect(bus,SIGNAL(call_error(QString)), this, SIGNAL(paused()));
-    delete bus;
+
+    CControlBus *bus_tmp=bus;
+    bus=0;
+    delete bus_tmp;
 }
 
 /* ATTENTION: ScriptThread::stop() is called from GUI thread,
@@ -104,7 +108,8 @@ void ScriptThread::run()
 void ScriptThread::stop()
 {
     bool success=true;
-    bus->stop(&success);
+    if(bus!=0)
+        bus->stop(&success);
 }
 
 /* ATTENTION: ScriptThread::resume() is called from GUI thread,
@@ -112,6 +117,6 @@ void ScriptThread::stop()
  */
 void ScriptThread::resume()
 {
-    bus->is_paused=false;
+    if(bus!=0)
+        bus->is_paused=false;
 }
-
