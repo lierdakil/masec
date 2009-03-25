@@ -20,6 +20,7 @@ asec_magn::asec_magn(QWidget *parent)
     connect(&magn_timer,SIGNAL(field_set(float,float,float)),this,SLOT(field_set(float,float,float)));
     connect(&magn_timer,SIGNAL(quench()),this,SLOT(quench()));
     connect(&magn_timer,SIGNAL(newpoint(float,float)),this,SLOT(newpoint(float,float)));
+    connect(&magn_timer,SIGNAL(error(QString)),this,SLOT(error(QString)));
 
     QSettings f("settings.ini",QSettings::IniFormat);
     QString GPID = f.value("GPIB/magnid","").toString();
@@ -95,4 +96,12 @@ void asec_magn::quench()
     //emit finished(data);
     emit critical(qApp->applicationName(),tr("Magnet quench detected!"));
     QErrorMessage::qtHandler()->showMessage(trUtf8("Quench detected!"));
+}
+
+void asec_magn::error(QString message)
+{
+    QStringList data;
+    data<<QString("::ERROR::");
+    data<<message;
+    emit finished(data);
 }
