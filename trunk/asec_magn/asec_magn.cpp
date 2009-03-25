@@ -39,7 +39,11 @@ asec_magn::~asec_magn()
 void asec_magn::on_edGPID_returnPressed()
 {
     QString GPID = ui.edGPID->text();
-    qApp->setProperty("magnid",GPID);
+    if(GPID!=qApp->property("magnid"))
+    {
+        qApp->setProperty("magnid",GPID);
+        magn_timer.ID_changed();
+    }
 }
 
 void asec_magn::on_btSetField_clicked()
@@ -83,10 +87,12 @@ void asec_magn::field_set(float reqfield, float field, float settime/*minutes*/)
 
 void asec_magn::quench()
 {
-    QStringList data;
-    data<<QString("::ERROR::");
-    data<<trUtf8("Magnet quench detected!");
-    data<<QString("::UNRECOVERABLE::");
-    emit finished(data);
+    //---OBSOLETE-------
+    //QStringList data;
+    //data<<QString("::ERROR::");
+    //data<<trUtf8("Magnet quench detected!");
+    //data<<QString("::UNRECOVERABLE::");
+    //emit finished(data);
+    emit critical(qApp->applicationName(),tr("Magnet quench detected!"));
     QErrorMessage::qtHandler()->showMessage(trUtf8("Quench detected!"));
 }

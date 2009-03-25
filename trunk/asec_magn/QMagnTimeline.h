@@ -21,37 +21,38 @@
 
 class QMagnTimeline : public QObject
 {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
-	QMagnTimeline();
-	~QMagnTimeline();
+    QMagnTimeline();
+    ~QMagnTimeline();
 
 private:
-	double time,drawtime;//minutes
-	int startclock;
-        bool is_running;
-        bool stop_requested;
-        magnctrl *magn;
+    double time,drawtime;//minutes
+    int startclock;
+    bool is_running;
+    bool stop_requested;
+    magnctrl *magn;
 
-	void wait(double sec, const char* member);
-        void raiseError(QString message);
+    void wait(double sec, const char* member);
+    void raiseError(QString message);
 
 public slots:
-	void start(float field);//start field setting
-	void draw_field();//emit newpoint in separate event thread
-	void check_quench();//check if magnet quenched
-	void rampdone();//first we wait until ramp is done
-	void checkcurr();//now we check every TIMESTEP while current is at requested level
-	//if it is, return field_set
-	void stop();//stop
+    void start(float field);//start field setting
+    void draw_field();//emit newpoint in separate event thread
+    void check_quench();//check if magnet quenched
+    void rampdone();//first we wait until ramp is done
+    void checkcurr();//now we check every TIMESTEP while current is at requested level
+    //if it is, return field_set
+    void stop();//stop
+    void ID_changed();
 
 signals:
-	void field_set(float reqfield, float field, float settime/*minutes*/);//field reached requested value
-	void stopped();//stopped by user
-	void quench();//achtung! quench detected!
-        void error(QString message);//An ordianry error
-	void newpoint(float time, float field);//used to draw points
+    void field_set(float reqfield, float field, float settime/*minutes*/);//field reached requested value
+    void stopped();//stopped by user
+    void quench();//achtung! quench detected!
+    void error(QString message);//An ordianry error
+    void newpoint(float time, float field);//used to draw points
 };
 
 #endif /* QMAGNTIMELINE_H_ */

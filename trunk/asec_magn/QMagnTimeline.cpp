@@ -33,6 +33,12 @@ void QMagnTimeline::raiseError(QString message)
     emit error(message);
 }
 
+void QMagnTimeline::ID_changed()
+{
+    if(magn!=0 || is_running)
+        raiseError(tr("GPID changed!"));
+}
+
 void QMagnTimeline::start(float field /*kG*/)
 {
     try{
