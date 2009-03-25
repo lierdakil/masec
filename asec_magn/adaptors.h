@@ -38,6 +38,7 @@ public slots:
     void stop();
 signals:
     void finished(QStringList data);
+    void critical(QString module, QString message);
 };
 
 class help_adaptor : public QDBusAbstractAdaptor
