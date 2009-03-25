@@ -12,7 +12,7 @@ GPIBctrl::GPIBctrl(QString GPIBID, QString IDN, int timeout)
         throw GPIBGenericException("There was an error opening default RM session");
     }
 
-    err=viOpen(defaultRM, GPIBID.replace(",","::").append("::INSTR").toAscii().data(), VI_EXCLUSIVE_LOCK, 0, &did);//TODO: timeout?
+    err=viOpen(defaultRM, GPIBID.replace(",","::").append("::INSTR").toAscii().data(), VI_EXCLUSIVE_LOCK, 0, &did);
     if (err<VI_SUCCESS)
     {
         GPIBVISAException e(err,defaultRM);

@@ -49,14 +49,13 @@ float magnctrl::current()
 
 bool magnctrl::isQuench()
 {
-    //TODO: count
     return (queryIntList("ERST?",',').at(1) & 32) == 32;
 }
 
 float magnctrl::flds()//in kG, yes?
 {
     QVariantList data=queryVariantList("FLDS?",',',"int,float");
-    //TODO: int units=data[0].toInt();
+    //int units=data[0].toInt();
     //TODO: check units, yes?
     float value=data[1].toDouble();
     return value;
