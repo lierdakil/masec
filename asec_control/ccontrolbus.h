@@ -35,7 +35,7 @@ private:
 	QStringList reply;
 
 signals:
-	void new_row(QStringList row);
+        void new_row(QStringList row);//TODO: Obsolete
 	void bus_error(QString error);
 	void call_error(QString error);
 
