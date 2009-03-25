@@ -11,8 +11,7 @@ class ASEC_GPIBSHARED_EXPORT GPIBctrl {
 public:
     private:
     ViSession defaultRM, did;
-    QMutex mutex;//TODO: o_O When I make it static pointer, compilation fails
-    //TODO: Make mutex at least process-wise... somehow...
+    QMutex mutex;
 
 public:
     GPIBctrl(QString GPIBID, QString IDN, int timeout=5000);

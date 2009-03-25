@@ -114,7 +114,6 @@ void CControlBus::stop(bool *success)
         }
     }
 
-    //TODO: a race condition is very much possible here!
     if(reply_wait!=NULL)
         if(reply_wait->isRunning())
             reply_wait->quit();
@@ -183,12 +182,6 @@ bool CControlBus::call(QString function, QString service, QList<QScriptValue> ar
 
     reply.clear();
 
-    //creates event loop which will wait for reply from
-    //flow interface
-    if(reply_wait==NULL)
-        reply_wait=new QEventLoop(this);
-    //should we throw error if loop already initialized?
-
     //connect signal of finishing called module to handler of this
     connect(&flow,SIGNAL(finished(QStringList)),this,SLOT(reply_call(QStringList)));
 
@@ -205,6 +198,12 @@ bool CControlBus::call(QString function, QString service, QList<QScriptValue> ar
         emit call_error(exports.lastError().message());
         return false;
     }
+
+    //creates event loop which will wait for reply from
+    //flow interface
+    if(reply_wait==NULL)
+        reply_wait=new QEventLoop(this);
+    //should we throw error if loop already initialized?
 
     reply_wait->exec();//Run local event loop
 

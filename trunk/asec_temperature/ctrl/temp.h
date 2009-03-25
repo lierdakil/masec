@@ -36,6 +36,4 @@ public:
 	void rst();
 };
 
-//TODO: many error handlers
-
 #endif /*CTRL_TEMP_H_*/

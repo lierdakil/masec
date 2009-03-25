@@ -64,6 +64,7 @@ void asec_magn::newpoint(float time, float field)
 void asec_magn::set_field(float field) //method to set field
 {
     //TODO: check limits
+    //Is there a reason for this? I mean, limits are set by hardware anyway.
     ui.btSetField->setEnabled(false);
     delete ui.gvField->scene();
     ui.gvField->setScene(new QGraphicsScene);
