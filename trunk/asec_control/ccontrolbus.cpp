@@ -144,6 +144,7 @@ void CControlBus::reply_call(QStringList values)
     reply_wait->quit();
 }
 
+//TODO: get module name from DBus
 void CControlBus::critical_call(QString module, QString message)
 {
     QStringList reply_t;
