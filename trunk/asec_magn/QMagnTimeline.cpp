@@ -97,6 +97,9 @@ void QMagnTimeline::check_quench()
         if (magn->isQuench())
         {
             is_running=false;
+            magnctrl* tmp=magn;
+            magn=0;
+            delete tmp;
             emit quench();
         } else {
             QTimer::singleShot(int(1000*TIMESTEP),this,SLOT(check_quench()));
