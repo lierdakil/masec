@@ -1,6 +1,7 @@
 #include "QTempTimeline.h"
 #include <time.h>
 #define TIMESTEP 0.01
+#define wait(min,member) QTimer::singleShot(int(60000*min),this,member)
 
 QTempTimer::QTempTimer() : QObject()
 {
@@ -53,35 +54,30 @@ void QTempTimer::start(float nsetp, float nramp, float ntimeout, float nsettime)
     settime=nsettime;
 
     is_stopped=false;
-    stop_requested=false;
 
     ramp=temp->ramp(ramp);
 
     temp2=temp->temp();
-    time=0;
 
-    drawtime=0;
     QTimer::singleShot(int(60000*TIMESTEP),this,SLOT(draw_temp()));
 
     float setp0=temp->getsetp();
     temp->setpoint(setp);
     startclock=clock();
-    if(ramp>0)
+    if(ramp>0 && (setp-setp0)!=0)
     {
         wait(fabs(setp-setp0)/ramp,SLOT(rampdone()));//wait until system dragged setpoint.
     }
-    else
+    else//RAMP OFF
     {
         wait(TIMESTEP,SLOT(step1()));
     }
 }
 
-void QTempTimer::wait(double min, const char* member)
-{
-    //only called from within try...catch
-    time=(clock()-startclock)/60000.0f;
-    QTimer::singleShot(int(60000*min),this,member);
-}
+//void QTempTimer::wait(double min, const char* member)
+//{
+//    //only called from within try...catch
+//}
 
 QTempTimer::~QTempTimer()
 {
@@ -108,9 +104,10 @@ void QTempTimer::rampdone()
 bool QTempTimer::stable()
 {
     //only called directly from within try...catch
-    //two consequent values of temperature are near setp
+    //two consequent values of temperature are near setp and
+    //deriative by two last points <= 1/2
     //TODO: Maybe there's a better algorithm to detect that temperature is stable?
-    return ( fabs(temp1-setp)<=0.5 && fabs(temp2-setp)<=0.5 );
+    return ( fabs(temp1-setp)<=0.25 && fabs(temp2-setp)<=0.25 && fabs(temp2-temp1)/(time2-time1)<=0.5);
 }
 
 void QTempTimer::draw_temp()
@@ -119,8 +116,7 @@ void QTempTimer::draw_temp()
         return;
 
     try{
-        drawtime=(clock()-startclock)/60000.0f;
-        emit newpoint(drawtime,temp->temp(),temp->getsetp());
+        emit newpoint((clock()-startclock)/60000.0f,temp->temp(),temp->getsetp());
         QTimer::singleShot(int(60000*TIMESTEP),this,SLOT(draw_temp()));
     } catch (GPIBGenericException e) {
         raiseError(e.report());
@@ -138,14 +134,12 @@ void QTempTimer::step1()
         temp1=temp2;
         temp2=temp->temp();
 
-        if(time>=timeout)
+        time1=time2;
+        time2=clock()/60000.0f;//in minutes
+
+        if(((clock()-startclock)/60000.0f)>=timeout)
         {
             raiseError(trUtf8("Exceeded temperature setup timeout"));
-        } else if(stop_requested) {
-            is_stopped=true;
-            delete temp;
-            temp=0;
-            emit stopped();
         } else if ( stable() ) {
             wait(settime,SLOT(step2()));//wait settime to check if temperature stabilized.
         } else {
@@ -183,6 +177,12 @@ void QTempTimer::step2()
 
 void QTempTimer::stop()
 {
-    stop_requested=true;
+    if(!is_stopped)
+    {
+        is_stopped=true;
+        delete temp;
+        temp=0;
+        emit stopped();
+    }
 }
 
