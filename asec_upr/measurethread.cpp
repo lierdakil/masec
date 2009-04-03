@@ -184,6 +184,39 @@ float MeasureThread::golden(float a, float b, float epsilon, bool max)
     return (a+b)/2;
 }
 
+double MeasureThread::find_extremum(QByteArray dat, int start, int stop, int sm, bool max)
+{
+#ifdef GOLDEN
+    return golden(k*start+ssf,k*stop+ssf,epsilon,true);
+#else
+    while(start<stop && sm > 1)
+    {
+        QList<qreal> diff=sm_diff(dat,sm);
+        //left to right
+        for(int i=start;i<stop;i++)
+        {
+            if((max && diff[i]<=0) || (!max && diff[i]>=0))
+            {
+                start=i;
+                break;
+            }
+        }
+        //right to left
+        for(int i=stop;i>start;i--)
+        {
+            if((max && diff[i]>=0) || (!max && diff[i]<=0))
+            {
+                stop=i;
+                break;
+            }
+        }
+        sm--;
+    }
+
+    return k*start+ssf;
+#endif
+}
+
 void MeasureThread::findresonance()
 {
     int xmin=0,xmax1=0,xfmax=0,xmax2=0;
@@ -261,64 +294,12 @@ void MeasureThread::findresonance()
 
     gen->sweepoff();
 
-#ifdef GOLDEN
-    rf = golden(k*xmax1+ssf,k*xmin+ssf,epsilon,true);
-#else
-    rf=0;
-    //left to right
-    for(int i=xmax1;i<xmin;i++)
-    {
-        if(diff[i]<0)
-        {
-            rf=(qreal)i/(qreal)2;
-            break;
-        }
-    }
-    //right to left
-    for(int i=xmin;i>xmax1;i--)
-    {
-        if(diff[i]>0)
-        {
-            rf+=(qreal)i/(qreal)2;
-            break;
-        }
-    }
-    /* rf= median of two points closest to edges of
-         * segment xmax1-xmin, where diff changes sign.
-         */
-    rf=k*rf+ssf;
-#endif
+    rf=find_extremum(dat,xmax1,xmin,sm2,true);
     draw_x((rf-ssf)/k);
     ra=getamplonf(rf);
     draw_y(-ra/k2*sqrt(2));
 
-#ifdef GOLDEN
-    af = golden(k*xmin+ssf,k*xmax2+ssf,epsilon,false);
-#else
-    af=0;
-    //left to right
-    for(int i=xmin;i<xmax2;i++)
-    {
-        if(diff[i]>0)
-        {
-            af+=(qreal)i/(qreal)2;
-            break;
-        }
-    }
-    //right to left
-    for(int i=xmax2;i>xmin;i--)
-    {
-        if(diff[i]<0)
-        {
-            af+=(qreal)i/(qreal)2;
-            break;
-        }
-    }
-    /* af= median of two points closest to edges of
-         * segment xmin-xmax2, where diff changes sign.
-         */
-    af=k*af+ssf;
-#endif
+    af=find_extremum(dat,xmin,xmax2,sm2,false);
     draw_x((af-ssf)/k);
     aa=getamplonf(af);
     draw_y(-aa/k2*sqrt(2));

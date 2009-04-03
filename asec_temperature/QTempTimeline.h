@@ -21,7 +21,10 @@ private:
     //void wait(double min, const char *member);
     tempctrl *temp;
     bool is_stopped;
-    int startclock;
+    float fstartclock;
+    float ramptime;//minutes
+    float testtime;//minutes
+    int step_num;
 
 private slots:
     void start(float nsetp, float nramp, float ntimeout, float nsettime);//start temperature setting
@@ -35,16 +38,13 @@ public:
     float timeout;
     double settime;
     //return vals
-    float temp1, temp2;
-    float time1, time2;
+    QVector<float> temps;
+    //QVector<float> times;
 
 public slots:
     void start_zone(float nsetp, float nramp, float ntimeout, float nsettime);
     void start_manual(float nsetp, float nramp, float ntimeout, float nsettime, float P, float I, float D, int range, double mout);
-    void draw_temp();//emit newpoint in separate event thread
-    void rampdone();//first we wait until ramp is done
-    void step1();//now we check every TIMESTEP while temperature stabilizes - main check cycle, should include emit timedout() here
-    void step2();//then we wait $settime and check if it really stabilized
+    void step();
     void stop();//stop
 
 signals:

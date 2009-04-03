@@ -62,8 +62,8 @@ void vib_temperature::temp_set()
 {
     QStringList data;
     data<<QString("Setpoint,K:%1").arg(temptl.setp);
-    data<<QString("Temperature 1,K:%1").arg(temptl.temp1);
-    data<<QString("Temperature 2,K:%1").arg(temptl.temp2);
+    data<<QString("Temperature 1,K:%1").arg(temptl.temps.first());
+    data<<QString("Temperature 2,K:%1").arg(temptl.temps.last());
     data<<QString("Ramp,K/min:%1").arg(temptl.ramp);
     data<<QString("Timeout,min:%1").arg(temptl.timeout);
     data<<QString("Stabilization time,min:%1").arg(temptl.settime);
