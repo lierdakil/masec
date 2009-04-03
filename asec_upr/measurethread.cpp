@@ -213,7 +213,7 @@ double MeasureThread::find_extremum(QByteArray dat, int start, int stop, int sm,
         sm--;
     }
 
-    return k*start+ssf;
+    return k*(start+stop)/2+ssf;
 #endif
 }
 
