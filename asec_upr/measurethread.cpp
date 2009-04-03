@@ -189,7 +189,7 @@ double MeasureThread::find_extremum(QByteArray dat, int start, int stop, int sm,
 #ifdef GOLDEN
     return golden(k*start+ssf,k*stop+ssf,epsilon,true);
 #else
-    while(start<stop && sm > 1)
+    while(start<stop && sm >= 1)
     {
         QList<qreal> diff=sm_diff(dat,sm);
         //left to right
@@ -197,7 +197,7 @@ double MeasureThread::find_extremum(QByteArray dat, int start, int stop, int sm,
         {
             if((max && diff[i]<=0) || (!max && diff[i]>=0))
             {
-                start=i;
+                start=i-1;
                 break;
             }
         }
@@ -206,14 +206,14 @@ double MeasureThread::find_extremum(QByteArray dat, int start, int stop, int sm,
         {
             if((max && diff[i]>=0) || (!max && diff[i]<=0))
             {
-                stop=i;
+                stop=i+1;
                 break;
             }
         }
         sm--;
     }
 
-    return k*(start+stop)/2+ssf;
+    return k*(start+stop)/2.0f+ssf;
 #endif
 }
 
