@@ -6,10 +6,11 @@
  */
 
 #include "temp.h"
+#define LOOP 'B'
 
 tempctrl::tempctrl(QString GPIBID) : GPIBctrl(GPIBID,"LSCI,MODEL331S,333585,061404", 10000)
 {
-    write("CSET 1, A, 1, 1, 2");
+    write(QString("CSET 1, %1, 1, 1, 2").arg(LOOP));
     write(QString("*SRE %1").arg(128));
 }
 
@@ -81,7 +82,7 @@ void tempctrl::setPID(float P, float I, float D)
 
 float tempctrl::temp()/*Kelvin*/
 {
-    return queryFloat("KRDG? A");
+    return queryFloat(QString("KRDG? %1").arg(LOOP));
     // in case this dirty hack is still needed....
     //    float temp;
     //    int status;

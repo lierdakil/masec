@@ -30,6 +30,9 @@ vib_temperature::vib_temperature(QWidget *parent)
 
     connect(&fix_timer, SIGNAL(timeout()), this, SLOT(fix_range()));
 
+    QSettings f("settings.ini",QSettings::IniFormat);
+    ui.sbt_test->setValue(f.value("TempCtrl/mantmout", 5).toDouble());
+
     try{
         tempctrl temp(qApp->property("tempid").toString());
         ui.sbRamp->setValue(temp.getramp());
@@ -51,7 +54,8 @@ vib_temperature::vib_temperature(QWidget *parent)
 
 vib_temperature::~vib_temperature()
 {
-
+    QSettings f("settings.ini",QSettings::IniFormat);
+    f.setValue("TempCtrl/mantmout", ui.sbt_test->value());
 }
 
 void vib_temperature::temp_set()
@@ -74,6 +78,7 @@ void vib_temperature::error(QString message)
     data<<trUtf8("::ERROR::");
     data<<message;
     emit finished(data);
+    QErrorMessage::qtHandler()->showMessage(message);
     ui.btStopTest->setEnabled(false);
     ui.btTest->setEnabled(true);
 }
@@ -95,6 +100,7 @@ void vib_temperature::newpoint(float time, float temp, float setpoint)
         ui.gvTemp->fitInView(ui.gvTemp->scene()->sceneRect());
     }
     ui.nlT->setProperty("value",temp);
+    ui.nlTime->setProperty("value",time);
     lasttime=time;
     lasttemp=temp;
     lastsetp=setpoint;
