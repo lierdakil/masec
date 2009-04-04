@@ -66,9 +66,19 @@ void vibupraut::measure(double startf, double stopf, QString filename)
 void vibupraut::path(QList<qreal> data,QPen pen)
 {
     QPainterPath path;
-    path.moveTo(0,-data[0]);
+    qreal max=data[0];
+    qreal min=data[0];
+    foreach(qreal f, data)
+    {
+        if(f>max)
+            max=f;
+        if(f<min)
+            min=f;
+    }
+    qreal k=1/(min-max);
+    path.moveTo(0,(data[0]-min)*k);
     for(int i=1;i<data.count();++i)
-        path.lineTo(i,-data[i]);
+        path.lineTo(i,(data[i]-min)*k);
     ui.graph->scene()->addPath(path,pen,Qt::NoBrush);
     ui.graph->fitInView(ui.graph->scene()->sceneRect());
 }
@@ -76,9 +86,19 @@ void vibupraut::path(QList<qreal> data,QPen pen)
 void vibupraut::path(QByteArray data,QPen pen)
 {
     QPainterPath path;
-    path.moveTo(0,-data[0]);
+    int max=data[0];
+    int min=data[0];
+    foreach(int b, data)
+    {
+        if(b>max)
+            max=b;
+        if(b<min)
+            min=b;
+    }
+    qreal k=1/qreal(min-max);
+    path.moveTo(0,(data[0]-min)*k);
     for(int i=1;i<data.count();++i)
-        path.lineTo(i,-data[i]);
+        path.lineTo(i,(data[i]-min)*k);
     ui.graph->scene()->addPath(path,pen,Qt::NoBrush);
     ui.graph->fitInView(ui.graph->scene()->sceneRect());
 }
