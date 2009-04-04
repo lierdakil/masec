@@ -1,7 +1,8 @@
-<ui version="4.0" >
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
  <class>vibuprautClass</class>
- <widget class="QWidget" name="vibuprautClass" >
-  <property name="geometry" >
+ <widget class="QWidget" name="vibuprautClass">
+  <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
@@ -9,87 +10,95 @@
     <height>460</height>
    </rect>
   </property>
-  <property name="windowTitle" >
+  <property name="windowTitle">
    <string>vibupraut</string>
   </property>
-  <layout class="QVBoxLayout" >
+  <layout class="QVBoxLayout">
    <item>
-    <widget class="QGraphicsView" name="graph" />
+    <widget class="QGraphicsView" name="graph"/>
    </item>
    <item>
-    <layout class="QGridLayout" >
-     <item row="0" column="0" >
-      <widget class="QLabel" name="lbOscId" >
-       <property name="text" >
+    <layout class="QGridLayout">
+     <item row="0" column="0">
+      <widget class="QLabel" name="lbOscId">
+       <property name="text">
         <string>GPIB Осциллографа</string>
        </property>
       </widget>
      </item>
-     <item row="0" column="1" >
-      <widget class="QLabel" name="lbGenId" >
-       <property name="text" >
+     <item row="0" column="1">
+      <widget class="QLabel" name="lbGenId">
+       <property name="text">
         <string>GPIB Генератора</string>
        </property>
       </widget>
      </item>
-     <item row="0" column="2" >
-      <widget class="QLabel" name="lbMulID" >
-       <property name="text" >
+     <item row="0" column="2">
+      <widget class="QLabel" name="lbMulID">
+       <property name="text">
         <string>GPIB Мультиметра</string>
        </property>
       </widget>
      </item>
-     <item row="1" column="0" >
-      <widget class="QLineEdit" name="edOscId" />
+     <item row="1" column="0">
+      <widget class="QLineEdit" name="edOscId"/>
      </item>
-     <item row="1" column="1" >
-      <widget class="QLineEdit" name="edGenId" />
+     <item row="1" column="1">
+      <widget class="QLineEdit" name="edGenId"/>
      </item>
-     <item row="1" column="2" >
-      <widget class="QLineEdit" name="edMulId" />
+     <item row="1" column="2">
+      <widget class="QLineEdit" name="edMulId"/>
      </item>
-     <item row="2" column="0" >
-      <widget class="QLabel" name="lbOscVol" >
-       <property name="toolTip" >
+     <item row="2" column="0">
+      <widget class="QLabel" name="lbOscVol">
+       <property name="toolTip">
         <string>Цена деления осциллографа при первом пробеге (Вольт)</string>
        </property>
-       <property name="text" >
+       <property name="text">
         <string>Цена деления осциллогафа</string>
        </property>
       </widget>
      </item>
-     <item row="2" column="1" >
-      <widget class="QLabel" name="lbSm1" >
-       <property name="toolTip" >
+     <item row="2" column="1">
+      <widget class="QLabel" name="lbSm1">
+       <property name="toolTip">
         <string>Глубина сглаживания при первом пробеге</string>
        </property>
-       <property name="text" >
+       <property name="text">
         <string>Сглаживание 1</string>
        </property>
       </widget>
      </item>
-     <item row="2" column="2" >
-      <widget class="QLabel" name="lbSm2" >
-       <property name="toolTip" >
+     <item row="2" column="2">
+      <widget class="QLabel" name="lbSm2">
+       <property name="toolTip">
         <string>Глубина сглаживания при втором пробеге</string>
        </property>
-       <property name="text" >
+       <property name="text">
         <string>Сглаживание 2</string>
        </property>
       </widget>
      </item>
-     <item row="3" column="0" >
-      <widget class="QDoubleSpinBox" name="sbOscVol" />
+     <item row="3" column="0">
+      <widget class="QDoubleSpinBox" name="sbOscVol"/>
      </item>
-     <item row="3" column="1" >
-      <widget class="QSpinBox" name="sbSm1" />
+     <item row="3" column="1">
+      <widget class="QSpinBox" name="sbSm1">
+       <property name="maximum">
+        <number>1000</number>
+       </property>
+      </widget>
      </item>
-     <item row="3" column="2" >
-      <widget class="QSpinBox" name="sbSm2" />
+     <item row="3" column="2">
+      <widget class="QSpinBox" name="sbSm2">
+       <property name="maximum">
+        <number>1000</number>
+       </property>
+      </widget>
      </item>
-     <item row="1" column="3" >
-      <widget class="QPushButton" name="btRun" >
-       <property name="text" >
+     <item row="1" column="3">
+      <widget class="QPushButton" name="btRun">
+       <property name="text">
         <string>Test Run</string>
        </property>
       </widget>
@@ -98,7 +107,7 @@
    </item>
   </layout>
  </widget>
- <layoutdefault spacing="6" margin="11" />
+ <layoutdefault spacing="6" margin="11"/>
  <tabstops>
   <tabstop>edOscId</tabstop>
   <tabstop>edGenId</tabstop>

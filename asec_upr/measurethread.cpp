@@ -8,8 +8,8 @@
 #include "measurethread.h"
 #include "sleep.h"
 
-#define draw_x(x) emit line(x,0,x,-127,Qt::SolidLine)
-#define draw_y(y) emit line(0,y,2500,y,Qt::SolidLine)
+#define draw_x(x,pen) emit line(x,0,x,-1,pen)
+#define draw_y(y,pen) emit line(0,y,2500,y,pen)
 
 //#define GOLDEN
 
@@ -69,11 +69,11 @@ QByteArray MeasureThread::sweep()
  *
  */
 
-        emit path(data,QPen(Qt::green));
+        //emit path(data,QPen(Qt::green));
 
         QList<qreal> diff = sm_diff(data,sm1);
 
-        emit path(diff,QPen(Qt::darkYellow));
+        //emit path(diff,QPen(Qt::darkYellow));
 
         double min_diff_val=0;
         int min_diff_index;
@@ -111,9 +111,9 @@ QByteArray MeasureThread::sweep()
         //		starti=2*maxi-min_diff_index;//double interval
         //		stopi=2*mini-min_diff_index;
         starti=2*maxi-mini;
-        draw_x(starti);
+        //draw_x(starti,QPen(Qt::magenta));
         stopi=2*mini-maxi;
-        draw_x(stopi);
+        //draw_x(stopi,QPen(Qt::magenta));
     }
     //calculate coefficents to convert index to frequency
     double kt = (fff-fsf)/data.count();
@@ -134,6 +134,7 @@ QByteArray MeasureThread::sweep()
     ch1=ch1*max_data/101.6;
     osc->setch1(ch1);
     k2=ch1/25.4;
+    k3=ch1*5;
 
     gen->setsweep(ssf,sff);
     osc->wait("READY");
@@ -197,7 +198,7 @@ double MeasureThread::find_extremum(QByteArray dat, int start, int stop, int sm,
         {
             if((max && diff[i]<=0) || (!max && diff[i]>=0))
             {
-                start=i-1;
+                start=i-sm;
                 break;
             }
         }
@@ -206,7 +207,7 @@ double MeasureThread::find_extremum(QByteArray dat, int start, int stop, int sm,
         {
             if((max && diff[i]>=0) || (!max && diff[i]<=0))
             {
-                stop=i+1;
+                stop=i+sm;
                 break;
             }
         }
@@ -279,9 +280,9 @@ void MeasureThread::findresonance()
             }
         }
 
-        draw_x(xmin);
-        draw_x(xmax1);
-        draw_x(xmax2);
+        draw_x(xmin,QPen(Qt::black));
+        draw_x(xmax1,QPen(Qt::black));
+        draw_x(xmax2,QPen(Qt::black));
         cycles++;
         if(cycles>4)
             throw GPIBGenericException(trUtf8("Could not acquire resonance qurve"));
@@ -295,14 +296,14 @@ void MeasureThread::findresonance()
     gen->sweepoff();
 
     rf=find_extremum(dat,xmax1,xmin,sm2,true);
-    draw_x((rf-ssf)/k);
+    draw_x((rf-ssf)/k,QPen(Qt::black));
     ra=getamplonf(rf);
-    draw_y(-ra/k2*sqrt(2));
+    //draw_y(-ra/k3,QPen(Qt::blue));
 
     af=find_extremum(dat,xmin,xmax2,sm2,false);
-    draw_x((af-ssf)/k);
+    draw_x((af-ssf)/k,QPen(Qt::black));
     aa=getamplonf(af);
-    draw_y(-aa/k2*sqrt(2));
+    //draw_y(-aa/k3,QPen(Qt::blue));
 
     gen->sweepon();
 }

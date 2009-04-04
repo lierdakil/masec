@@ -22,7 +22,7 @@ class MeasureThread : public QThread
 
 private:
     double epsilon;
-    double k, k2;
+    double k, k2, k3;
     void findresonance();
     QByteArray sweep();
     float getamplonf(float freq);
