@@ -7,6 +7,7 @@
 
 #include "measurethread.h"
 #include "sleep.h"
+#include <math.h>
 
 #define draw_x(x,pen) emit line(x,0,x,-1,pen)
 #define draw_y(y,pen) emit line(0,y,2500,y,pen)
@@ -218,11 +219,60 @@ double MeasureThread::find_extremum(QByteArray dat, int start, int stop, int sm,
 #endif
 }
 
+double Func(Point3D P, double w)
+{
+    double R_m=P.x;
+    double L_m=P.y;
+    double C_m=P.z;
+    double R_0=0;//?
+    double C_0=0;//?
+
+    double w2=pow(w,2);
+    double C_02=pow(C_0,2);
+    double R_m2=pow(R_m,2);
+    double R_02=pow(R_0,2);
+    double A = w*L_m - 1/(C_m*w);
+    double A2 = pow(A,2);
+    double Z = R_m2 + A2;
+    double Z2=pow(Z,2);
+
+    return (w2*C_02*Z2
+            -2*w*A*C_0*Z+
+            Z)/
+            ((w2*C_02*R_02+1)*Z2
+             +(2*R_m*R_0-2*w*A*C_0*R_02)*Z
+             +Z*R_02);
+}
+
+double FuncDiff(Point3D P, double f)
+{
+    double R_m=P.x;
+    double L_m=P.y;
+    double C_m=P.z;
+    double R_0=0;//?
+    double C_0=0;//?
+
+    double w=2*3.1415926535*f;
+    double w2=pow(w,2);
+    double C_02=pow(C_0,2);
+    double R_m2=pow(R_m,2);
+    double R_02=pow(R_0,2);
+    double A = w*L_m - 1/(C_m*w);
+    double A2 = pow(A,2);
+    double Z = R_m2 + A2;
+    double Z2=pow(Z,2);
+    double B = (w2*C_02*R_02+1)*Z2+(2*R_m*R_0-2*w*A*C_0*R_02)*Z+R_02*Z;
+    double B2 = pow(B,2);
+
+    return (2*w*C_02*Z2-2*A*C_0*Z)/B
+            -((w2*C_02*Z2-2*w*A*C_0*Z+Z)*(2*w*C_02*R_02*Z2-2*A*C_0*R_02*Z))/B2;
+}
+
 void MeasureThread::findresonance()
 {
     int xmin=0,xmax1=0,xfmax=0,xmax2=0;
 
-    QByteArray dat;
+    dat.clear();
     QList<qreal> diff;
 
     int cycles=0;
@@ -290,17 +340,28 @@ void MeasureThread::findresonance()
 
     for(int i=0; i<dat.count(); i++)
     {
-        curve<<QPair<double,double>(k*i+ssf, dat[i]*k2);
+        curve<<fPoint2D(k*i+ssf, dat[i]*k2);
     }
 
     gen->sweepoff();
 
-    rf=find_extremum(dat,xmax1,xmin,sm2,true);
+    CSimplex3D simp(Func, 50, fPoint3D(25,25,25));
+    simp.setData(curve);
+    Point3D params = simp.optimize(0.1);
+
+    QList<qreal> opt;
+    for(double freq=ssf; freq<sff; freq +=k)
+    {
+        opt<<Func(params,freq);
+    }
+    emit path(opt,QPen(Qt::red));
+
+    //rf=find_extremum(dat,xmax1,xmin,sm2,true);
     draw_x((rf-ssf)/k,QPen(Qt::black));
     ra=getamplonf(rf);
     //draw_y(-ra/k3,QPen(Qt::blue));
 
-    af=find_extremum(dat,xmin,xmax2,sm2,false);
+    //af=find_extremum(dat,xmin,xmax2,sm2,false);
     draw_x((af-ssf)/k,QPen(Qt::black));
     aa=getamplonf(af);
     //draw_y(-aa/k3,QPen(Qt::blue));
@@ -348,10 +409,10 @@ void MeasureThread::run()
             QString buf;
             for(int i=0;i<curve.count();i++)
             {
-                buf.setNum(curve.at(i).first,'f',10);
+                buf.setNum(curve.at(i).x,'f',10);
                 f.write(buf.toAscii());
                 f.write("\t");
-                buf.setNum(curve.at(i).second,'f',10);
+                buf.setNum(curve.at(i).y,'f',10);
                 f.write(buf.toAscii());
                 f.write("\r\n");
             }
