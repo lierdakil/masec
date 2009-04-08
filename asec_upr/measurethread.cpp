@@ -7,10 +7,9 @@
 
 #include "measurethread.h"
 #include "sleep.h"
-#include <math.h>
 
-#define draw_x(x,pen) emit line(x,0,x,-1,pen)
-#define draw_y(y,pen) emit line(0,y,2500,y,pen)
+#define draw_x(x) emit line(x,0,x,-127,Qt::SolidLine)
+#define draw_y(y) emit line(0,y,2500,y,Qt::SolidLine)
 
 //#define GOLDEN
 
@@ -70,11 +69,11 @@ QByteArray MeasureThread::sweep()
  *
  */
 
-        //emit path(data,QPen(Qt::green));
+        emit path(data,QPen(Qt::green));
 
         QList<qreal> diff = sm_diff(data,sm1);
 
-        //emit path(diff,QPen(Qt::darkYellow));
+        emit path(diff,QPen(Qt::darkYellow));
 
         double min_diff_val=0;
         int min_diff_index;
@@ -112,9 +111,9 @@ QByteArray MeasureThread::sweep()
         //		starti=2*maxi-min_diff_index;//double interval
         //		stopi=2*mini-min_diff_index;
         starti=2*maxi-mini;
-        //draw_x(starti,QPen(Qt::magenta));
+        draw_x(starti);
         stopi=2*mini-maxi;
-        //draw_x(stopi,QPen(Qt::magenta));
+        draw_x(stopi);
     }
     //calculate coefficents to convert index to frequency
     double kt = (fff-fsf)/data.count();
@@ -135,7 +134,6 @@ QByteArray MeasureThread::sweep()
     ch1=ch1*max_data/101.6;
     osc->setch1(ch1);
     k2=ch1/25.4;
-    k3=ch1*5;
 
     gen->setsweep(ssf,sff);
     osc->wait("READY");
@@ -199,7 +197,7 @@ double MeasureThread::find_extremum(QByteArray dat, int start, int stop, int sm,
         {
             if((max && diff[i]<=0) || (!max && diff[i]>=0))
             {
-                start=i-sm;
+                start=i-1;
                 break;
             }
         }
@@ -208,7 +206,7 @@ double MeasureThread::find_extremum(QByteArray dat, int start, int stop, int sm,
         {
             if((max && diff[i]>=0) || (!max && diff[i]<=0))
             {
-                stop=i+sm;
+                stop=i+1;
                 break;
             }
         }
@@ -219,64 +217,11 @@ double MeasureThread::find_extremum(QByteArray dat, int start, int stop, int sm,
 #endif
 }
 
-double Func(Point3D P, double w)
-{
-    double R_m=P.x;
-    double L_m=P.y;
-    double C_m=P.z;
-    double R_0=1;//?
-    double C_0=1;//?
-
-    double w2=pow(w,2);
-    double C_02=pow(C_0,2);
-    double R_m2=pow(R_m,2);
-    double R_02=pow(R_0,2);
-    double A = w*L_m - 1/(C_m*w);
-    double A2 = pow(A,2);
-    double Z = R_m2 + A2;
-    double Z2=pow(Z,2);
-
-    double re=(w2*C_02*Z2
-            -2*w*A*C_0*Z+
-            Z)/
-            ((w2*C_02*R_02+1)*Z2
-             +(2*R_m*R_0-2*w*A*C_0*R_02)*Z
-             +Z*R_02);
-    if(re>0)
-        return sqrt(re);
-    else
-        return 0;
-}
-
-double FuncDiff(Point3D P, double f)
-{
-    double R_m=P.x;
-    double L_m=P.y;
-    double C_m=P.z;
-    double R_0=0;//?
-    double C_0=0;//?
-
-    double w=2*3.1415926535*f;
-    double w2=pow(w,2);
-    double C_02=pow(C_0,2);
-    double R_m2=pow(R_m,2);
-    double R_02=pow(R_0,2);
-    double A = w*L_m - 1/(C_m*w);
-    double A2 = pow(A,2);
-    double Z = R_m2 + A2;
-    double Z2=pow(Z,2);
-    double B = (w2*C_02*R_02+1)*Z2+(2*R_m*R_0-2*w*A*C_0*R_02)*Z+R_02*Z;
-    double B2 = pow(B,2);
-
-    return (2*w*C_02*Z2-2*A*C_0*Z)/B
-            -((w2*C_02*Z2-2*w*A*C_0*Z+Z)*(2*w*C_02*R_02*Z2-2*A*C_0*R_02*Z))/B2;
-}
-
 void MeasureThread::findresonance()
 {
     int xmin=0,xmax1=0,xfmax=0,xmax2=0;
 
-    dat.clear();
+    QByteArray dat;
     QList<qreal> diff;
 
     int cycles=0;
@@ -297,11 +242,11 @@ void MeasureThread::findresonance()
             }
         }
 
-        //emit path(dat,QPen(Qt::blue));
+        emit path(dat,QPen(Qt::blue));
 
         diff=sm_diff(dat,sm2);
 
-        //emit path(diff, QPen(Qt::red));
+        emit path(diff, QPen(Qt::red));
 
         float min=255;
         float max1=0;
@@ -334,46 +279,30 @@ void MeasureThread::findresonance()
             }
         }
 
-        draw_x(xmin,QPen(Qt::black));
-        draw_x(xmax1,QPen(Qt::black));
-        draw_x(xmax2,QPen(Qt::black));
+        draw_x(xmin);
+        draw_x(xmax1);
+        draw_x(xmax2);
         cycles++;
         if(cycles>4)
             throw GPIBGenericException(trUtf8("Could not acquire resonance qurve"));
     }
 
-    QList<qreal> curv;
     for(int i=0; i<dat.count(); i++)
     {
-        curve<<fPoint2D(k*i+ssf, dat[i]*k2);
-        curv<<dat[i]*k2;
+        curve<<QPair<double,double>(k*i+ssf, dat[i]*k2);
     }
-    emit path(curv,QPen(Qt::blue));
 
     gen->sweepoff();
 
-    CSimplex3D simp(Func, 100, fPoint3D(500,500,500));
-    simp.setData(curve);
-    Point3D params = simp.optimize(0.1);
+    rf=find_extremum(dat,xmax1,xmin,sm2,true);
+    draw_x((rf-ssf)/k);
+    ra=getamplonf(rf);
+    draw_y(-ra/k2*sqrt(2));
 
-    qDebug()<<QString("%1, %2, %3").arg(params.x).arg(params.y).arg(params.z);
-
-    QList<qreal> opt;
-    for(double freq=ssf; freq<sff; freq +=k)
-    {
-        opt<<Func(params,freq);
-    }
-    emit path(opt,QPen(Qt::cyan));
-
-    //rf=find_extremum(dat,xmax1,xmin,sm2,true);
-    //draw_x((rf-ssf)/k,QPen(Qt::black));
-    //ra=getamplonf(rf);
-    //draw_y(-ra/k3,QPen(Qt::blue));
-
-    //af=find_extremum(dat,xmin,xmax2,sm2,false);
-    //draw_x((af-ssf)/k,QPen(Qt::black));
-    //aa=getamplonf(af);
-    //draw_y(-aa/k3,QPen(Qt::blue));
+    af=find_extremum(dat,xmin,xmax2,sm2,false);
+    draw_x((af-ssf)/k);
+    aa=getamplonf(af);
+    draw_y(-aa/k2*sqrt(2));
 
     gen->sweepon();
 }
@@ -418,10 +347,10 @@ void MeasureThread::run()
             QString buf;
             for(int i=0;i<curve.count();i++)
             {
-                buf.setNum(curve.at(i).x,'f',10);
+                buf.setNum(curve.at(i).first,'f',10);
                 f.write(buf.toAscii());
                 f.write("\t");
-                buf.setNum(curve.at(i).y,'f',10);
+                buf.setNum(curve.at(i).second,'f',10);
                 f.write(buf.toAscii());
                 f.write("\r\n");
             }

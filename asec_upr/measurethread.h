@@ -15,7 +15,6 @@
 #include "ctrl/gen.h"
 #include "ctrl/vol.h"
 #include "ctrl/osc.h"
-#include <csimplex3d.h>
 
 class MeasureThread : public QThread
 {
@@ -23,7 +22,7 @@ class MeasureThread : public QThread
 
 private:
     double epsilon;
-    double k, k2, k3;
+    double k, k2;
     void findresonance();
     QByteArray sweep();
     float getamplonf(float freq);
@@ -40,8 +39,7 @@ private:
     double ra; //Resonance Amplitude
     double af; //Antiresonance Frequency
     double aa; //Antiresonance Amplitude
-    QList<Point2D> curve;
-    QByteArray dat;
+    QList<QPair<double,double> > curve;
     double find_extremum(QByteArray dat, int start, int stop, int sm, bool max);
 
 public:
