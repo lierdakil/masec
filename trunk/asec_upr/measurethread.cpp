@@ -224,8 +224,8 @@ double Func(Point3D P, double w)
     double R_m=P.x;
     double L_m=P.y;
     double C_m=P.z;
-    double R_0=0;//?
-    double C_0=0;//?
+    double R_0=1;//?
+    double C_0=1;//?
 
     double w2=pow(w,2);
     double C_02=pow(C_0,2);
@@ -236,12 +236,16 @@ double Func(Point3D P, double w)
     double Z = R_m2 + A2;
     double Z2=pow(Z,2);
 
-    return (w2*C_02*Z2
+    double re=(w2*C_02*Z2
             -2*w*A*C_0*Z+
             Z)/
             ((w2*C_02*R_02+1)*Z2
              +(2*R_m*R_0-2*w*A*C_0*R_02)*Z
              +Z*R_02);
+    if(re>0)
+        return sqrt(re);
+    else
+        return 0;
 }
 
 double FuncDiff(Point3D P, double f)
@@ -293,11 +297,11 @@ void MeasureThread::findresonance()
             }
         }
 
-        emit path(dat,QPen(Qt::blue));
+        //emit path(dat,QPen(Qt::blue));
 
         diff=sm_diff(dat,sm2);
 
-        emit path(diff, QPen(Qt::red));
+        //emit path(diff, QPen(Qt::red));
 
         float min=255;
         float max1=0;
@@ -338,32 +342,37 @@ void MeasureThread::findresonance()
             throw GPIBGenericException(trUtf8("Could not acquire resonance qurve"));
     }
 
+    QList<qreal> curv;
     for(int i=0; i<dat.count(); i++)
     {
         curve<<fPoint2D(k*i+ssf, dat[i]*k2);
+        curv<<dat[i]*k2;
     }
+    emit path(curv,QPen(Qt::blue));
 
     gen->sweepoff();
 
-    CSimplex3D simp(Func, 50, fPoint3D(25,25,25));
+    CSimplex3D simp(Func, 100, fPoint3D(500,500,500));
     simp.setData(curve);
     Point3D params = simp.optimize(0.1);
+
+    qDebug()<<QString("%1, %2, %3").arg(params.x).arg(params.y).arg(params.z);
 
     QList<qreal> opt;
     for(double freq=ssf; freq<sff; freq +=k)
     {
         opt<<Func(params,freq);
     }
-    emit path(opt,QPen(Qt::red));
+    emit path(opt,QPen(Qt::cyan));
 
     //rf=find_extremum(dat,xmax1,xmin,sm2,true);
-    draw_x((rf-ssf)/k,QPen(Qt::black));
-    ra=getamplonf(rf);
+    //draw_x((rf-ssf)/k,QPen(Qt::black));
+    //ra=getamplonf(rf);
     //draw_y(-ra/k3,QPen(Qt::blue));
 
     //af=find_extremum(dat,xmin,xmax2,sm2,false);
-    draw_x((af-ssf)/k,QPen(Qt::black));
-    aa=getamplonf(af);
+    //draw_x((af-ssf)/k,QPen(Qt::black));
+    //aa=getamplonf(af);
     //draw_y(-aa/k3,QPen(Qt::blue));
 
     gen->sweepon();
