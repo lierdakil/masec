@@ -76,9 +76,11 @@ void vibupraut::path(QList<qreal> data,QPen pen)
             min=f;
     }
     qreal k=1/(min-max);
-    path.moveTo(0,(data[0]-min)*k);
+    //path.moveTo(0,(data[0]-min)*k);
+    path.moveTo(0,-data[0]);
     for(int i=1;i<data.count();++i)
-        path.lineTo(i,(data[i]-min)*k);
+        //path.lineTo(i,(data[i]-min)*k);
+        path.lineTo(i,-data[i]);
     ui.graph->scene()->addPath(path,pen,Qt::NoBrush);
     ui.graph->fitInView(ui.graph->scene()->sceneRect());
 }
