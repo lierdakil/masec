@@ -29,7 +29,6 @@ private:
 private slots:
     void start(float nsetp, float nramp, float ntimeout, float nsettime);//start temperature setting
     void raiseError(QString message); //stops timeline and raises error via error(QString) signal
-    bool stable();//we use this function to check if temperature is stable at the moment
 
 public:
     //"input"
@@ -38,8 +37,6 @@ public:
     float timeout;
     double settime;
     //return vals
-    QVector<float> temps;
-    //QVector<float> times;
 
 public slots:
     void start_zone(float nsetp, float nramp, float ntimeout, float nsettime);
