@@ -1,28 +1,68 @@
 #include <QtCore>
+#include <QtGui>
 #include <QFile>
 #include <iostream>
+#include <mainwindow.h>
 using namespace std;
+
+int len(char* str)
+{
+    int i=0;
+    while(str[i])
+        i++;
+    return i;
+}
 
 int main(int argc, char *argv[])
 {
-    if(argc==2)
+    bool usegui=false;
+    bool stripheader=false;
+    QString parameters;
+    QStringList arguments;
+    for(int i=1; i<argc; ++i)
     {
-        QFile f(argv[1]);
+        if(argv[i][0]=='-')
+            parameters+=QString::fromLocal8Bit(argv[i]+1);
+        else
+            arguments<<QString::fromLocal8Bit(argv[i]);
+    }
+    if (!parameters.isEmpty())
+    {
+        for(int i=0; i<parameters.length(); ++i)
+        {
+            if(parameters[i]=='g')
+                usegui=true;
+            else if (parameters[i]=='s')
+                stripheader=true;
+            else
+                goto usage;
+        }
+    }
+
+    if(arguments.count()==1 && !usegui)
+    {
+        QFile f(arguments[0]);
         if (f.open(QIODevice::ReadOnly))
         {
             QString line = QString::fromUtf8(f.readLine());
             QStringList header;
 
-            //copy comment
+            //copy comment if needed
             if(line.contains("/*"))
+            {
                 while(!line.contains("*/"))
                 {
-                cout<<line.toLocal8Bit().data();
-                line = QString::fromUtf8(f.readLine());
+                    if(!stripheader)
+                        cout<<line.toLocal8Bit().data();
+                    line = QString::fromUtf8(f.readLine());
+                }
+                if(!stripheader)
+                {
+                    cout<<" * \n";
+                    cout<<" * File was parsed with asec_parser,\n * hence it's a tab-delimited ascii-table now\n";
+                    cout<<line.toLocal8Bit().data();
+                }
             }
-            cout<<" * \n";
-            cout<<" * File was parsed with asec_parser,\n * hence it's a tab-delimited ascii-table now\n";
-            cout<<line.toLocal8Bit().data();
 
             //build header
             unsigned long int data_start=f.pos();
@@ -64,12 +104,20 @@ int main(int argc, char *argv[])
             }
         } else {
             cout<<"Could not open file ";
-            cout<<(argv[1]);
+            cout<<(arguments.at(0).toLocal8Bit().data());
             cout<<":";
             cout<<f.errorString().toLocal8Bit().data();
         }
-    } else {
-        cout<<"Usage: asec_parser \"filename.red\"";
+        return 0;
+    } else if (arguments.count()==1 && usegui) {
+        //show gui
+        QApplication a(argc,argv);
+        MainWindow w(arguments[0]);
+        w.show();
+        a.exec();
+        return 0;
     }
-    return 0;
+    usage:
+    cout<<"Usage: asec_parser [-gs] \"filename.red\"";
+    return 1;
 }
