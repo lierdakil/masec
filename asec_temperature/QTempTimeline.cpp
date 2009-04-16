@@ -33,8 +33,10 @@ void QTempTimer::start_manual(float nsetp, float nramp, float ntimeout, float ns
         temp->readPID(&oldP,&oldI,&oldD);
         if(oldP!=P || oldI!=I || oldD != D)
             temp->setPID(P,I,D);
-        temp->setrange(range);
-        temp->setmout(mout);
+        if (temp->getrange()!=range)
+            temp->setrange(range);
+        if (temp->getmout()!=mout)
+            temp->setmout(mout);
         start(nsetp, nramp, ntimeout, nsettime);
     } catch (GPIBGenericException e) {
         raiseError(e.report());

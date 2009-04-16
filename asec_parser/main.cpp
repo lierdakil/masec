@@ -16,7 +16,7 @@ int len(char* str)
 int main(int argc, char *argv[])
 {
     bool usegui=false;
-    bool stripheader=false;
+    bool stripcomments=false;
     QString parameters;
     QStringList arguments;
     for(int i=1; i<argc; ++i)
@@ -33,7 +33,7 @@ int main(int argc, char *argv[])
             if(parameters[i]=='g')
                 usegui=true;
             else if (parameters[i]=='s')
-                stripheader=true;
+                stripcomments=true;
             else
                 goto usage;
         }
@@ -44,31 +44,16 @@ int main(int argc, char *argv[])
         QFile f(arguments[0]);
         if (f.open(QIODevice::ReadOnly))
         {
-            QString line = QString::fromUtf8(f.readLine());
+            QString line;
             QStringList header;
 
-            //copy comment if needed
-            if(line.contains("/*"))
-            {
-                while(!line.contains("*/"))
-                {
-                    if(!stripheader)
-                        cout<<line.toLocal8Bit().data();
-                    line = QString::fromUtf8(f.readLine());
-                }
-                if(!stripheader)
-                {
-                    cout<<" * \n";
-                    cout<<" * File was parsed with asec_parser,\n * hence it's a tab-delimited ascii-table now\n";
-                    cout<<line.toLocal8Bit().data();
-                }
-            }
-
             //build header
-            unsigned long int data_start=f.pos();
             while(!f.atEnd())
             {
                 line = QString::fromUtf8(f.readLine());
+                while (line.startsWith('#')){
+                    line = QString::fromUtf8(f.readLine());
+                }
                 QStringList dataline=line.split(";");
                 foreach(QString entry, dataline)
                 {
@@ -83,10 +68,15 @@ int main(int argc, char *argv[])
                 cout<<name.toLocal8Bit().data()<<"\t";
             cout<<"\n";
 
-            f.seek(data_start);
+            f.seek(0);
             while(!f.atEnd())
             {
                 line = QString::fromUtf8(f.readLine());
+                while (line.startsWith('#')){
+                    if(!stripcomments)
+                        cout<<line.toLocal8Bit().data();
+                    line = QString::fromUtf8(f.readLine());
+                }
                 QStringList dataline=line.split(";");
                 QVector<QString> row;
                 row.fill("",header.count());

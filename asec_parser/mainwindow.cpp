@@ -10,28 +10,18 @@ MainWindow::MainWindow(QString filename, QWidget *parent) :
     QFile f(filename);
     if (f.open(QIODevice::ReadOnly))
     {
-        QString line = QString::fromUtf8(f.readLine());
+        QString line;
         QStringList header;
         QStringList comment;
 
-        if(line.contains("/*"))
-        {
-            while(!line.contains("*/"))
-            {
-                comment<<line;
-                line = QString::fromUtf8(f.readLine());
-            }
-            comment<<line;
-        }
-
-        m_ui->teComment->setPlainText(comment.join(""));
-
         //build header
-        unsigned long int data_start=f.pos();
         int rowCount=0;
         while(!f.atEnd())
         {
             line = QString::fromUtf8(f.readLine());
+            while (line.startsWith('#')){
+                line = QString::fromUtf8(f.readLine());
+            }
             ++rowCount;
             QStringList dataline=line.split(";");
             foreach(QString entry, dataline)
@@ -48,11 +38,15 @@ MainWindow::MainWindow(QString filename, QWidget *parent) :
         for(int i=0; i<header.count(); ++i)
             m_ui->twData->setHorizontalHeaderItem(i, new QTableWidgetItem(header.at(i)));
 
-        f.seek(data_start);
+        f.seek(0);
         int curRow=0;
         while(!f.atEnd())
         {
             line = QString::fromUtf8(f.readLine());
+            while (line.startsWith('#')){
+                comment<<line;
+                line = QString::fromUtf8(f.readLine());
+            }
             QStringList dataline=line.split(";");
             QVector<QString> row;
             row.fill("",header.count());
@@ -69,6 +63,8 @@ MainWindow::MainWindow(QString filename, QWidget *parent) :
                 m_ui->twData->setItem(curRow,i, new QTableWidgetItem(row[i]));
             curRow++;
         }
+        m_ui->teComment->setPlainText(comment.join(""));
+        f.close();
     }
 }
 

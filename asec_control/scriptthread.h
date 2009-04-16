@@ -22,7 +22,6 @@ public:
     static QScriptValue call(QScriptContext *context, QScriptEngine *engine);
     QString code;
     QString filename;
-    QString description;
     CControlBus *bus;
     void run();
     void stop();

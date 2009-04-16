@@ -32,9 +32,9 @@ void vib_control::on_btRun_clicked()
         ui.lbStatus->clear();
         scriptthread.code=ui.code->textEdit()->toPlainText();
         scriptthread.filename=fd.selectedFiles().first();
-        scriptthread.description=QInputDialog::getText(this,
-                                                       trUtf8("Описание эксперимента"),
-                                                       trUtf8("Краткое описание проводимого эксперимента"));
+//        scriptthread.description=QInputDialog::getText(this,
+//                                                       trUtf8("Описание эксперимента"),
+//                                                       trUtf8("Краткое описание проводимого эксперимента"));
         scriptthread.start();
     }
 }
