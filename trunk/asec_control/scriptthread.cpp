@@ -54,7 +54,7 @@ void ScriptThread::run()
 {
     QString error_msg;
     bool success=true;
-    bus = new CControlBus(filename,description,code,&success);
+    bus = new CControlBus(filename,code,&success);
     connect(bus,SIGNAL(bus_error(QString)), this, SIGNAL(error(QString)));
     connect(bus,SIGNAL(call_error(QString)), this, SIGNAL(error(QString)));
     connect(bus,SIGNAL(call_error(QString)), this, SIGNAL(paused()));

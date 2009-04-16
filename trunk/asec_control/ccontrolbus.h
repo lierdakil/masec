@@ -50,7 +50,7 @@ signals:
 public:
     //common name: ru.pp.livid.asec.* ; interface: ru.pp.livid.asec.exports
 
-    CControlBus(QString log_file_name, QString description, QString code,  bool *success);
+    CControlBus(QString log_file_name, QString code,  bool *success);
     ~CControlBus();
 
     //QScript adaptor

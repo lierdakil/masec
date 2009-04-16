@@ -7,7 +7,7 @@
 
 #include "ccontrolbus.h"
 
-CControlBus::CControlBus(QString log_file_name, QString description, QString code, bool *success)
+CControlBus::CControlBus(QString log_file_name, QString code, bool *success)
 {
     reply_wait=NULL;
     if(!QDBusConnection::sessionBus().isConnected())
@@ -33,18 +33,16 @@ CControlBus::CControlBus(QString log_file_name, QString description, QString cod
         emit bus_error(trUtf8("CControlBus(): Could not open file!"));
         return;
     }
-    description="/* This file is a data file for ASEC\n"
-                " * Experiment description (UTF-8):\n"
-                " * "+description+"\n"
-                " * Data format: Name:Value;Name:Value;...\n"
-                " * Newline separates measurement cycles\n"
-                " * \n"
-                " * Code:\n";
+    QString description="# This file is a data file for ASEC\n"
+                "# Data format: Name:Value;Name:Value;...\n"
+                "# Newline separates measurement cycles\n"
+                "# \n"
+                "# Code:\n";
     // Добавлять в описание код эксперимента
-    description+=" * "+code.replace("\n","\n * ")+"\n";
+    description+="# "+code.replace("\n","\n# ")+"\n";
     // и список загруженных модулей
 
-    description+=" * Loaded modules:\n";
+    description+="# Loaded modules:\n";
     QStringList list = QDBusConnection::sessionBus().interface()->registeredServiceNames().value().filter(QRegExp("^ru.pp.livid.asec.(.*)"));
     //for each service in list
     for(int k=0;k<list.count();++k)
@@ -53,10 +51,10 @@ CControlBus::CControlBus(QString log_file_name, QString description, QString cod
 
         if (iface.isValid())
         {
-            description+=" * "+list.value(k)+"\n";
+            description+="# "+list.value(k)+"\n";
             QDBusReply<QString> reply=iface.call("module_description");
             if(reply.isValid())
-                description+=" * "+reply.value().replace("\n","\n * ")+"\n";
+                description+="# "+reply.value().replace("\n","\n# ")+"\n";
         }
 
         QDBusInterface* flow=new QDBusInterface(list.value(k),"/","ru.pp.livid.asec.flow");
@@ -69,8 +67,9 @@ CControlBus::CControlBus(QString log_file_name, QString description, QString cod
     }
 
 
-    description+=" */\n";
+    description+="#\n";
     data_file->write(description.toUtf8());
+    data_file->close();
 
     last_call="";
     stopped=true;
@@ -92,6 +91,7 @@ CControlBus::~CControlBus()
     QMutexLocker locker(&file_mutex);
     QMutexLocker locker_result(&result_row_mutex);
     // Закрыть файл, вычистить все лишнее и тд и тп.
+    data_file->open(QIODevice::Append);
     data_file->write(result_row.join(";").toUtf8());
     data_file->close();
     emit new_row(result_row);
@@ -177,8 +177,10 @@ int CControlBus::call(QString function, QString service, QList<QScriptValue> arg
     result_row_mutex.lock();
     if(last_call=="mes" && function.left(function.indexOf("_"))=="set")
     {
+        data_file->open(QIODevice::Append);
         data_file->write(result_row.join(";").toUtf8());
         data_file->write(QString("\n").toUtf8());
+        data_file->close();
         emit new_row(result_row);
         result_row.clear();
     }
@@ -243,6 +245,9 @@ int CControlBus::call(QString function, QString service, QList<QScriptValue> arg
 
     //creates event loop which will wait for reply from
     //flow interface
+    while(reply_wait!=NULL)
+        reply_wait->quit();
+
     if(reply_wait==NULL)
         reply_wait=new QEventLoop(this);
     //should we throw error if loop already initialized?
