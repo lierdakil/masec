@@ -42,6 +42,7 @@ CControlBus::CControlBus(QString log_file_name, QString code, bool *success)
     description+="# "+code.replace("\n","\n# ")+"\n";
     // и список загруженных модулей
 
+    flow_interfaces.clear();
     description+="# Loaded modules:\n";
     QStringList list = QDBusConnection::sessionBus().interface()->registeredServiceNames().value().filter(QRegExp("^ru.pp.livid.asec.(.*)"));
     //for each service in list
@@ -91,7 +92,21 @@ CControlBus::~CControlBus()
     QMutexLocker locker(&file_mutex);
     QMutexLocker locker_result(&result_row_mutex);
     // Закрыть файл, вычистить все лишнее и тд и тп.
-    data_file->open(QIODevice::Append);
+    while(!data_file->open(QIODevice::Append))
+    {
+        if(QMessageBox::warning(0,tr("Failed to open data file"),
+                                tr("Program was unable to open data file. Retry?"),
+                                QMessageBox::Retry||QMessageBox::Abort,
+                                QMessageBox::Retry)==QMessageBox::Retry)
+            continue;
+        else
+        {
+            result_row.clear();
+            delete data_file;
+            return;
+        }
+    }
+
     data_file->write(result_row.join(";").toUtf8());
     data_file->close();
     emit new_row(result_row);
@@ -125,9 +140,11 @@ void CControlBus::stop(bool *success)
         }
     }
 
+    eventloop_mutex.lock();
     if(reply_wait!=NULL)
         if(reply_wait->isRunning())
             reply_wait->quit();
+    eventloop_mutex.unlock();
 
     stopped=true;
     *success=true;
@@ -141,7 +158,10 @@ bool CControlBus::is_stopped()
 void CControlBus::reply_call(QStringList values)
 {
     reply=values;
-    reply_wait->quit();
+    eventloop_mutex.lock();
+    if(reply_wait!=NULL)
+        reply_wait->quit();
+    eventloop_mutex.unlock();
 }
 
 //TODO: get module name from DBus
@@ -152,7 +172,10 @@ void CControlBus::critical_call(QString module, QString message)
     reply_t<<tr("There was critical error in module %1 with message '%2'").arg(module,message);
     reply_t<<"::UNRECOVERABLE::";
     reply=reply_t;
-    reply_wait->quit();
+    eventloop_mutex.lock();
+    if(reply_wait!=NULL)
+        reply_wait->quit();
+    eventloop_mutex.unlock();
 }
 
 int CControlBus::call(QString function, QString service, QList<QScriptValue> arguments)
@@ -177,7 +200,18 @@ int CControlBus::call(QString function, QString service, QList<QScriptValue> arg
     result_row_mutex.lock();
     if(last_call=="mes" && function.left(function.indexOf("_"))=="set")
     {
-        data_file->open(QIODevice::Append);
+        while(!data_file->open(QIODevice::Append))
+        {
+            if(QMessageBox::warning(0,tr("Failed to open data file"),
+                                    tr("Program was unable to open data file. Retry?"),
+                                    QMessageBox::Retry||QMessageBox::Abort,
+                                    QMessageBox::Retry)==QMessageBox::Abort)
+            {
+                result_row.clear();
+                emit call_error(tr("Failed to open data file. Abort by user."));
+                return R_CALL_ERROR_UNRECOVERABLE;
+            }
+        }
         data_file->write(result_row.join(";").toUtf8());
         data_file->write(QString("\n").toUtf8());
         data_file->close();
@@ -194,7 +228,10 @@ int CControlBus::call(QString function, QString service, QList<QScriptValue> arg
     foreach(QDBusInterface* flow_i, flow_interfaces)
     {
         if(flow_i->isValid() && flow_i->service()==service)
+        {
             flow=flow_i;
+            break;
+        }
     }
 
     if(flow==0)//No corresponding flow interface found
@@ -245,19 +282,24 @@ int CControlBus::call(QString function, QString service, QList<QScriptValue> arg
 
     //creates event loop which will wait for reply from
     //flow interface
-    while(reply_wait!=NULL)
-        reply_wait->quit();
-
+    eventloop_mutex.lock();
     if(reply_wait==NULL)
         reply_wait=new QEventLoop(this);
+    else {
+        emit call_error(tr("Tried to create event loop, but it's already there!"));
+        return R_CALL_ERROR;
+    }
+    eventloop_mutex.unlock();
     //should we throw error if loop already initialized?
 
     reply_wait->exec();//Run local event loop
 
     //after event loop finished, we do not need it anymore
+    eventloop_mutex.lock();
     QEventLoop *ptemp=reply_wait;
     reply_wait=0;
     delete ptemp;
+    eventloop_mutex.unlock();
     //Cheat with temporary holder is used in order to signalize
     //other threads and to avoid race conditions
 

@@ -17,6 +17,7 @@
 #include <QThread>
 #include <QMutex>
 #include <QMutexLocker>
+#include <QMessageBox>
 #include <QtScript>
 #include "qhelpindexbuilder.h"
 #include "qfuncinitbuilder.h"
@@ -37,6 +38,7 @@ private:
     QString last_call;
     QMutex file_mutex;
     QMutex result_row_mutex;
+    QMutex eventloop_mutex;
     QEventLoop *reply_wait;
     QStringList reply;
     QList<QDBusInterface*> flow_interfaces;
