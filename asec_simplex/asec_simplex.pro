@@ -12,10 +12,16 @@ SOURCES += point2d.cpp \
     graph.cpp
 HEADERS += point2d.h \
     graph.h
-INCLUDEPATH += C:\Qwt-5.1.2-svn\include
-LIBS += -L C:\Qwt-5.1.2-svn\lib \
-    -lqwtd5
-INCLUDEPATH += "C:\Program Files\GnuWin32\include"
-LIBS += -L "C:\Program Files\GnuWin32\lib" \
-    -lgsl -lgslcblas
+win32 {
+    INCLUDEPATH += C:\Qwt-5.1.2-svn\include
+    LIBS += -L C:\Qwt-5.1.2-svn\lib \
+        -lqwtd5
+    INCLUDEPATH += "C:\Program Files\GnuWin32\include"
+    LIBS += -L "C:\Program Files\GnuWin32\lib" \
+        -lgsl -lgslcblas
+} else {
+    INCLUDEPATH += /usr/include \
+        /usr/include/qwt5
+    LIBS+= -lqwt -lgsl -lgslcblas
+}
 FORMS += graph.ui

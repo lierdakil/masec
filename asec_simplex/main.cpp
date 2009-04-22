@@ -47,7 +47,7 @@ double If(const gsl_vector *v, void *params) //I(f)
     double f0 = 1/(2*PI*sqrt(Lm*Cm));
 
     if(f0<(p->f_min) || f0>(p->f_max))
-        return GSL_NAN;
+        return U/R0;//it's actually the theoretical maximum
 
     double w=2*PI*p->f;
 
@@ -94,18 +94,30 @@ Point2D find_extremum(QVector<Point2D> dat, bool max, int* index=0)
 
 int main(int argc, char* argv[])
 {
-    if(argc<=3)
+    if(argc<3)
     {
         std::cerr<<"Usage:\n"
-                <<"\t"<<argv[0]<<" Lm C0 datafile\n";
+                <<"\t"<<argv[0]<<" redfile datafile(s)\n";
         return 1;
     }
 
+    QFile f(argv[1]);
+    if(f.open(QFile::ReadOnly))
+    {
+        while(!f.atEnd())
+        {
+            QString line=QString::fromUtf8(f.readLine());
+            if(line.startsWith('#'))
+                std::cout<<line.toLocal8Bit().data();
+        }
+        f.close();
+    }
+
     std::cout<<"File\t"
-            "Resonance frequency, Hz\t"
-            "Resonance amplitude, V\t"
-            "Antiresonance frequency, Hz\t"
-            "Antiresonance amplitude, V\t"
+            "Resonance freq, Hz\t"
+            "Resonance ampl, V\t"
+            "Antiresonance freq, Hz\t"
+            "Antiresonance ampl, V\t"
             "St. dev., V\t"
             "Mean Noise, V\n";
 
@@ -115,10 +127,10 @@ int main(int argc, char* argv[])
     gsl_vector *a;
     a=gsl_vector_alloc(PARAM_COUNT);
 
-    bool useC0,useLm, useU=false, useR0=false;
-    double inLm, inC0, inU, inR0;
+    bool useC0=false ,useLm=false, useU=false, useR0=false;
+    double inLm=0, inC0=0, inU=0, inR0=0;
 
-    for(int ifile=3;ifile<argc;++ifile)
+    for(int ifile=2;ifile<argc;++ifile)
     {
         QFile f(argv[ifile]);
         if (!f.open(QIODevice::ReadOnly))
@@ -155,7 +167,7 @@ int main(int argc, char* argv[])
         //noise/=func_sm_data.count();//Standard deviation from mean
 
         //experimental
-        if(ifile==3) //we only need initial parameters if it's first run, for other files in serise,
+        if(ifile==2) //we only need initial parameters if it's first run, for other files in serise,
             //parameters do not change much
         {
             Point2D Res, Antires;
@@ -163,9 +175,8 @@ int main(int argc, char* argv[])
             Antires=find_extremum(func_data,false);
             double fr=Res.x, fa=Antires.x, Ir=Res.y, Ia=Antires.y;
 
-            inLm=QString(argv[1]).toDouble(&useLm);
-            inC0=QString(argv[2]).toDouble(&useC0);
-
+            useC0=false;
+            useLm=false;
 
             double C0,Lm,Rm,Cm,R0,U;
             R0=1000;
@@ -192,6 +203,16 @@ int main(int argc, char* argv[])
             gsl_vector_set_all(a,1e10);
         }
 
+        {//update Cm if f0 changed a bit too dramatically
+            double Lm = useLm ? inLm : gsl_vector_get(a,1)*gsl_vector_get(units,1);
+            double f0=1/(2*PI*sqrt(Lm*gsl_vector_get(a,2)*gsl_vector_get(units,2)));
+            if(f0<func_data.first().x || f0>func_data.last().x)
+            {
+                Point2D Res=find_extremum(func_data,true);
+                gsl_vector_set(a,2,1/(gsl_vector_get(units,2)*4*PI*PI*Res.x*Res.x*Lm));
+            }
+        }
+
         gsl_vector *ss;//step size
         ss=gsl_vector_alloc(PARAM_COUNT);
         gsl_vector_set_all(ss, 1e-3);
@@ -204,8 +225,8 @@ int main(int argc, char* argv[])
         param_struct func_params;
 
         func_params.data=&func_sm_data;
-        func_params.f_min=func_sm_data.first().x;
-        func_params.f_max=func_sm_data.last().x;
+        func_params.f_min=func_data.first().x;
+        func_params.f_max=func_data.last().x;
         func_params.RmU=gsl_vector_get(units,0);
         func_params.LmU=gsl_vector_get(units,1);
         func_params.CmU=gsl_vector_get(units,2);
@@ -316,7 +337,7 @@ int main(int argc, char* argv[])
         gsl_multimin_fminimizer_free(min);
         gsl_vector_free(ss);
 
-        if(ifile==3)
+        if(ifile==2)
         {
             useLm=true;
             inLm=gsl_vector_get(par,1);
