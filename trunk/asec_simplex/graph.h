@@ -4,6 +4,7 @@
 #include <QtGui/QWidget>
 #include <qwt_plot.h>
 #include <qwt_plot_curve.h>
+#include "functions.h"
 
 namespace Ui {
     class Graph;
@@ -30,6 +31,7 @@ private:
 
 private slots:
     void sb_valueChanged(double );
+    void sb_Lm_valueChanged(double );
 };
 
 #endif // GRAPH_H

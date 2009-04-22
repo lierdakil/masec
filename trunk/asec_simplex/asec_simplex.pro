@@ -9,19 +9,27 @@ CONFIG += console
 DESTDIR = ../build/
 SOURCES += point2d.cpp \
     main.cpp \
-    graph.cpp
+    graph.cpp \
+    functions.cpp
 HEADERS += point2d.h \
-    graph.h
-win32 {
+    graph.h \
+    functions.h
+win32 { 
     INCLUDEPATH += C:\Qwt-5.1.2-svn\include
-    LIBS += -L C:\Qwt-5.1.2-svn\lib \
+    LIBS += -L \
+        C:\Qwt-5.1.2-svn\lib \
         -lqwtd5
     INCLUDEPATH += "C:\Program Files\GnuWin32\include"
-    LIBS += -L "C:\Program Files\GnuWin32\lib" \
-        -lgsl -lgslcblas
-} else {
+    LIBS += -L \
+        "C:\Program Files\GnuWin32\lib" \
+        -lgsl \
+        -lgslcblas
+}
+else { 
     INCLUDEPATH += /usr/include \
         /usr/include/qwt5
-    LIBS+= -lqwt -lgsl -lgslcblas
+    LIBS += -lqwt \
+        -lgsl \
+        -lgslcblas
 }
 FORMS += graph.ui
