@@ -19,6 +19,11 @@ int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
     QFile f;
+    QString prefixf,prefixV;
+    if(argc>1)
+        prefixf=QString::fromLocal8Bit(argv[1])+" ";
+    if(argc>2)
+        prefixV=QString::fromLocal8Bit(argv[2])+" ";
     if(f.open(0,QIODevice::ReadOnly))
     {
         double Mq=-1, Ms=-1, Fr=-1, ls=-1, hs=-1, ws=-1;
@@ -65,12 +70,12 @@ int main(int argc, char *argv[])
                 continue;
             double A=1+Mq/Ms;
             double B=Mq*Fr/Ms;
-            double fr=data.at(header.indexOf("Resonance freq, Hz")).toDouble();
-            double fa=data.at(header.indexOf("Antiresonance freq, Hz")).toDouble();
-            double Vr=data.at(header.indexOf("Resonance ampl, V")).toDouble();
-            double Va=data.at(header.indexOf("Antiresonance ampl, V")).toDouble();
+            double fr=data.at(header.indexOf(prefixf+"Resonance freq, Hz")).toDouble();
+            double fa=data.at(header.indexOf(prefixf+"Antiresonance freq, Hz")).toDouble();
+            double Vr=data.at(header.indexOf(prefixV+"Resonance ampl, V")).toDouble();
+            double Va=data.at(header.indexOf(prefixV+"Antiresonance ampl, V")).toDouble();
             double fs=(fr+(fa-fr)*Va/(Va+Vr))*A-B;
-            double E=4*Ms/(hs*ws)*ls*fs;
+            double E=4*Ms/(hs*ws)*ls*fs*fs;
             double Q1=2*(fa-fr)*A*sqrt(Vr*Va)/(fs*(Vr+Va));
             QString buf;
             data_append(fs);
