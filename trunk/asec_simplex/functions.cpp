@@ -52,3 +52,20 @@ double StDev(const gsl_vector *v, void *params) //sum from 0 to N-1 (I_exp(f)-I(
     return S/data->count();
 }
 
+Point2D find_extremum(QVector<Point2D> dat, bool max, int* index)
+{
+    double extY=dat.first().y;
+    int exti=0;
+    for(int i=0;i<dat.count();++i)
+    {
+        if((max && extY<=dat[i].y)||(!max && extY>dat[i].y))
+        {
+            extY=dat[i].y;
+            exti=i;
+        }
+    }
+    if(index!=0)
+        *index=exti;
+    return dat[exti];
+}
+

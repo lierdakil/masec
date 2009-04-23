@@ -103,6 +103,12 @@ void Graph::sb_valueChanged(double val)
         Y_f.push_back(I);
     }
     fn.setData(X_f,Y_f);
+    double Vr = fn.maxYValue();
+    double Va = fn.minYValue();
+    double fr = X_f.at(Y_f.indexOf(Vr));
+    double fa = X_f.at(Y_f.indexOf(Va));
+    R.setValue(fr,Vr);
+    A.setValue(fa,Va);
     m_ui->qwtPlot->update();
     m_ui->qwtPlot->replot();
 }
