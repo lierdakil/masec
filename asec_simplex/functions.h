@@ -23,4 +23,6 @@ double If(const gsl_vector *v, void *params); //I(f)
 
 double StDev(const gsl_vector *v, void *params); //sum from 0 to N-1 (I_exp(f)-I(f))**2
 
+Point2D find_extremum(QVector<Point2D> dat, bool max, int* index=0);
+
 #endif // FUNCTIONS_H

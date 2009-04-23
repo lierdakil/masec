@@ -7,23 +7,6 @@
 #include "graph.h"
 #include <QApplication>
 
-Point2D find_extremum(QVector<Point2D> dat, bool max, int* index=0)
-{
-    double extY=dat.first().y;
-    int exti=0;
-    for(int i=0;i<dat.count();++i)
-    {
-        if((max && extY<=dat[i].y)||(!max && extY>dat[i].y))
-        {
-            extY=dat[i].y;
-            exti=i;
-        }
-    }
-    if(index!=0)
-        *index=exti;
-    return dat[exti];
-}
-
 int main(int argc, char* argv[])
 {
     if(argc<3)
