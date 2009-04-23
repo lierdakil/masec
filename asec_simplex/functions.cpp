@@ -49,6 +49,6 @@ double StDev(const gsl_vector *v, void *params) //sum from 0 to N-1 (I_exp(f)-I(
         double r = (data->at(i).y-I);
         S+=r*r;
     }
-    return S;
+    return S/data->count();
 }
 
