@@ -31,5 +31,7 @@ else {
     LIBS += -lqwt \
         -lgsl \
         -lgslcblas
+    QMAKE_CXXFLAGS+= -fopenmp
+    QMAKE_LFLAGS+= -fopenmp
 }
 FORMS += graph.ui

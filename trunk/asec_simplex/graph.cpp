@@ -46,8 +46,6 @@ m_ui(new Ui::Graph)
     connect(m_ui->sbU,SIGNAL(valueChanged(double)),SLOT(sb_valueChanged(double)));
     connect(m_ui->sbC0,SIGNAL(valueChanged(double)),SLOT(sb_valueChanged(double)));
     connect(m_ui->sbR0,SIGNAL(valueChanged(double)),SLOT(sb_valueChanged(double)));
-
-    this->setWindowState(Qt::WindowMaximized);
 }
 
 Graph::~Graph()
