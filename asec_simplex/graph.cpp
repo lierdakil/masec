@@ -7,7 +7,7 @@ Graph::Graph(QVector<qreal> X_exp, QVector<qreal> Y_exp,
              double C0, double R0,
              double fa, double Va,
              double fr, double Vr) :
-QWidget(0),
+QDialog(0),
 m_ui(new Ui::Graph)
 {
     m_ui->setupUi(this);
@@ -53,6 +53,36 @@ m_ui(new Ui::Graph)
 Graph::~Graph()
 {
     delete m_ui;
+}
+
+double Graph::Rm()
+{
+    return m_ui->sbRm->value()*1e3;
+}
+
+double Graph::Lm()
+{
+    return m_ui->sbLm->value();
+}
+
+double Graph::Cm()
+{
+    return m_ui->sbCm->value()*1e-19;
+}
+
+double Graph::U()
+{
+    return m_ui->sbU->value();
+}
+
+double Graph::C0()
+{
+    return m_ui->sbC0->value()*1e-14;
+}
+
+double Graph::R0()
+{
+    return m_ui->sbR0->value();
 }
 
 void Graph::changeEvent(QEvent *e)
