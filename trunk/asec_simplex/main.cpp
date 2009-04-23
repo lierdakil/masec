@@ -11,9 +11,11 @@ int main(int argc, char* argv[])
 {
     if(argc<2)
     {
+        usage:
         std::cerr<<"Usage:\n"
-                <<"\t"<<argv[0]<<" datafile(s)\n"
-                <<"\tAnd ASCII table to append to on stdin\n";
+                <<"\t"<<argv[0]<<" [-c] datafile(s)\n"
+                <<"\tAnd ASCII table to append to on stdin\n"
+                <<"\tc - console only, no gui\n";
         return 1;
     }
 
@@ -62,12 +64,39 @@ int main(int argc, char* argv[])
     bool useC0=false ,useLm=false, useU=false, useR0=false;
     double inLm=0, inC0=0, inU=0, inR0=0;
 
-    for(int ifile=1;ifile<argc;++ifile)
+    QString parameters;
+    QStringList arguments;
+    bool consoleonly=false;
+
+    for(int i=1; i<argc; ++i)
     {
-        QFile f(argv[ifile]);
+        if(argv[i][0]=='-')
+            parameters+=QString::fromLocal8Bit(argv[i]+1);
+        else
+            arguments<<QString::fromLocal8Bit(argv[i]);
+    }
+
+    if (!parameters.isEmpty())
+    {
+        for(int i=0; i<parameters.length(); ++i)
+        {
+            switch(parameters.at(i).toAscii()){
+            case 'c':
+                consoleonly=true;
+                break;
+            default:
+                goto usage;
+                break;
+            }
+        }
+    }
+
+    for(int ifile=0;ifile<arguments.count();++ifile)
+    {
+        QFile f(arguments[ifile]);
         if (!f.open(QIODevice::ReadOnly))
         {
-            std::cerr<<"could not open "<<argv[ifile];
+            std::cerr<<"could not open "<<arguments.at(ifile).toLocal8Bit().data();
             return 2;
         }
 
@@ -104,7 +133,7 @@ int main(int argc, char* argv[])
         Antires=find_extremum(func_sm_data,false,&aresi);
 
         //experimental
-        if(ifile==1) //we only need initial parameters if it's first run, for other files in serise,
+        if(ifile==0) //we only need initial parameters if it's first run, for other files in serise,
             //parameters do not change much
         {
             double fr=Res.x, fa=Antires.x, Ir=Res.y, Ia=Antires.y;
@@ -284,7 +313,10 @@ int main(int argc, char* argv[])
                     gsl_vector_get(par,2), gsl_vector_get(par,4), gsl_vector_get(par,3),
                     gsl_vector_get(par,5), minf, minI, maxf, maxI);
             g.setWindowTitle(f.fileName());
-            gstatus=g.exec();
+            if(!consoleonly)
+                gstatus=g.exec();
+            else
+                gstatus=QDialog::Accepted; //if it was not shown, we have to agree :)
             if(gstatus==QDialog::Rejected)
             {
                 gsl_vector_set(par,0,g.Rm());
@@ -297,16 +329,16 @@ int main(int argc, char* argv[])
                 gsl_vector_div(a,units);
             } else {
                 QString buf;
-                table[ifile].append("\t"+f.fileName()+"\t");
-                table[ifile].append(buf.setNum(maxf)+"\t");
-                table[ifile].append(buf.setNum(maxI)+"\t");
-                table[ifile].append(buf.setNum(minf)+"\t");
-                table[ifile].append(buf.setNum(minI)+"\t");
-                table[ifile].append(buf.setNum(min->fval)+"\t");
-                table[ifile].append(buf.setNum(noise));
+                table[ifile+1].append("\t"+f.fileName()+"\t");
+                table[ifile+1].append(buf.setNum(maxf)+"\t");
+                table[ifile+1].append(buf.setNum(maxI)+"\t");
+                table[ifile+1].append(buf.setNum(minf)+"\t");
+                table[ifile+1].append(buf.setNum(minI)+"\t");
+                table[ifile+1].append(buf.setNum(min->fval)+"\t");
+                table[ifile+1].append(buf.setNum(noise));
             }
 
-            if(ifile==1)
+            if(ifile==0)
             {
                 useLm=true;
                 inLm=gsl_vector_get(par,1);
