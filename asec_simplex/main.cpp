@@ -9,6 +9,33 @@
 
 int main(int argc, char* argv[])
 {
+    QString parameters;
+    QStringList arguments;
+    bool consoleonly=false;
+
+    for(int i=1; i<argc; ++i)
+    {
+        if(argv[i][0]=='-')
+            parameters+=QString::fromLocal8Bit(argv[i]+1);
+        else
+            arguments<<QString::fromLocal8Bit(argv[i]);
+    }
+
+    if (!parameters.isEmpty())
+    {
+        for(int i=0; i<parameters.length(); ++i)
+        {
+            switch(parameters.at(i).toAscii()){
+            case 'c':
+                consoleonly=true;
+                break;
+            default:
+                goto usage;
+                break;
+            }
+        }
+    }
+
     if(argc<2)
     {
         usage:
@@ -39,9 +66,9 @@ int main(int argc, char* argv[])
 
     if(table.count()<=1)
     {
-        for(int i=0;i<argc;++i)
+        for(int i=0;i<arguments.count();++i)
             table<<"";
-    } else if(table.count()!=argc)
+    } else if(table.count()!=arguments.count()+1)
     {
         std::cerr<<"Invalid ascii table specified";
         return 1;
@@ -63,33 +90,6 @@ int main(int argc, char* argv[])
 
     bool useC0=false ,useLm=false, useU=false, useR0=false;
     double inLm=0, inC0=0, inU=0, inR0=0;
-
-    QString parameters;
-    QStringList arguments;
-    bool consoleonly=false;
-
-    for(int i=1; i<argc; ++i)
-    {
-        if(argv[i][0]=='-')
-            parameters+=QString::fromLocal8Bit(argv[i]+1);
-        else
-            arguments<<QString::fromLocal8Bit(argv[i]);
-    }
-
-    if (!parameters.isEmpty())
-    {
-        for(int i=0; i<parameters.length(); ++i)
-        {
-            switch(parameters.at(i).toAscii()){
-            case 'c':
-                consoleonly=true;
-                break;
-            default:
-                goto usage;
-                break;
-            }
-        }
-    }
 
     for(int ifile=0;ifile<arguments.count();++ifile)
     {
@@ -270,15 +270,13 @@ int main(int argc, char* argv[])
             }
 
             double maxf=func_data[0].x;
-            func_params.f = maxf;
-            double maxI=If(min->x,&func_params);
+            double maxI=If(min->x,&func_params,maxf);
             double minf=maxf;
-            double minI=If(min->x,&func_params);
+            double minI=If(min->x,&func_params,maxf);
 
             for(double freq=func_data[0].x; freq<func_data.last().x; ++freq)
             {
-                func_params.f = freq;
-                double I=If(min->x,&func_params);
+                double I=If(min->x,&func_params, freq);
                 X_f.push_back(freq);
                 Y_f.push_back(I);
                 if(I>maxI)
