@@ -12,6 +12,8 @@
 
 struct param_struct {
     QVector<Point2D> *data;
+    int resi;
+    int aresi;
     double f;
     double f_min;
     double f_max;

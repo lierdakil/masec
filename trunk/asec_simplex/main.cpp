@@ -82,8 +82,9 @@ int main(int argc, char* argv[])
         noise/=func_sm_data.count();//Standard deviation from mean
 
         Point2D Res, Antires;
-        Res=find_extremum(func_sm_data,true);
-        Antires=find_extremum(func_sm_data,false);
+        int resi,aresi;
+        Res=find_extremum(func_sm_data,true,&resi);
+        Antires=find_extremum(func_sm_data,false,&aresi);
 
         //experimental
         if(ifile==2) //we only need initial parameters if it's first run, for other files in serise,
@@ -138,6 +139,9 @@ int main(int argc, char* argv[])
         param_struct func_params;
 
         func_params.data=&func_sm_data;
+        func_params.resi=resi;
+        func_params.aresi=aresi;
+
         func_params.f_min=func_data.first().x;
         func_params.f_max=func_data.last().x;
         func_params.RmU=gsl_vector_get(units,0);

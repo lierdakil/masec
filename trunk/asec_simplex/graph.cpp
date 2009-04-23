@@ -94,6 +94,12 @@ void Graph::sb_valueChanged(double val)
     func_params.U=m_ui->sbU->value();
     func_params.R0=m_ui->sbR0->value();
 
+    func_params.f=startf;
+    double Vr = If((const gsl_vector*)NULL, &func_params);
+    double Va = Vr;
+    double fr = startf;
+    double fa = startf;
+
     QVector<qreal> X_f,Y_f;
     for(double f=startf; f<endf; ++f)
     {
@@ -101,14 +107,22 @@ void Graph::sb_valueChanged(double val)
         double I=If((const gsl_vector*)NULL, &func_params);
         X_f.push_back(f);
         Y_f.push_back(I);
+        if(I>Vr)
+        {
+            Vr=I;
+            fr=f;
+        }
+        if(I<Va)
+        {
+            Va=I;
+            fa=f;
+        }
     }
     fn.setData(X_f,Y_f);
-    double Vr = fn.maxYValue();
-    double Va = fn.minYValue();
-    double fr = X_f.at(Y_f.indexOf(Vr));
-    double fa = X_f.at(Y_f.indexOf(Va));
     R.setValue(fr,Vr);
+    R.setLabel(QwtText(QString("f_r = %1, V_r = %2").arg(fr).arg(Vr),QwtText::AutoText));
     A.setValue(fa,Va);
+    A.setLabel(QwtText(QString("f_a = %1, V_a = %2").arg(fa).arg(Va),QwtText::AutoText));
     m_ui->qwtPlot->update();
     m_ui->qwtPlot->replot();
 }
