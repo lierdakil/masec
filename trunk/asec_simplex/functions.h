@@ -14,14 +14,13 @@ struct param_struct {
     QVector<Point2D> *data;
     int resi;
     int aresi;
-    double f;
     double f_min;
     double f_max;
     double RmU,LmU,CmU,C0U,UU,R0U;
     double Rm,Lm,Cm,C0,U,R0;
 };
 
-double If(const gsl_vector *v, void *params); //I(f)
+double If(const gsl_vector *v, void *params, double f); //I(f)
 
 double StDev(const gsl_vector *v, void *params); //sum from 0 to N-1 (I_exp(f)-I(f))**2
 

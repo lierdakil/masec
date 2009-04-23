@@ -122,8 +122,7 @@ void Graph::sb_valueChanged(double val)
     func_params.U=m_ui->sbU->value();
     func_params.R0=m_ui->sbR0->value();
 
-    func_params.f=startf;
-    double Vr = If((const gsl_vector*)NULL, &func_params);
+    double Vr = If((const gsl_vector*)NULL, &func_params, startf);
     double Va = Vr;
     double fr = startf;
     double fa = startf;
@@ -131,8 +130,7 @@ void Graph::sb_valueChanged(double val)
     QVector<qreal> X_f,Y_f;
     for(double f=startf; f<endf; ++f)
     {
-        func_params.f=f;
-        double I=If((const gsl_vector*)NULL, &func_params);
+        double I=If((const gsl_vector*)NULL, &func_params, f);
         X_f.push_back(f);
         Y_f.push_back(I);
         if(I>Vr)

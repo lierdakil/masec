@@ -1,6 +1,6 @@
 #include "functions.h"
 
-double If(const gsl_vector *v, void *params) //I(f)
+double If(const gsl_vector *v, void *params, double f) //I(f)
 {
     param_struct *p = (param_struct*)params;
 
@@ -26,7 +26,7 @@ double If(const gsl_vector *v, void *params) //I(f)
     if(f0<(p->f_min) || f0>(p->f_max))//if it tries to walk away from solution, return something big
         return U/R0;//it's actually the theoretical maximum
 
-    double w=2*PI*p->f;
+    double w=2*PI*f;
 
     double A = (((pow(Cm,2)*pow(w,4)*pow(Rm,2)+pow(Cm,2)*pow(w,6)*pow(Lm,2)-2*Cm*pow(w,4)*Lm+pow(w,2))*pow(C0,2)+(2*Cm*pow(w,2)-2*pow(Cm,2)*pow(w,4)*Lm)*C0+pow(Cm,2)*pow(w,2))*pow(R0,2)+2*pow(Cm,2)*pow(w,2)*Rm*R0+pow(Cm,2)*pow(w,2)*pow(Rm,2)+pow(Cm,2)*pow(w,4)*pow(Lm,2)-2*Cm*pow(w,2)*Lm+1)/((pow(Cm,2)*pow(w,4)*pow(Rm,2)+pow(Cm,2)*pow(w,6)*pow(Lm,2)-2*Cm*pow(w,4)*Lm+pow(w,2))*pow(C0,2)+(2*Cm*pow(w,2)-2*pow(Cm,2)*pow(w,4)*Lm)*C0+pow(Cm,2)*pow(w,2));
     if(A>0)
@@ -37,17 +37,16 @@ double If(const gsl_vector *v, void *params) //I(f)
 
 double StDev(const gsl_vector *v, void *params) //sum from 0 to N-1 (I_exp(f)-I(f))**2
 {
-    param_struct p = *((param_struct*)params);
-    QVector<Point2D> *data = p.data;
+    param_struct *p = (param_struct*)params;
+    QVector<Point2D> *data = p->data;
     double S=0;
     //    double k=0;
-#pragma omp parallel firstprivate(p) reduction(+:S)
+#pragma omp parallel reduction(+:S)
     {
 #pragma omp for
         for(int i=0; i<data->count(); ++i)
         {
-            p.f = data->at(i).x;
-            double I = If(v,&p);
+            double I = If(v,p,data->at(i).x);
             double r = (data->at(i).y-I);
             //        if(i<p->resi) k++;
             //        else if (i>p->aresi) k--;
