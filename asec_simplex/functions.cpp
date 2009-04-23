@@ -40,6 +40,7 @@ double StDev(const gsl_vector *v, void *params) //sum from 0 to N-1 (I_exp(f)-I(
     param_struct *p = (param_struct*)params;
     QVector<Point2D> *data = p->data;
     double S=0;
+//    double k=0;
     for(int i=0; i<data->count(); ++i)
     {
         p->f = data->at(i).x;
@@ -47,7 +48,10 @@ double StDev(const gsl_vector *v, void *params) //sum from 0 to N-1 (I_exp(f)-I(
         if(I==GSL_NAN)
             return I;
         double r = (data->at(i).y-I);
-        S+=r*r;
+//        if(i<p->resi) k++;
+//        else if (i>p->aresi) k--;
+//        else {};
+        S+=r*r/**k*/;
     }
     return S/data->count();
 }
