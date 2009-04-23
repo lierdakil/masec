@@ -214,7 +214,7 @@ int main(int argc, char* argv[])
 
         QVector<qreal> X_exp,Y_exp,X_f,Y_f;
 
-        foreach(Point2D P, func_sm_data)
+        foreach(Point2D P, func_data)
         {
             X_exp.push_back(P.x);
             Y_exp.push_back(P.y);
