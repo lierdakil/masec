@@ -63,20 +63,20 @@ int main(int argc, char *argv[])
                 }
             }
 
+            f.seek(0);
+            do{
+                line = QString::fromUtf8(f.readLine());
+                if(!stripcomments && line.startsWith('#'))
+                    cout<<line.toLocal8Bit().data();
+            }while (line.startsWith('#'));
+
             //output header
             foreach(QString name, header)
                 cout<<name.toLocal8Bit().data()<<"\t";
             cout<<"\n";
 
-            f.seek(0);
-            while(!f.atEnd())
+            while(true)
             {
-                line = QString::fromUtf8(f.readLine());
-                while (line.startsWith('#')){
-                    if(!stripcomments)
-                        cout<<line.toLocal8Bit().data();
-                    line = QString::fromUtf8(f.readLine());
-                }
                 QStringList dataline=line.split(";");
                 QVector<QString> row;
                 row.fill("",header.count());
@@ -91,6 +91,10 @@ int main(int argc, char *argv[])
                 foreach(QString cell, row)
                     cout<<cell.toLocal8Bit().data()<<"\t";
                 cout<<"\n";
+                if(f.atEnd())
+                    break;
+                else
+                    line = QString::fromUtf8(f.readLine());
             }
         } else {
             cout<<"Could not open file ";
