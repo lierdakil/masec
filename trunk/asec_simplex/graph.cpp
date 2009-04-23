@@ -4,9 +4,11 @@
 Graph::Graph(QVector<qreal> X_exp, QVector<qreal> Y_exp,
              QVector<qreal> X_f, QVector<qreal> Y_f,
              double Rm, double Lm, double Cm ,double U,
-                   double C0, double R0) :
-    QWidget(0),
-    m_ui(new Ui::Graph)
+             double C0, double R0,
+             double fa, double Va,
+             double fr, double Vr) :
+QWidget(0),
+m_ui(new Ui::Graph)
 {
     m_ui->setupUi(this);
     exp.setData(X_exp,Y_exp);
@@ -14,6 +16,18 @@ Graph::Graph(QVector<qreal> X_exp, QVector<qreal> Y_exp,
     exp.attach(m_ui->qwtPlot);
     fn.attach(m_ui->qwtPlot);
     fn.setPen(QPen(Qt::red));
+    R.setLinePen(Qt::SolidLine);
+    R.setLineStyle(QwtPlotMarker::Cross);
+    R.setLabel(QwtText(QString("f_r = %1, V_r = %2").arg(fr).arg(Vr),QwtText::AutoText));
+    R.setLabelAlignment(Qt::AlignRight | Qt::AlignBottom);
+    R.setValue(fr,Vr);
+    R.attach(m_ui->qwtPlot);
+    A.setLinePen(Qt::SolidLine);
+    A.setLineStyle(QwtPlotMarker::Cross);
+    A.setLabel(QwtText(QString("f_a = %1, V_a = %2").arg(fa).arg(Va),QwtText::AutoText));
+    A.setLabelAlignment(Qt::AlignLeft | Qt::AlignTop);
+    A.setValue(fa,Va);
+    A.attach(m_ui->qwtPlot);
     m_ui->qwtPlot->update();
 
     connect(m_ui->sbLm,SIGNAL(valueChanged(double)),SLOT(sb_Lm_valueChanged(double)));
@@ -32,6 +46,8 @@ Graph::Graph(QVector<qreal> X_exp, QVector<qreal> Y_exp,
     connect(m_ui->sbU,SIGNAL(valueChanged(double)),SLOT(sb_valueChanged(double)));
     connect(m_ui->sbC0,SIGNAL(valueChanged(double)),SLOT(sb_valueChanged(double)));
     connect(m_ui->sbR0,SIGNAL(valueChanged(double)),SLOT(sb_valueChanged(double)));
+
+    this->setWindowState(Qt::WindowMaximized);
 }
 
 Graph::~Graph()

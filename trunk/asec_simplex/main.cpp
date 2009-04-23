@@ -81,8 +81,8 @@ int main(int argc, char* argv[])
 
         QVector<Point2D> func_sm_data; //smoothen initial data and lessen number of points
         double noise=0;
-        int step=100;
-        for(int i=step/2;i<func_data.count()-step/2;i+=step)
+        int step=50;
+        for(int i=step/2;i<func_data.count()-step/2;++i)
         {
             double y=0;
             double x=0;
@@ -96,15 +96,16 @@ int main(int argc, char* argv[])
             func_sm_data<<fPoint2D(func_data[i].x,y);
             noise+=pow(func_sm_data.last().y-func_data[i].y,2);
         }
-        //noise/=func_sm_data.count();//Standard deviation from mean
+        noise/=func_sm_data.count();//Standard deviation from mean
+
+        Point2D Res, Antires;
+        Res=find_extremum(func_sm_data,true);
+        Antires=find_extremum(func_sm_data,false);
 
         //experimental
         if(ifile==2) //we only need initial parameters if it's first run, for other files in serise,
             //parameters do not change much
         {
-            Point2D Res, Antires;
-            Res=find_extremum(func_data,true);
-            Antires=find_extremum(func_data,false);
             double fr=Res.x, fa=Antires.x, Ir=Res.y, Ia=Antires.y;
 
             useC0=false;
@@ -139,10 +140,7 @@ int main(int argc, char* argv[])
             double Lm = useLm ? inLm : gsl_vector_get(a,1)*gsl_vector_get(units,1);
             double f0=1/(2*PI*sqrt(Lm*gsl_vector_get(a,2)*gsl_vector_get(units,2)));
             if(f0<func_data.first().x || f0>func_data.last().x)
-            {
-                Point2D Res=find_extremum(func_data,true);
                 gsl_vector_set(a,2,1/(gsl_vector_get(units,2)*4*PI*PI*Res.x*Res.x*Lm));
-            }
         }
 
         gsl_vector *ss;//step size
@@ -185,16 +183,23 @@ int main(int argc, char* argv[])
         gsl_multimin_fminimizer_set(min, &func, a, ss);
         int status;
         size_t iter=0;
+        double oldsize;
         do
         {
             iter++;
+            if(iter % 10==0)
+                oldsize=gsl_multimin_fminimizer_size(min);
             status = gsl_multimin_fminimizer_iterate(min);
 
             if (status)
                 break;
 
-            double size = gsl_multimin_fminimizer_size (min);
-            status = gsl_multimin_test_size (size, 1e-3);
+            double size = gsl_multimin_fminimizer_size(min);
+            //status = gsl_multimin_test_size (size, 1e-10);
+            if(size!=oldsize || iter%10!=9 )
+                status=GSL_CONTINUE;
+            else
+                status=GSL_SUCCESS;
 
             if (status == GSL_SUCCESS)
             {
@@ -218,44 +223,42 @@ int main(int argc, char* argv[])
                         <<size<<"\n";
             }
         }
-        while (status == GSL_CONTINUE && iter < 2000);
+        while (status == GSL_CONTINUE && iter < 10000);
 
         QVector<qreal> X_exp,Y_exp,X_f,Y_f;
 
-        foreach(Point2D P, func_data)
+        foreach(Point2D P, func_sm_data)
         {
             X_exp.push_back(P.x);
             Y_exp.push_back(P.y);
         }
 
 
+        double maxf=func_data[0].x;
+        func_params.f = maxf;
+        double maxI=If(min->x,&func_params);
+        double minf=maxf;
+        double minI=If(min->x,&func_params);
+
+        for(double freq=func_data[0].x; freq<func_data.last().x; ++freq)
         {
-            double maxf=func_data[0].x;
-            func_params.f = maxf;
-            double maxI=If(min->x,&func_params);
-            double minf=maxf;
-            double minI=If(min->x,&func_params);
-
-            for(double freq=func_data[0].x; freq<func_data.last().x; ++freq)
+            func_params.f = freq;
+            double I=If(min->x,&func_params);
+            X_f.push_back(freq);
+            Y_f.push_back(I);
+            if(I>maxI)
             {
-                func_params.f = freq;
-                double I=If(min->x,&func_params);
-                X_f.push_back(freq);
-                Y_f.push_back(I);
-                if(I>maxI)
-                {
-                    maxI=I;
-                    maxf=freq;
-                }
-
-                if(I<minI)
-                {
-                    minI=I;
-                    minf=freq;
-                }
+                maxI=I;
+                maxf=freq;
             }
-            std::cout<<f.fileName().toAscii().data()<<"\t"<<maxf<<"\t"<<maxI<<"\t"<<minf<<"\t"<<minI<<"\t"<<min->fval<<"\t"<<noise<<"\n";
+
+            if(I<minI)
+            {
+                minI=I;
+                minf=freq;
+            }
         }
+        std::cout<<f.fileName().toAscii().data()<<"\t"<<maxf<<"\t"<<maxI<<"\t"<<minf<<"\t"<<minI<<"\t"<<min->fval<<"\t"<<noise<<"\n";
 
         gsl_vector_memcpy(a, min->x);
 
@@ -277,8 +280,8 @@ int main(int argc, char* argv[])
             inLm=gsl_vector_get(par,1);
             useC0=true;
             inC0=gsl_vector_get(par,3);
-//            useU=true;
-//            inU=gsl_vector_get(par,4);
+            //            useU=true;
+            //            inU=gsl_vector_get(par,4);
             useR0=true;
             inR0=gsl_vector_get(par,5);
         }
@@ -286,7 +289,7 @@ int main(int argc, char* argv[])
         QApplication app(argc,argv);
         Graph* g= new Graph(X_exp, Y_exp, X_f, Y_f, gsl_vector_get(par,0), gsl_vector_get(par,1),
                             gsl_vector_get(par,2), gsl_vector_get(par,4), gsl_vector_get(par,3),
-                            gsl_vector_get(par,5));
+                            gsl_vector_get(par,5), minf, minI, maxf, maxI);
         gsl_vector_free(par);
         g->setWindowTitle(f.fileName());
         g->show();
