@@ -1,7 +1,7 @@
 #ifndef GRAPH_H
 #define GRAPH_H
 
-#include <QtGui/QWidget>
+#include <QtGui/QDialog>
 #include <qwt_plot.h>
 #include <qwt_plot_curve.h>
 #include <qwt_plot_marker.h>
@@ -12,7 +12,7 @@ namespace Ui {
     class Graph;
 }
 
-class Graph : public QWidget {
+class Graph : public QDialog {
     Q_OBJECT
     Q_DISABLE_COPY(Graph)
 public:
@@ -21,6 +21,12 @@ public:
                    double Rm, double Lm, double Cm ,double U,
                    double C0, double R0, double fa, double Va,
                    double fr, double Vr);
+    double Rm();
+    double Lm();
+    double Cm();
+    double U();
+    double C0();
+    double R0();
     virtual ~Graph();
 
 protected:
