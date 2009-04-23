@@ -37,21 +37,23 @@ double If(const gsl_vector *v, void *params) //I(f)
 
 double StDev(const gsl_vector *v, void *params) //sum from 0 to N-1 (I_exp(f)-I(f))**2
 {
-    param_struct *p = (param_struct*)params;
-    QVector<Point2D> *data = p->data;
+    param_struct p = *((param_struct*)params);
+    QVector<Point2D> *data = p.data;
     double S=0;
-//    double k=0;
-    for(int i=0; i<data->count(); ++i)
+    //    double k=0;
+#pragma omp parallel firstprivate(p) reduction(+:S)
     {
-        p->f = data->at(i).x;
-        double I = If(v,params);
-        if(I==GSL_NAN)
-            return I;
-        double r = (data->at(i).y-I);
-//        if(i<p->resi) k++;
-//        else if (i>p->aresi) k--;
-//        else {};
-        S+=r*r/**k*/;
+#pragma omp for
+        for(int i=0; i<data->count(); ++i)
+        {
+            p.f = data->at(i).x;
+            double I = If(v,&p);
+            double r = (data->at(i).y-I);
+            //        if(i<p->resi) k++;
+            //        else if (i>p->aresi) k--;
+            //        else {};
+            S+=r*r/**k*/;
+        }
     }
     return S/data->count();
 }
