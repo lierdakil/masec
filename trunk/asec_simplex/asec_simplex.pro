@@ -14,18 +14,21 @@ SOURCES += point2d.cpp \
 HEADERS += point2d.h \
     graph.h \
     functions.h
-win32 { 
+win32 {
     INCLUDEPATH += C:\Qwt-5.1.2-svn\include
     LIBS += -L \
         C:\Qwt-5.1.2-svn\lib \
         -lqwtd5
-    INCLUDEPATH += "C:\Program Files\GnuWin32\include"
-    LIBS += -L \
-        "C:\Program Files\GnuWin32\lib" \
+    INCLUDEPATH += \
+        #"C:\Program Files\GnuWin32\include" \
+        "C:\msys\1.0\local\include"
+    LIBS += \
+        #-L "C:\Program Files\GnuWin32\lib" \
+        -L "C:\msys\1.0\local\lib" \
         -lgsl \
         -lgslcblas
 }
-else { 
+else {
     INCLUDEPATH += /usr/include \
         /usr/include/qwt5
     LIBS += -lqwt \
