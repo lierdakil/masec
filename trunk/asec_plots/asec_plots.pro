@@ -16,6 +16,13 @@ SOURCES += QListWidgetItemPlot.cpp \
 FORMS += qplotparam.ui \
     qplotwindow.ui \
     asec_plots.ui
-RESOURCES += 
-INCLUDEPATH += C:\Qwt-5.1.2-svn\include
-LIBS += C:\Qwt-5.1.2-svn\lib\libqwtd5.a
+RESOURCES +=
+win32{
+    INCLUDEPATH += C:\Qwt-5.2.0-svn\include
+    LIBS += -L C:\Qwt-5.2.0-svn\lib
+}
+else {
+    INCLUDEPATH += /usr/include \
+        /usr/include/qwt5
+}
+LIBS += -lqwt
