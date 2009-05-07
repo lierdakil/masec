@@ -1,3 +1,4 @@
+CONFIG += exceptions
 TEMPLATE = app
 DESTDIR = ../build/
 TARGET = asec_upr

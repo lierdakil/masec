@@ -26,6 +26,7 @@ vibupraut::vibupraut(QWidget *parent)
     ui.sbOscVol->setValue(f.value("UPR/osc_vol",0.1).toDouble());
     ui.sbSm1->setValue(f.value("UPR/sm1",12).toInt());
     ui.sbSm2->setValue(f.value("UPR/sm2",24).toInt());
+    ui.sbVPP->setValue(f.value("UPR/VPP",5).toDouble());
 
     thread.setParent(this);
     qRegisterMetaType<QList<qreal> >("QList<qreal>");
@@ -45,6 +46,7 @@ vibupraut::~vibupraut()
     f.setValue("UPR/osc_vol", ui.sbOscVol->value());
     f.setValue("UPR/sm1",ui.sbSm1->value());
     f.setValue("UPR/sm2",ui.sbSm2->value());
+    f.setValue("UPR/VPP",ui.sbVPP->value());
 }
 
 void vibupraut::measure(double startf, double stopf, QString filename)
@@ -59,6 +61,7 @@ void vibupraut::measure(double startf, double stopf, QString filename)
     thread.volts1=ui.sbOscVol->value();
     thread.sm1=ui.sbSm1->value();
     thread.sm2=ui.sbSm2->value();
+    thread.genvolpp=ui.sbVPP->value();
     ui.graph->scene()->clear();
     thread.start();
 }

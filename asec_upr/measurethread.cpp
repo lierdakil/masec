@@ -76,7 +76,7 @@ QByteArray MeasureThread::sweep()
         emit path(diff,QPen(Qt::darkYellow));
 
         double min_diff_val=0;
-        int min_diff_index;
+        int min_diff_index=0;
 
         //find diff_min
         for (int i=0;i<diff.count();i++)
@@ -189,31 +189,28 @@ double MeasureThread::find_extremum(QByteArray dat, int start, int stop, int sm,
 #ifdef GOLDEN
     return golden(k*start+ssf,k*stop+ssf,epsilon,true);
 #else
-    while(start<stop && sm >= 1)
+    QList<qreal> diff=sm_diff(dat,sm);
+    int a,b;
+    //left to right
+    for(int i=start;i<stop;i++)
     {
-        QList<qreal> diff=sm_diff(dat,sm);
-        //left to right
-        for(int i=start;i<stop;i++)
+        if((max && (diff[i]<=0 && diff[i-1]>=0)) || (!max && (diff[i]>=0 && diff[i-1]<=0)))
         {
-            if((max && diff[i]<=0) || (!max && diff[i]>=0))
-            {
-                start=i-1;
-                break;
-            }
+            a=i;
+            break;
         }
-        //right to left
-        for(int i=stop;i>start;i--)
+    }
+    //right to left
+    for(int i=stop;i>start;i--)
+    {
+        if((max && (diff[i]>=0 && diff[i+1]<=0)) || (!max && (diff[i]<=0 && diff[i+1]>=0)))
         {
-            if((max && diff[i]>=0) || (!max && diff[i]<=0))
-            {
-                stop=i+1;
-                break;
-            }
+            b=i;
+            break;
         }
-        sm--;
     }
 
-    return k*(start+stop)/2.0f+ssf;
+    return k*(a+b)/2.0f+ssf;
 #endif
 }
 
@@ -337,6 +334,7 @@ void MeasureThread::run()
         gen = new genctrl(genid);
         vol = new volctrl(mulid);
         osc = new oscctrl(oscid);
+        gen->setvol(genvolpp);
 
         findresonance();
 
@@ -344,20 +342,18 @@ void MeasureThread::run()
         {
             QFile f(filename);
             f.open(QFile::WriteOnly);
-            QString buf;
             for(int i=0;i<curve.count();i++)
             {
-                buf.setNum(curve.at(i).first,'f',10);
-                f.write(buf.toAscii());
+                f.write(QString::number(curve.at(i).first,'f',10).toAscii());
                 f.write("\t");
-                buf.setNum(curve.at(i).second,'f',10);
-                f.write(buf.toAscii());
+                f.write(QString::number(curve.at(i).second,'f',10).toAscii());
                 f.write("\r\n");
             }
             f.close();
         }
 
         QStringList data;
+        data<<QString("Generator amplitude, VPP:%1").arg(genvolpp);
         data<<QString("First run start freq, Hz:%1").arg(fsf);
         data<<QString("First run stop freq, Hz:%1").arg(fff);
         data<<QString("Second run start freq, Hz:%1").arg(ssf);

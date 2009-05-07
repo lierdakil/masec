@@ -51,6 +51,7 @@ public:
     QString mulid;
     double volts1;
     int sm1, sm2;
+    double genvolpp;
     void run();
 
 signals:
