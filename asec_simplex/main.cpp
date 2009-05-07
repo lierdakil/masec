@@ -218,7 +218,7 @@ int main(int argc, char* argv[])
             gsl_multimin_fminimizer_set(min, &func, a, ss);
             int status;
             size_t iter=0;
-            double oldsize;
+            double oldsize=0;
 
             do
             {
@@ -232,7 +232,7 @@ int main(int argc, char* argv[])
 
                 double size = gsl_multimin_fminimizer_size(min);
                 //status = gsl_multimin_test_size (size, 1e-10);
-                if(size!=oldsize || iter%10!=9 )
+                if(size!=oldsize || iter%10!=9 || size>10)
                     status=GSL_CONTINUE;
                 else
                     status=GSL_SUCCESS;
@@ -326,14 +326,14 @@ int main(int argc, char* argv[])
                 gsl_vector_memcpy(a,par);
                 gsl_vector_div(a,units);
             } else {
-                QString buf;
+#define table_append_num(v) table[ifile+1].append(QString::number(v,'f',10)+"\t")
                 table[ifile+1].append("\t"+f.fileName()+"\t");
-                table[ifile+1].append(buf.setNum(maxf)+"\t");
-                table[ifile+1].append(buf.setNum(maxI)+"\t");
-                table[ifile+1].append(buf.setNum(minf)+"\t");
-                table[ifile+1].append(buf.setNum(minI)+"\t");
-                table[ifile+1].append(buf.setNum(min->fval)+"\t");
-                table[ifile+1].append(buf.setNum(noise));
+                table_append_num(maxf);
+                table_append_num(maxI);
+                table_append_num(minf);
+                table_append_num(minI);
+                table_append_num(min->fval);
+                table_append_num(noise);
             }
 
             if(ifile==0)
