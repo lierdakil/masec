@@ -2,8 +2,9 @@ TEMPLATE = app
 DESTDIR = ../build/
 TARGET = asec_temperature
 QT += core \
-    gui
-CONFIG += qdbus
+    gui \
+    dbus
+CONFIG += exceptions
 HEADERS += adaptors.h \
     ctrl/temp.h \
     QTempTimeline.h \
@@ -17,7 +18,7 @@ SOURCES += ctrl/temp.cpp \
     asec_temperature.cpp
 FORMS += settings.ui \
     asec_temperature.ui
-RESOURCES += 
+RESOURCES +=
 INCLUDEPATH += ../asec_gpib \
         ../visa
 LIBS += -L../build \

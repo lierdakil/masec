@@ -8,12 +8,13 @@ vib_temperature::vib_temperature(QWidget *parent)
 
     QErrorMessage::qtHandler();
 
-    QDBusConnection connection = QDBusConnection::sessionBus();
-    connection.registerService("ru.pp.livid.asec.temp");
-    connection.registerObject("/", this);
+
     new export_adaptor(this);
     new help_adaptor(this);
     new flow_adaptor(this);
+    QDBusConnection connection = QDBusConnection::sessionBus();
+    connection.registerService("ru.pp.livid.asec.temp");
+    connection.registerObject("/", this);
 
     ui.gvTemp->setScene(new QGraphicsScene());
     ui.gbTest->setVisible(false);
