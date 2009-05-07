@@ -66,6 +66,8 @@ void QTempTimer::start(float nsetp, float nramp, float ntimeout, float nsettime)
     ramp=nramp;
     timeout=ntimeout;
     settime=nsettime;
+    Tmin=-1;
+    Tmax=-1;
 
     is_stopped=false;
 
@@ -141,6 +143,8 @@ void QTempTimer::step()
             } else {
                 //temperature is in window, but settime did not elapse yet
                 //resume testing
+                if(Tmin>ftemp || Tmin<0) Tmin=ftemp;
+                if(Tmax<ftemp || Tmax<0) Tmax=ftemp;
                 do_step(STEP_WAIT);
             }
             break;
