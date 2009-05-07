@@ -41,7 +41,7 @@ private:
     QMutex eventloop_mutex;
     QEventLoop *reply_wait;
     QStringList reply;
-    QList<QDBusInterface*> flow_interfaces;
+    QList<QDBusInterface*> flow_interfaces, exports_interfaces;
     bool stopped;
 
 signals:

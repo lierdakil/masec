@@ -46,25 +46,32 @@ CControlBus::CControlBus(QString log_file_name, QString code, bool *success)
     description+="# Loaded modules:\n";
     QStringList list = QDBusConnection::sessionBus().interface()->registeredServiceNames().value().filter(QRegExp("^ru.pp.livid.asec.(.*)"));
     //for each service in list
-    for(int k=0;k<list.count();++k)
+    //for(int k=0;k<list.count();++k)
+    foreach(QString service, list)
     {
-        QDBusInterface iface(list.value(k),"/","ru.pp.livid.asec.help");
+        QDBusInterface iface(service,"/","ru.pp.livid.asec.help");
 
         if (iface.isValid())
         {
-            description+="# "+list.value(k)+"\n";
+            description+="# "+service+"\n";
             QDBusReply<QString> reply=iface.call("module_description");
             if(reply.isValid())
                 description+="# "+reply.value().replace("\n","\n# ")+"\n";
         }
 
-        QDBusInterface* flow=new QDBusInterface(list.value(k),"/","ru.pp.livid.asec.flow");
+        QDBusInterface* flow=new QDBusInterface(service,"/","ru.pp.livid.asec.flow");
         if(flow->isValid())
         {
             flow_interfaces << flow;
             connect(flow,SIGNAL(critical(QString,QString)),SLOT(critical_call(QString,QString)));
         } else
             delete flow;
+
+        QDBusInterface* exports=new QDBusInterface(service,"/","ru.pp.livid.asec.exports");
+        if(exports->isValid())
+            exports_interfaces << exports;
+        else
+            delete exports;
     }
 
 
@@ -87,6 +94,9 @@ CControlBus::~CControlBus()
 
     foreach(QDBusInterface* flow, flow_interfaces)
         delete flow;
+
+    foreach(QDBusInterface* exports, exports_interfaces)
+        delete exports;
 
     //TODO: diconnect critical?
     QMutexLocker locker(&file_mutex);
@@ -222,7 +232,7 @@ int CControlBus::call(QString function, QString service, QList<QScriptValue> arg
     file_mutex.unlock();
 
     //читаем список функций на интерфейсе exports
-    QDBusInterface exports(service,"/","ru.pp.livid.asec.exports");
+    QDBusInterface* exports=0;//(service,"/","ru.pp.livid.asec.exports")
     QDBusInterface* flow=0;
     //find corresponding flow interface among registered
     foreach(QDBusInterface* flow_i, flow_interfaces)
@@ -234,21 +244,38 @@ int CControlBus::call(QString function, QString service, QList<QScriptValue> arg
         }
     }
 
+    foreach(QDBusInterface* exports_i, exports_interfaces)
+    {
+        if(exports_i->isValid() && exports_i->service()==service)
+        {
+            exports=exports_i;
+            break;
+        }
+    }
+
+    if(exports==0)//No corresponding flow interface found
+    {
+        emit call_error(tr("Unable to find exports interface on %1").arg(service));
+        return R_CALL_ERROR;
+    }
+
     if(flow==0)//No corresponding flow interface found
     {
         emit call_error(tr("Unable to find flow interface on %1").arg(service));
         return R_CALL_ERROR;
     }
 
-    if(exports.lastError().isValid())
+    if(exports->lastError().isValid())
     {
-        emit call_error(exports.lastError().message());
+        emit call_error(tr("Error on interface exports with message '%1'"
+                                "on line %2").arg(exports->lastError().message()).arg(__LINE__));
         return R_CALL_ERROR;
     }
 
     if(flow->lastError().isValid())
     {
-        emit call_error(flow->lastError().message());
+        emit call_error(tr("Error on interface flow with message '%1'"
+                                "on line %2").arg(flow->lastError().message()).arg(__LINE__));
         return R_CALL_ERROR;
     }
 
@@ -272,11 +299,11 @@ int CControlBus::call(QString function, QString service, QList<QScriptValue> arg
         return R_CALL_ERROR;
     }
 
-    exports.callWithArgumentList(QDBus::NoBlock,function,argumentlist);
+    exports->callWithArgumentList(QDBus::Block,function,argumentlist);
 
-    if(exports.lastError().isValid())
+    if(exports->lastError().isValid())
     {
-        emit call_error(exports.lastError().message());
+        emit call_error(service+": "+exports->lastError().message());
         return R_CALL_ERROR;
     }
 
