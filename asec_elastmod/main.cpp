@@ -13,7 +13,7 @@ if(p<0) p=QInputDialog::getDouble(0, \
                                   .arg(#p).arg(#u),\
                                   0,-2147483647,2147483647,10); \
         std::cout<<"# "#p" = "<<p<<" "#u"\n"
-#define data_append(var) QString::number(var,'f'); data<<buf
+#define data_append(var) data<<QString::number(var,'f')
 
 int main(int argc, char *argv[])
 {
