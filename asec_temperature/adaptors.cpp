@@ -36,8 +36,8 @@ QStringList help_adaptor::returned_values()
 {
     QStringList data;
     data<<QString("Setpoint,K");
-    //data<<QString("Temperature 1,K");
-    //data<<QString("Temperature 2,K");
+    data<<QString("Temperature min,K");
+    data<<QString("Temperature max,K");
     data<<QString("Ramp,K/min");
     data<<QString("Timeout,min");
     data<<QString("Stabilization time,min");

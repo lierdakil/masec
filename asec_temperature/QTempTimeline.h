@@ -37,6 +37,7 @@ public:
     float timeout;
     double settime;
     //return vals
+    float Tmin, Tmax;
 
 public slots:
     void start_zone(float nsetp, float nramp, float ntimeout, float nsettime);
