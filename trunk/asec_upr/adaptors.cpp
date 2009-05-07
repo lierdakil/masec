@@ -43,6 +43,7 @@ help_adaptor::help_adaptor(vibupraut *v) : QDBusAbstractAdaptor(v), vua(v)
 QStringList help_adaptor::returned_values()
 {
     QStringList data;
+    data<<QString("Generator amplitude, VPP");
     data<<QString("First run start freq, Hz");
     data<<QString("First run stop freq, Hz");
     data<<QString("Second run start freq, Hz");
