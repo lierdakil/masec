@@ -1,9 +1,10 @@
+CONFIG += exceptions
 TEMPLATE = app
 DESTDIR = ../build/
 TARGET = asec_magn
 QT += core \
-    gui
-CONFIG += qdbus
+    gui \
+    dbus
 HEADERS += QMagnTimeline.h \
     ctrl/magn.h \
     asec_magn.h \
@@ -14,7 +15,7 @@ SOURCES += QMagnTimeline.cpp \
     asec_magn.cpp \
     adaptors.cpp
 FORMS += asec_magn.ui
-RESOURCES += 
+RESOURCES +=
 INCLUDEPATH += ../asec_gpib \
         ../visa \
         /usr/include
