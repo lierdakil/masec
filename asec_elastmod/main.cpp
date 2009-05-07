@@ -13,7 +13,7 @@ if(p<0) p=QInputDialog::getDouble(0, \
                                   .arg(#p).arg(#u),\
                                   0,-2147483647,2147483647,10); \
         std::cout<<"# "#p" = "<<p<<" "#u"\n"
-#define data_append(var) buf.setNum(var); data<<buf
+#define data_append(var) QString::number(var,'f'); data<<buf
 
 int main(int argc, char *argv[])
 {
@@ -77,7 +77,6 @@ int main(int argc, char *argv[])
             double fs=(fr+(fa-fr)*Va/(Va+Vr))*A-B;
             double E=4*Ms/(hs*ws)*ls*fs*fs;
             double Q1=2*(fa-fr)*A*sqrt(Vr*Va)/(fs*(Vr+Va));
-            QString buf;
             data_append(fs);
             data_append(E);
             data_append(Q1);
