@@ -1,6 +1,7 @@
 # -------------------------------------------------
 # Project created by QtCreator 2009-03-20T15:23:35
 # -------------------------------------------------
+CONFIG += exceptions dll
 QT -= gui
 TARGET = asec_gpib
 TEMPLATE = lib
