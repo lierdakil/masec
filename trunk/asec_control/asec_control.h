@@ -3,7 +3,7 @@
 
 #include <QtGui>
 #include <QtCore>
-//#include <QErrorMessage>
+#include <QErrorMessage>
 #include <QTimer>
 #include "ui_asec_control.h"
 #include "scriptthread.h"
@@ -22,18 +22,18 @@ public:
 //    QList<graphic_window*> graphics;
 
 public slots:
-	void on_btRun_clicked();
-	void on_btResume_clicked();
-	void on_btStop_clicked();
-	void on_btSaveCode_clicked();
-	void on_btLoadCode_clicked();
-	void on_tabWidget_currentChanged(int index);
-	void on_cbFunction_currentIndexChanged(QString item);
-	void script_started();
-	void script_paused();
-	void script_finished();
-	void script_error(QString error);
-	void script_bug(QString message, int BugLine);
+        void on_btRun_clicked();
+        void on_btResume_clicked();
+        void on_btStop_clicked();
+        void on_btSaveCode_clicked();
+        void on_btLoadCode_clicked();
+        void on_tabWidget_currentChanged(int index);
+        void on_cbFunction_currentIndexChanged(QString item);
+        void script_started();
+        void script_paused();
+        void script_finished();
+        void script_error(QString error);
+        void script_bug(QString message, int BugLine);
 };
 
 #endif // VIB_CONTROL_H
