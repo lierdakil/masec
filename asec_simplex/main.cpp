@@ -88,8 +88,8 @@ int main(int argc, char* argv[])
     gsl_vector *a;
     a=gsl_vector_alloc(PARAM_COUNT);
 
-    bool useC0=false ,useLm=false, useU=false, useR0=false;
-    double inLm=0, inC0=0, inU=0, inR0=0;
+    bool useC0=false ,useLm=false, useU=true, useR0=true;
+    double inLm=0, inC0=0, inU=5, inR0=1000;
 
     for(int ifile=0;ifile<arguments.count();++ifile)
     {
@@ -138,19 +138,14 @@ int main(int argc, char* argv[])
         {
             double fr=Res.x, fa=Antires.x, Ir=Res.y, Ia=Antires.y;
 
-            useC0=false;
-            useLm=false;
-
             double C0,Lm,Rm,Cm,R0,U;
             R0=1000;
             U=5;
             double Zmax=U*R2/Ia,
             Zmin=U*R2/Ir;
             Rm=Zmin;
-            if(!useC0) C0=1/sqrt(4*pow(PI,2)*pow(fa,2)*Rm*Zmax);
-            else C0=inC0;
-            if(!useLm) Lm=1/(4*pow(PI,2)*C0*(pow(fa,2)-pow(fr,2)));
-            else Lm=inLm;
+            C0=1/sqrt(4*pow(PI,2)*pow(fa,2)*Rm*Zmax);
+            Lm=1/(4*pow(PI,2)*C0*(pow(fa,2)-pow(fr,2)));
             Cm=1/(4*PI*PI*fr*fr*Lm);
 
             gsl_vector_set(a,0,Rm);
@@ -177,7 +172,7 @@ int main(int argc, char* argv[])
 
             gsl_vector *ss;//step size
             ss=gsl_vector_alloc(PARAM_COUNT);
-            gsl_vector_set_all(ss, 1e-2);
+            gsl_vector_set_all(ss, 1e-3);
             gsl_vector_mul(ss,a);
 
             gsl_multimin_function func;
@@ -186,7 +181,7 @@ int main(int argc, char* argv[])
 
             param_struct func_params;
 
-            func_params.data=&func_sm_data;
+            func_params.data=&func_data;
             func_params.resi=resi;
             func_params.aresi=aresi;
 
@@ -336,16 +331,16 @@ int main(int argc, char* argv[])
                 table_append_num(noise);
             }
 
-            if(ifile==0)
+            if(ifile==0 && gstatus==QDialog::Accepted)
             {
                 useLm=true;
                 inLm=gsl_vector_get(par,1);
                 useC0=true;
                 inC0=gsl_vector_get(par,3);
-                //            useU=true;
-                //            inU=gsl_vector_get(par,4);
-                useR0=true;
-                inR0=gsl_vector_get(par,5);
+//                useU=true;
+//                inU=gsl_vector_get(par,4);
+//                useR0=true;
+//                inR0=gsl_vector_get(par,5);
             }
             gsl_vector_free(par);
         }while(gstatus==QDialog::Rejected);
