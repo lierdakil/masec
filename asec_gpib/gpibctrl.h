@@ -17,6 +17,7 @@ public:
 #ifdef VISA
     ViSession defaultRM, did;
 #elif LINUXGPIB
+    int did;
 #endif
     QMutex mutex;
 

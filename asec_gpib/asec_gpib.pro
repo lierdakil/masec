@@ -30,4 +30,6 @@ win32{
 unix{
 	LIBS = -lgpib
 	DEFINES+=LINUXGPIB
+	SOURCES += gpibbusexception.cpp
+	HEADERS += gpibbusexception.h
 }
