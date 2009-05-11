@@ -4,6 +4,8 @@
 #include "gpibgenericexception.h"
 #ifdef VISA
 #include "gpibvisaexception.h"
+#elif LINUXGPIB
+#include "gpibbusexception.h"
 #endif
 #include "gpibidnexception.h"
 #include "gpibinvalidreplyexception.h"

@@ -102,19 +102,77 @@ QByteArray GPIBctrl::readArray(int maxlength)
 #elif LINUXGPIB
 GPIBctrl::GPIBctrl(QString GPIBID, QString IDN, int timeout)
 {
+    GPIBID.replace("gpib","");
+    int bidx = GPIBID.split(',').at(0).toInt();
+    int pad = GPIBID.split(',').at(1).toInt();
+    
+    did = ibdev(bidx,pad,0/*sad*/,timeout, 0, '\n' | REOS);
+    if(did==-1)
+    {
+        throw GPIBGenericException(QString("Unable to open device \"%1\"").arg(IDN));
+    }
+
+    if((ibclr(did) & ERR) == ERR)
+    {
+        GPIBBusException e(ThreadIberr());
+        ibonl(did,0);
+	throw e;
+    }
+
+    try {
+        write("*CLS");
+    } catch (GPIBGenericException e) {
+        ibonl(did,0);
+        throw e;
+    }
+    
+    QString _IDN;
+    try {
+        _IDN=queryString("*IDN?");
+    } catch (GPIBGenericException e) {
+        ibonl(did,0);
+        throw e;
+    }
+
+    if(_IDN != IDN)
+    {
+	ibonl(did,0);
+        throw GPIBIDNException(GPIBID, _IDN, IDN);
+    }
 }
 GPIBctrl::~GPIBctrl()
 {
+    ibonl(did,0);
 }
 void GPIBctrl::write(QString string)
 {
+    QMutexLocker m(&mutex);
+    QString str=string.append("\n");
+    msleep(SLEEP_TIME);
+    int status = ibwrt(did, str.toAscii().data(), str.length());
+    if((status & ERR) == ERR)
+        throw GPIBBusException(ThreadIberr());
 }
 QByteArray GPIBctrl::readArray(int maxlength)
 {
+    QMutexLocker m(&mutex);
+    msleep(SLEEP_TIME);//If we read too fast, sometimes devices fail to answer in time
+
+    QByteArray res;
+    res.resize(maxlength);
+
+    int status = ibrd(did,res.data(),maxlength);
+    int len = ThreadIbcnt();
+
+    if((status & ERR) == ERR)
+        throw GPIBBusException(ThreadIberr());
+
+    res.resize(len);
+    return res;
 }
 #endif
 
-//platform-independant functions follow
+//platform-independent functions follow
 
 QString GPIBctrl::readString()
 {
