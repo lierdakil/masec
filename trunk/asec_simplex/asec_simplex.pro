@@ -20,12 +20,15 @@ win32 {
     LIBS += -L C:\Qwt-5.2.0-svn\lib \
         -L "C:\gsl\lib"
 }
-else {
+unix {
     INCLUDEPATH += /usr/include \
-        /usr/include/qwt5
+        /usr/include/qwt5 \
+	/usr/include/qwt-qt4
     QMAKE_CXXFLAGS+= -fopenmp
     QMAKE_LFLAGS+= -fopenmp
 }
+
+#Debian uses -lqwt-qt4
 LIBS += -lqwt \
     -lgsl \
     -lgslcblas

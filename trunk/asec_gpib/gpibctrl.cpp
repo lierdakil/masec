@@ -2,6 +2,7 @@
 #include "sleep.h"
 #define SLEEP_TIME 20
 
+#ifdef VISA
 GPIBctrl::GPIBctrl(QString GPIBID, QString IDN, int timeout)
 {
     /*initialize GPIB control*/
@@ -97,6 +98,23 @@ QByteArray GPIBctrl::readArray(int maxlength)
     res.resize(len);
     return res;
 }
+
+#elif LINUXGPIB
+GPIBctrl::GPIBctrl(QString GPIBID, QString IDN, int timeout)
+{
+}
+GPIBctrl::~GPIBctrl()
+{
+}
+void GPIBctrl::write(QString string)
+{
+}
+QByteArray GPIBctrl::readArray(int maxlength)
+{
+}
+#endif
+
+//platform-independant functions follow
 
 QString GPIBctrl::readString()
 {

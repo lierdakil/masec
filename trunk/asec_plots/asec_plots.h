@@ -2,7 +2,7 @@
 #define ASEC_PLOTS_H
 
 #include <QtGui/QWidget>
-#include <QtDbus>
+#include <QtDBus>
 #include "ui_asec_plots.h"
 
 #include "QListWidgetItemPlot.h"

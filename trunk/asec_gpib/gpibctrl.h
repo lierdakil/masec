@@ -4,13 +4,20 @@
 #include "asec_gpib_global.h"
 
 #include <QtCore>
+#ifdef VISA
 #include <visa.h>
+#elif LINUXGPIB
+#include <gpib/ib.h>
+#endif
 #include "gpibexceptions.h"
 
 class ASEC_GPIBSHARED_EXPORT GPIBctrl {
 public:
     private:
+#ifdef VISA
     ViSession defaultRM, did;
+#elif LINUXGPIB
+#endif
     QMutex mutex;
 
 public:
