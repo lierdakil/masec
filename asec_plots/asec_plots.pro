@@ -23,6 +23,9 @@ win32{
 }
 else {
     INCLUDEPATH += /usr/include \
-        /usr/include/qwt5
+        /usr/include/qwt5 \
+        /usr/include/qwt-qt4
 }
+
+#Debian uses -lqwt-qt4 instead
 LIBS += -lqwt
