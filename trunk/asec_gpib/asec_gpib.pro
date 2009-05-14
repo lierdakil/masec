@@ -23,7 +23,6 @@ win32{
     LIBS = -L../visa \
         -lvisa32
     INCLUDEPATH += ../visa
-    DEFINES += VISA
     SOURCES += gpibvisaexception.cpp
     HEADERS += gpibvisaexception.h
 }
