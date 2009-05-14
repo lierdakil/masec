@@ -12,6 +12,7 @@
 #define draw_y(y) emit line(0,y,2500,y,Qt::SolidLine)
 
 //#define GOLDEN
+#define PHI 1.61803398874989484
 
 QList<qreal> sm_diff(QByteArray data, int nr)//nr - Depth of smoothing in one direction
 {
@@ -55,19 +56,19 @@ QByteArray MeasureThread::sweep()
         osc->wait("READY");
         data = osc->readcurve();
 
-        /*		    max
- *		     _
- *		    / \
- *		___/   |   _______
- *		        \_/
- *		        min
- *
- *         /\     _
- *		---  \   / -------
- *            \_/
- *		    diff_min/
- *
- */
+        /*    max
+        *     _
+        *    / \
+        *___/   |   _______
+        *        \_/
+        *        min
+        *
+        *   /\     _
+        *---  \   /  -------
+        *      \_/
+        *    diff_min/
+        *
+        */
 
         emit path(data,QPen(Qt::green));
 
@@ -108,8 +109,8 @@ QByteArray MeasureThread::sweep()
             }
         }
 
-        //		starti=2*maxi-min_diff_index;//double interval
-        //		stopi=2*mini-min_diff_index;
+        //starti=2*maxi-min_diff_index;//double interval
+        //stopi=2*mini-min_diff_index;
         starti=2*maxi-mini;
         draw_x(starti);
         stopi=2*mini-maxi;
@@ -126,21 +127,33 @@ QByteArray MeasureThread::sweep()
         if(data.at(i)>max_data)
             max_data=data.at(i);
 
-    //	double curv=osc->getch1();
-    //	double onediv=curv/25.4;
-    //	double maxv=max_data*onediv;
-    //	double newv=maxv/4;
+    //double curv=osc->getch1();
+    //double onediv=curv/25.4;
+    //double maxv=max_data*onediv;
+    //double newv=maxv/4;
     double ch1=osc->getch1();
     ch1=ch1*max_data/101.6;
-    osc->setch1(ch1);
-    k2=ch1/25.4;
 
-    gen->setsweep(ssf,sff);
-    osc->wait("READY");
-    gen->startsweep();
-    osc->wait("READY");
+    QByteArray data2;
+    int max_data2=0;
+    do {
+        osc->setch1(ch1);
+        k2=ch1/25.4;
 
-    QByteArray data2 = osc->readcurve();
+        gen->setsweep(ssf,sff);
+        osc->wait("READY");
+        gen->startsweep();
+        osc->wait("READY");
+
+        data2 = osc->readcurve();
+        max_data2=0;
+        for(int i=0; i<data2.count(); ++i)
+            if(data2.at(i)>max_data2)
+                max_data2=data2.at(i);
+        if(max_data2>=127)
+            ch1=ch1*PHI;
+    } while(max_data2>=127);
+
     return data2;
 }
 
@@ -152,7 +165,7 @@ float MeasureThread::getamplonf(float freq)
 
 float MeasureThread::golden(float a, float b, float epsilon, bool max)
 {
-    const double phi = 1.61803398874989484;
+    const double phi = PHI;
 
     float x1=b-(b-a)/phi;
     float x2=a+(b-a)/phi;
