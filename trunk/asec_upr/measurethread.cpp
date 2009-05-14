@@ -128,7 +128,7 @@ QByteArray MeasureThread::sweep()
             max_data=data.at(i);
 
     //double curv=osc->getch1();
-    //double onediv=curv/25.4;
+    //double onediv=curv*10.0/254;
     //double maxv=max_data*onediv;
     //double newv=maxv/4;
     double ch1=osc->getch1();
