@@ -38,6 +38,7 @@ public slots:
     void newpoint(float time, float temp, float setpoint);
     void error(QString message);
     void set_temp_zone(double temp, double ramp, double timeout);
+    void newstatus(int status);
 signals:
     void finished(QStringList data);
 };
