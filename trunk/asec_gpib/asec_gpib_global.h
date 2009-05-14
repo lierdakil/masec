@@ -3,8 +3,6 @@
 
 #include <QtCore/qglobal.h>
 
-#define VISA
-
 #if defined(ASEC_GPIB_LIBRARY)
 #  define ASEC_GPIBSHARED_EXPORT Q_DECL_EXPORT
 #else
