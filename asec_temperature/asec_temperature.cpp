@@ -28,6 +28,7 @@ vib_temperature::vib_temperature(QWidget *parent)
     connect(&temptl,SIGNAL(stopped()),this,SLOT(stopped()));
     connect(&temptl,SIGNAL(newpoint(float,float,float)),this,SLOT(newpoint(float,float,float)));
     connect(&temptl,SIGNAL(error(QString)),this,SLOT(error(QString)));
+    connect(&temptl,SIGNAL(newstatus(int)),this,SLOT(newstatus(int)));
 
     connect(&fix_timer, SIGNAL(timeout()), this, SLOT(fix_range()));
 
@@ -82,6 +83,28 @@ void vib_temperature::error(QString message)
     QErrorMessage::qtHandler()->showMessage(message);
     ui.btStopTest->setEnabled(false);
     ui.btTest->setEnabled(true);
+}
+
+void vib_temperature::newstatus(int status)
+{
+    switch(status)
+    {
+    case STATUS_RAMP:
+        ui.lbStatus->setText(tr("Waiting for ramp to finish"));
+        break;
+    case STATUS_WAIT:
+        ui.lbStatus->setText(tr("Waiting for temp to get into window"));
+        break;
+    case STATUS_WINDOW:
+        ui.lbStatus->setText(tr("Temperature is in window"));
+        break;
+    case STATUS_FINISHED:
+        ui.lbStatus->setText(tr("Temperature set"));
+        break;
+    case STATUS_TMOUT:
+        ui.lbStatus->setText(tr("Timed out"));
+        break;
+    }
 }
 
 void vib_temperature::on_btSettings_clicked()

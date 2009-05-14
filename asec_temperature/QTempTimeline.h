@@ -13,6 +13,12 @@
 #include <gpibexceptions.h>
 #include "ctrl/temp.h"
 
+#define STATUS_RAMP 0
+#define STATUS_WAIT 1
+#define STATUS_WINDOW 2
+#define STATUS_FINISHED 3
+#define STATUS_TMOUT 4
+
 class QTempTimer : public QObject
 {
     Q_OBJECT
@@ -50,6 +56,7 @@ signals:
     void stopped();//stopped by user
     void error(QString message);//error occured
     void newpoint(float time, float temp, float setpoint);
+    void newstatus(int status);
 
 public:
     QTempTimer();

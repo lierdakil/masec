@@ -7,7 +7,7 @@
 #define STEP_RAMP 0 //Wait until ramp finishes
 #define STEP_WAIT 1 //Test for settime if temperature stays in TEMP_WINDOW
 
-#define TEMP_MEM 128 //points
+//#define TEMP_MEM 128 //points
 #define TEMP_WINDOW 0.25 //+-Kelvin
 
 QTempTimer::QTempTimer() : QObject()
@@ -81,12 +81,14 @@ void QTempTimer::start(float nsetp, float nramp, float ntimeout, float nsettime)
     if(ramp>0 && setp!=setp0)
     {
         ramptime=fabs(setp-setp0)/ramp;
+        emit newstatus(STATUS_RAMP);
         do_step(STEP_RAMP);
     }
     else//RAMP OFF
     {
         ramptime=0;
         testtime=0;
+        emit newstatus(STATUS_WAIT);
         do_step(STEP_WAIT);
     }
 }
@@ -121,6 +123,7 @@ void QTempTimer::step()
                 //ramp finished
                 //on to next step
                 testtime=ftime;
+                emit newstatus(STATUS_WAIT);
                 do_step(STEP_WAIT);
             } else {
                 //ramp is ongoing
@@ -132,6 +135,7 @@ void QTempTimer::step()
                 //temperature is out of window
                 //reset timer
                 testtime=ftime;
+                emit newstatus(STATUS_WAIT);
                 do_step(STEP_WAIT);
             } else if ( (ftime-testtime) >=settime ){
                 //temperature is stable for settime minutes
@@ -139,12 +143,17 @@ void QTempTimer::step()
                 is_stopped=true;
                 delete temp;
                 temp=0;
+                emit newstatus(STATUS_FINISHED);
                 emit temp_set();
+            } else if ( ftime > timeout ) {
+                emit newstatus(STATUS_TMOUT);
+                raiseError(tr("Temperature setup exceeded time limit"));
             } else {
                 //temperature is in window, but settime did not elapse yet
                 //resume testing
                 if(Tmin>ftemp || Tmin<0) Tmin=ftemp;
                 if(Tmax<ftemp || Tmax<0) Tmax=ftemp;
+                emit newstatus(STATUS_WINDOW);
                 do_step(STEP_WAIT);
             }
             break;
