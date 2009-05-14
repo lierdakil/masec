@@ -2,7 +2,7 @@
 #include "sleep.h"
 #define SLEEP_TIME 20
 
-#ifdef VISA
+#if defined(VISA)
 GPIBctrl::GPIBctrl(QString GPIBID, QString IDN, int timeout)
 {
     /*initialize GPIB control*/
@@ -99,13 +99,13 @@ QByteArray GPIBctrl::readArray(int maxlength)
     return res;
 }
 
-#elif LINUXGPIB
+#else
 GPIBctrl::GPIBctrl(QString GPIBID, QString IDN, int timeout)
 {
     GPIBID.replace("gpib","");
     int bidx = GPIBID.split(',').at(0).toInt();
     int pad = GPIBID.split(',').at(1).toInt();
-    
+
     did = ibdev(bidx,pad,0/*sad*/,timeout, 0, '\n' | REOS);
     if(did==-1)
     {
@@ -116,7 +116,7 @@ GPIBctrl::GPIBctrl(QString GPIBID, QString IDN, int timeout)
     {
         GPIBBusException e(ThreadIberr());
         ibonl(did,0);
-	throw e;
+        throw e;
     }
 
     try {
@@ -125,7 +125,7 @@ GPIBctrl::GPIBctrl(QString GPIBID, QString IDN, int timeout)
         ibonl(did,0);
         throw e;
     }
-    
+
     QString _IDN;
     try {
         _IDN=queryString("*IDN?");
@@ -136,7 +136,7 @@ GPIBctrl::GPIBctrl(QString GPIBID, QString IDN, int timeout)
 
     if(_IDN != IDN)
     {
-	ibonl(did,0);
+        ibonl(did,0);
         throw GPIBIDNException(GPIBID, _IDN, IDN);
     }
 }
