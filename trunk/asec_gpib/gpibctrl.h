@@ -4,9 +4,9 @@
 #include "asec_gpib_global.h"
 
 #include <QtCore>
-#ifdef VISA
+#if defined(VISA)
 #include <visa.h>
-#elif LINUXGPIB
+#else
 #include <gpib/ib.h>
 #endif
 #include "gpibexceptions.h"
@@ -14,9 +14,9 @@
 class ASEC_GPIBSHARED_EXPORT GPIBctrl {
 public:
     private:
-#ifdef VISA
+#if defined(VISA)
     ViSession defaultRM, did;
-#elif LINUXGPIB
+#else
     int did;
 #endif
     QMutex mutex;

@@ -2,9 +2,9 @@
 #define GPIBEXCEPTIONS_H
 
 #include "gpibgenericexception.h"
-#ifdef VISA
+#if defined(VISA)
 #include "gpibvisaexception.h"
-#elif LINUXGPIB
+#else
 #include "gpibbusexception.h"
 #endif
 #include "gpibidnexception.h"

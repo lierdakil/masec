@@ -20,16 +20,15 @@ HEADERS += gpibctrl.h \
     gpibinvalidreplyexception.h \
     gpibunxparamvalexception.h
 win32{
-	LIBS = -L../visa \
-	    -lvisa32
-	INCLUDEPATH += ../visa
-	DEFINES += VISA
-	SOURCES += gpibvisaexception.cpp
-	HEADERS += gpibvisaexception.h
+    LIBS = -L../visa \
+        -lvisa32
+    INCLUDEPATH += ../visa
+    DEFINES += VISA
+    SOURCES += gpibvisaexception.cpp
+    HEADERS += gpibvisaexception.h
 }
 unix{
-	LIBS = -lgpib
-	DEFINES+=LINUXGPIB
-	SOURCES += gpibbusexception.cpp
-	HEADERS += gpibbusexception.h
+    LIBS = -lgpib
+    SOURCES += gpibbusexception.cpp
+    HEADERS += gpibbusexception.h
 }
