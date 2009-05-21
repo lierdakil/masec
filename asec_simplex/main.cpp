@@ -7,11 +7,20 @@
 #include "graph.h"
 #include <QApplication>
 
+#define iRm 0
+#define iLm 1
+#define iCm 2
+#define iC0 3
+#define iU 4
+#define iR0 5
+
+
 int main(int argc, char* argv[])
 {
     QString parameters;
     QStringList arguments;
     bool consoleonly=false;
+    bool has_table=true;
 
     for(int i=1; i<argc; ++i)
     {
@@ -66,21 +75,21 @@ int main(int argc, char* argv[])
 
     if(table.count()<=1)
     {
-        for(int i=0;i<arguments.count();++i)
-            table<<"";
+        has_table=false;
     } else if(table.count()!=arguments.count()+1)
     {
         std::cerr<<"Invalid ascii table specified";
         return 1;
     }
 
-    table.first().append("\tFile\t"
-                         "Simplex Resonance freq, Hz\t"
-                         "Simplex Resonance ampl, V\t"
-                         "Simplex Antiresonance freq, Hz\t"
-                         "Simplex Antiresonance ampl, V\t"
-                         "St. dev., V\t"
-                         "Mean Noise, V");
+    if(has_table)
+        table.first().append("\tFile\t"
+                             "Simplex Resonance freq, Hz\t"
+                             "Simplex Resonance ampl, V\t"
+                             "Simplex Antiresonance freq, Hz\t"
+                             "Simplex Antiresonance ampl, V\t"
+                             "St. dev., V\t"
+                             "Mean Noise, V");
 
     gsl_vector *units;
     units=gsl_vector_alloc(PARAM_COUNT);
@@ -133,14 +142,14 @@ int main(int argc, char* argv[])
         Antires=find_extremum(func_sm_data,false,&aresi);
 
         //experimental
-        if(ifile==0) //we only need initial parameters if it's first run, for other files in serise,
+        if(ifile==0) //we only need initial parameters if it's first run, for other files in series,
             //parameters do not change much
         {
             double fr=Res.x, fa=Antires.x, Ir=Res.y, Ia=Antires.y;
 
             double C0,Lm,Rm,Cm,R0,U;
-            R0=1000;
-            U=5;
+            R0=inR0;
+            U=inU;
             double Zmax=U*R2/Ia,
             Zmin=U*R2/Ir;
             Rm=Zmin;
@@ -148,15 +157,15 @@ int main(int argc, char* argv[])
             Lm=1/(4*pow(PI,2)*C0*(pow(fa,2)-pow(fr,2)));
             Cm=1/(4*PI*PI*fr*fr*Lm);
 
-            gsl_vector_set(a,0,Rm);
-            gsl_vector_set(a,1,Lm);
-            gsl_vector_set(a,2,Cm);
-            gsl_vector_set(a,3,C0);
-            gsl_vector_set(a,4,U);
-            gsl_vector_set(a,5,R0);
+            gsl_vector_set(a,iRm,Rm);
+            gsl_vector_set(a,iLm,Lm);
+            gsl_vector_set(a,iCm,Cm);
+            gsl_vector_set(a,iC0,C0);
+            gsl_vector_set(a,iU,U);
+            gsl_vector_set(a,iR0,R0);
 
             gsl_vector_set_all(units,1e-10);
-            gsl_vector_mul(units,a);
+            gsl_vector_mul(units,a);//units=a*1e-10;
 
             gsl_vector_set_all(a,1e10);
         }
@@ -164,10 +173,11 @@ int main(int argc, char* argv[])
         int gstatus=0;
         do{
             {//update Cm if f0 changed a bit too dramatically
-                double Lm = useLm ? inLm : gsl_vector_get(a,1)*gsl_vector_get(units,1);
-                double f0=1/(2*PI*sqrt(Lm*gsl_vector_get(a,2)*gsl_vector_get(units,2)));
-                if(f0<func_data.first().x || f0>func_data.last().x)
-                    gsl_vector_set(a,2,1/(gsl_vector_get(units,2)*4*PI*PI*Res.x*Res.x*Lm));
+                double Lm = useLm ? inLm : gsl_vector_get(a,iLm)*gsl_vector_get(units,iLm);
+                double Cm = gsl_vector_get(a,iCm)*gsl_vector_get(units,iCm);
+                double f0=1/(2*PI*sqrt(Lm*Cm));
+                if(f0<func_sm_data.first().x || f0>func_sm_data.last().x)
+                    gsl_vector_set(a,iCm,1/(gsl_vector_get(units,iCm)*4*PI*PI*Res.x*Res.x*Lm));
             }
 
             gsl_vector *ss;//step size
@@ -187,12 +197,12 @@ int main(int argc, char* argv[])
 
             func_params.f_min=func_data.first().x;
             func_params.f_max=func_data.last().x;
-            func_params.RmU=gsl_vector_get(units,0);
-            func_params.LmU=gsl_vector_get(units,1);
-            func_params.CmU=gsl_vector_get(units,2);
-            func_params.C0U=gsl_vector_get(units,3);
-            func_params.UU=gsl_vector_get(units,4);
-            func_params.R0U=gsl_vector_get(units,5);
+            func_params.RmU=gsl_vector_get(units,iRm);
+            func_params.LmU=gsl_vector_get(units,iLm);
+            func_params.CmU=gsl_vector_get(units,iCm);
+            func_params.C0U=gsl_vector_get(units,iC0);
+            func_params.UU=gsl_vector_get(units,iU);
+            func_params.R0U=gsl_vector_get(units,iR0);
 
             func_params.Rm=-1;
             func_params.Lm=-1;
@@ -246,6 +256,14 @@ int main(int argc, char* argv[])
                     if(!useC0) std::cerr<<gsl_vector_get (min->x, 3)*gsl_vector_get (units, 3);
                     else std::cerr<<inC0;
                     std::cerr<<"\n"
+                            <<"U=";
+                    if(!useC0) std::cerr<<gsl_vector_get (min->x, 4)*gsl_vector_get (units, 4);
+                    else std::cerr<<inU;
+                    std::cerr<<"\t"
+                            <<"R0=";
+                    if(!useC0) std::cerr<<gsl_vector_get (min->x, 5)*gsl_vector_get (units, 5);
+                    else std::cerr<<inR0;
+                    std::cerr<<"\n"
                             <<"StDev="<<min->fval<<"\n"
                             <<"Noise="<<noise<<"\n";
                 } else {
@@ -287,6 +305,11 @@ int main(int argc, char* argv[])
                 }
             }
 
+            std::cerr << "Resonance freqency = " << maxf << "\n"
+                    << "Resonance amplitude = " << maxI << "\n"
+                    << "Antiresonance frequency = " << minf << "\n"
+                    << "Antiresonance amplitude = " << minI << "\n";
+
             gsl_vector_memcpy(a, min->x);
 
             gsl_vector *par;
@@ -310,45 +333,47 @@ int main(int argc, char* argv[])
                 gstatus=g.exec();
             else
                 gstatus=QDialog::Accepted; //if it was not shown, we have to agree :)
+
+            inU=g.U();
+            inR0=g.R0();
+            inLm=g.Lm();
+            inC0=g.C0();
+
             if(gstatus==QDialog::Rejected)
             {
-                gsl_vector_set(par,0,g.Rm());
-                gsl_vector_set(par,1,g.Lm());
-                gsl_vector_set(par,2,g.Cm());
-                gsl_vector_set(par,3,g.C0());
-                gsl_vector_set(par,4,g.U());
-                gsl_vector_set(par,5,g.R0());
+                gsl_vector_set(par,iRm,g.Rm());
+                gsl_vector_set(par,iLm,g.Lm());
+                gsl_vector_set(par,iCm,g.Cm());
+                gsl_vector_set(par,iC0,g.C0());
+                gsl_vector_set(par,iU,g.U());
+                gsl_vector_set(par,iR0,g.R0());
                 gsl_vector_memcpy(a,par);
                 gsl_vector_div(a,units);
             } else {
+                useLm=true;
+                useC0=true;
+                useU=true;
+                useR0=true;
+                if (has_table) {
 #define table_append_num(v) table[ifile+1].append(QString::number(v,'f',10)+"\t")
-                table[ifile+1].append("\t"+f.fileName()+"\t");
-                table_append_num(maxf);
-                table_append_num(maxI);
-                table_append_num(minf);
-                table_append_num(minI);
-                table_append_num(min->fval);
-                table_append_num(noise);
+                    table[ifile+1].append("\t"+f.fileName()+"\t");
+                    table_append_num(maxf);
+                    table_append_num(maxI);
+                    table_append_num(minf);
+                    table_append_num(minI);
+                    table_append_num(min->fval);
+                    table_append_num(noise);
+                }
             }
 
-            if(ifile==0 && gstatus==QDialog::Accepted)
-            {
-                useLm=true;
-                inLm=gsl_vector_get(par,1);
-                useC0=true;
-                inC0=gsl_vector_get(par,3);
-//                useU=true;
-//                inU=gsl_vector_get(par,4);
-//                useR0=true;
-//                inR0=gsl_vector_get(par,5);
-            }
             gsl_vector_free(par);
         }while(gstatus==QDialog::Rejected);
     }
     gsl_vector_free(a);
     gsl_vector_free(units);
-    foreach(QString s, table)
-        std::cout<<s.toLocal8Bit().data()<<"\n";
+    if (has_table)
+        foreach(QString s, table)
+            std::cout<<s.toLocal8Bit().data()<<"\n";
 }
 
 
