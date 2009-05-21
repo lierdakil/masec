@@ -40,20 +40,17 @@ double StDev(const gsl_vector *v, void *params) //sum from 0 to N-1 (I_exp(f)-I(
     param_struct *p = (param_struct*)params;
     QVector<Point2D> *data = p->data;
     double S=0;
-    //    double k=0;
 #pragma omp parallel reduction(+:S)
     //S is private for each thread, but gets added to global S on finish
     //S is not shared to avoid += race conditions
     {
 #pragma omp for
         for(int i=0; i<data->count(); ++i)
+            /*if(i<=p->resi || i>=p->aresi)*/
         {
             double I = If(v,p,data->at(i).x);
             double r = (data->at(i).y-I);
-            //        if(i<p->resi) k++;
-            //        else if (i>p->aresi) k--;
-            //        else {};
-            S+=r*r/**k*/;
+            S+=r*r;
         }
     }
     return S/data->count();
