@@ -131,30 +131,58 @@ QByteArray MeasureThread::sweep()
     //double onediv=curv*10.0/254;
     //double maxv=max_data*onediv;
     //double newv=maxv/4;
-    double ch1=osc->getch1();
-    ch1=ch1*max_data/101.6;
+    //double ch1=osc->getch1();
+    k2=osc->ymul();
+    double ch1=max_data*k2/4;
 
-    QByteArray data2;
+    QByteArray data2_forward;
+    QByteArray data2_reverse;
     int max_data2=0;
     do {
         osc->setch1(ch1);
-        k2=ch1/25.4;
 
         gen->setsweep(ssf,sff);
         osc->wait("READY");
         gen->startsweep();
         osc->wait("READY");
 
-        data2 = osc->readcurve();
+        data2_forward = osc->readcurve();
+        k2=osc->ymul();
+
+        gen->setsweep(sff,ssf);
+        osc->wait("READY");
+        gen->startsweep();
+        osc->wait("READY");
+        data2_reverse = osc->readcurve();
+
         max_data2=0;
-        for(int i=0; i<data2.count(); ++i)
-            if(data2.at(i)>max_data2)
-                max_data2=data2.at(i);
+        for(int i=0; i<data2_forward.count(); ++i)
+            if(data2_forward.at(i)>max_data2)
+                max_data2=data2_forward.at(i);
+        for(int i=0; i<data2_reverse.count(); ++i)
+            if(data2_reverse.at(i)>max_data2)
+                max_data2=data2_reverse.at(i);
         if(max_data2>=127)
             ch1=ch1*PHI;
     } while(max_data2>=127);
+    QByteArray data2_reverse2;
+    for(int i=1; i<=data2_reverse.count();++i)
+        data2_reverse2.append(data2_reverse.at(data2_reverse.count()-i));
 
-    return data2;
+    emit path(data2_forward,QPen(Qt::magenta));
+    emit path(data2_reverse2,QPen(Qt::blue));
+
+    for(int i=0; i<data2_forward.count(); i++)
+    {
+        curve_forward<<QPair<double,double>(k*i+ssf, data2_forward.at(i)*k2);
+    }
+
+    for(int i=0; i<data2_reverse2.count(); i++)
+    {
+        curve_reverse<<QPair<double,double>(k*i+ssf, data2_reverse2.at(i)*k2);
+    }
+
+    return data2_reverse2;
 }
 
 float MeasureThread::getamplonf(float freq)
@@ -252,8 +280,6 @@ void MeasureThread::findresonance()
             }
         }
 
-        emit path(dat,QPen(Qt::blue));
-
         diff=sm_diff(dat,sm2);
 
         emit path(diff, QPen(Qt::red));
@@ -297,11 +323,6 @@ void MeasureThread::findresonance()
             throw GPIBGenericException(trUtf8("Could not acquire resonance qurve"));
     }
 
-    for(int i=0; i<dat.count(); i++)
-    {
-        curve<<QPair<double,double>(k*i+ssf, dat[i]*k2);
-    }
-
     gen->sweepoff();
 
     rf=find_extremum(dat,xmax1,xmin,sm2,true);
@@ -329,7 +350,8 @@ void MeasureThread::run()
     vol=0;
     osc=0;
 
-    curve.clear();
+    curve_forward.clear();
+    curve_reverse.clear();
 
     try{
         //---------Main block-------------
@@ -351,20 +373,6 @@ void MeasureThread::run()
 
         findresonance();
 
-        if(!filename.isEmpty())
-        {
-            QFile f(filename);
-            f.open(QFile::WriteOnly);
-            for(int i=0;i<curve.count();i++)
-            {
-                f.write(QString::number(curve.at(i).first,'f',10).toAscii());
-                f.write("\t");
-                f.write(QString::number(curve.at(i).second,'f',10).toAscii());
-                f.write("\r\n");
-            }
-            f.close();
-        }
-
         QStringList data;
         data<<QString("Generator amplitude, VPP:%1").arg(genvolpp);
         data<<QString("First run start freq, Hz:%1").arg(fsf);
@@ -375,6 +383,55 @@ void MeasureThread::run()
         data<<QString("Resonance ampl, V:%1").arg(ra);
         data<<QString("Antiresonance freq, Hz:%1").arg(af);
         data<<QString("Antiresonance ampl, V:%1").arg(aa);
+
+        if(!filename.isEmpty())
+        {
+            QFile f(filename+"_forward.txt");
+            f.open(QFile::WriteOnly);
+            foreach(QString s, data)
+            {
+                f.write("#");
+                f.write(s.toAscii());
+                f.write("\r\n");
+            }
+            f.write(QString("Frequency, Hz").toAscii());
+            f.write("\t");
+            f.write(QString("Amplitude, V").toAscii());
+            f.write("\r\n");
+            for(int i=0;i<curve_forward.count();i++)
+            {
+                f.write(QString::number(curve_forward.at(i).first,'f',10).toAscii());
+                f.write("\t");
+                f.write(QString::number(curve_forward.at(i).second,'f',10).toAscii());
+                f.write("\r\n");
+            }
+            f.close();
+        }
+
+        if(!filename.isEmpty())
+        {
+            QFile f(filename+"_reverse.txt");
+            f.open(QFile::WriteOnly);
+            foreach(QString s, data)
+            {
+                f.write("#");
+                f.write(s.toAscii());
+                f.write("\r\n");
+            }
+            f.write(QString("Frequency, Hz").toAscii());
+            f.write("\t");
+            f.write(QString("Amplitude, V").toAscii());
+            f.write("\r\n");
+            for(int i=0;i<curve_reverse.count();i++)
+            {
+                f.write(QString::number(curve_reverse.at(i).first,'f',10).toAscii());
+                f.write("\t");
+                f.write(QString::number(curve_reverse.at(i).second,'f',10).toAscii());
+                f.write("\r\n");
+            }
+            f.close();
+        }
+
         emit finished(data);
         //------END main block-------------------
     } catch (GPIBGenericException e) {

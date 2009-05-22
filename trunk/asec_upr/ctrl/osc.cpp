@@ -41,6 +41,11 @@ QByteArray oscctrl::readcurve()
     return data;
 }
 
+double oscctrl::ymul()
+{
+    return queryFloat("WFMP:YMU?",":WFMPRE:YMULT");
+}
+
 void oscctrl::wait(QString state)
 {
     QStringList reply;
