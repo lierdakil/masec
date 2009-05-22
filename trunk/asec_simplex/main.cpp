@@ -109,6 +109,18 @@ int main(int argc, char* argv[])
             return 2;
         }
 
+        if(has_table)
+        {
+            int i = table.first().split("\t").indexOf("Generator amplitude, VPP");
+            if(i>=0)
+            {
+                bool ok;
+                double tU = table.at(ifile+1).split("\t").at(i).toDouble(&ok);
+                if(ok) inU=tU/2;
+                std::cerr<<"read U value: "<<inU<<"\n";
+            }
+        }
+
         QVector<Point2D> func_data;//I(f)
         while(!f.atEnd())
         {
