@@ -15,28 +15,29 @@
 
 class vibupraut : public QWidget
 {
-	Q_OBJECT
+        Q_OBJECT
 
 public:
-	vibupraut(QWidget *parent = 0);
-	~vibupraut();
+        vibupraut(QWidget *parent = 0);
+        ~vibupraut();
 
 private:
-	Ui::vibuprautClass ui;
-	qreal current_x;
-	qreal current_y;
+        Ui::vibuprautClass ui;
+        qreal current_x;
+        qreal current_y;
 
 public:
-	void measure(double startf, double stopf, QString filename);
-	MeasureThread thread;
+        void measure(double startf, double stopf, QString filename);
+        MeasureThread thread;
 
 public slots:
-	void path(QList<qreal>,QPen pen);
-	void path(QByteArray,QPen pen);
-	void line(qreal x1, qreal y1,qreal x2, qreal y2, QPen pen);
-	void on_btRun_clicked();
+        void path(QList<qreal>,QPen pen);
+        void path(QByteArray,QPen pen);
+        void line(qreal x1, qreal y1,qreal x2, qreal y2, QPen pen);
+        void on_btRun_clicked();
+        void onfinished(QStringList data);
 signals:
-	void finished(QStringList data);
+        void finished(QStringList data);
 };
 
 #endif // VIBUPRAUT_H

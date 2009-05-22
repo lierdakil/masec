@@ -32,6 +32,7 @@ vibupraut::vibupraut(QWidget *parent)
     qRegisterMetaType<QList<qreal> >("QList<qreal>");
 
     connect(&thread,SIGNAL(finished(QStringList)),this,SIGNAL(finished(QStringList)));
+    connect(&thread,SIGNAL(finished(QStringList)),this,SLOT(onfinished(QStringList)));
     connect(&thread,SIGNAL(path(QList<qreal>,QPen)),this,SLOT(path(QList<qreal>,QPen)),Qt::QueuedConnection);
     connect(&thread,SIGNAL(path(QByteArray,QPen)),this,SLOT(path(QByteArray,QPen)),Qt::QueuedConnection);
     connect(&thread,SIGNAL(line(qreal,qreal,qreal,qreal,QPen)),this,SLOT(line(qreal,qreal,qreal,qreal,QPen)),Qt::QueuedConnection);
@@ -98,4 +99,9 @@ void vibupraut::on_btRun_clicked()
     double ff=QInputDialog::getDouble(this,trUtf8("Конечная частота"),trUtf8("Введите, Hz"),200000);
     QString file=QInputDialog::getText(this,trUtf8("Имя файла"),trUtf8("Имя файла для сохранения резонансной кривой (оставьте пустым, чтобы не сохранять)"));
     measure(sf,ff,file);
+}
+
+void vibupraut::onfinished(QStringList data)
+{
+    ui.lbStatus->setText(data.join("\n"));
 }
