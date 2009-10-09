@@ -1,4 +1,4 @@
-TEMPLATE = subdirs 
+TEMPLATE = subdirs
 CONFIG += ordered
 SUBDIRS = \
 asec_control \
@@ -10,3 +10,4 @@ asec_parser \
 asec_simplex \
 asec_elastmod \
 asec_plots \
+asec_Xray_solver \
