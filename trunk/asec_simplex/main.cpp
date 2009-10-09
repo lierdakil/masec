@@ -125,8 +125,10 @@ int main(int argc, char* argv[])
         while(!f.atEnd())
         {
             QStringList line = QString::fromAscii(f.readLine()).split('\t');
-            func_data<<fPoint2D(line[0].toDouble(),line[1].toDouble());
+            if(line.length()==2)
+                func_data<<fPoint2D(line[0].toDouble(),line[1].toDouble());
         }
+        func_data.pop_front();
         f.close();
 
         QVector<Point2D> func_sm_data; //smoothen initial data and lessen number of points
