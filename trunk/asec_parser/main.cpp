@@ -79,15 +79,14 @@ int main(int argc, char *argv[])
             {
                 QStringList dataline=line.split(";");
                 QVector<QString> row;
-                row.fill("",header.count());
+                row.fill("0",header.count());
                 foreach(QString entry, dataline)
                 {
                     QString name=entry.split(":").at(0);
                     QString value=entry.split(":").at(1);
-                    int id=header.indexOf(QRegExp(name));
-                    row[id]=value;
+                    int id=header.indexOf(name);
+                    row[id]=value.remove("\n");
                 }
-                row.last().remove("\n");
                 foreach(QString cell, row)
                     cout<<cell.toLocal8Bit().data()<<"\t";
                 cout<<"\n";

@@ -66,7 +66,10 @@ int main(int argc, char *argv[])
             if(line.isEmpty())
                 continue;
             QStringList data=line.split('\t');
-            if(data.count()<4)
+            if(data.count()<=header.indexOf(prefixf+"Resonance freq, Hz") ||
+               data.count()<= header.indexOf(prefixV+"Resonance ampl, V") ||
+               data.count()<= header.indexOf(prefixf+"Antiresonance freq, Hz") ||
+               data.count()<= header.indexOf(prefixV+"Antiresonance ampl, V"))
                 continue;
             double A=1+Mq/Ms;
             double B=Mq*Fr/Ms;
