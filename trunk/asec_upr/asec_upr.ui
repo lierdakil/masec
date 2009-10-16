@@ -80,7 +80,23 @@
       </widget>
      </item>
      <item row="3" column="0">
-      <widget class="QDoubleSpinBox" name="sbOscVol"/>
+      <widget class="QDoubleSpinBox" name="sbOscVol">
+       <property name="decimals">
+        <number>3</number>
+       </property>
+       <property name="minimum">
+        <double>0.002000000000000</double>
+       </property>
+       <property name="maximum">
+        <double>5.000000000000000</double>
+       </property>
+       <property name="singleStep">
+        <double>0.100000000000000</double>
+       </property>
+       <property name="value">
+        <double>0.500000000000000</double>
+       </property>
+      </widget>
      </item>
      <item row="3" column="1">
       <widget class="QSpinBox" name="sbSm1"/>
@@ -104,8 +120,11 @@
      </item>
      <item row="3" column="3">
       <widget class="QDoubleSpinBox" name="sbVPP">
+       <property name="minimum">
+        <double>0.050000000000000</double>
+       </property>
        <property name="maximum">
-        <double>20.000000000000000</double>
+        <double>10.000000000000000</double>
        </property>
        <property name="value">
         <double>5.000000000000000</double>

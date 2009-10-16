@@ -21,6 +21,7 @@ class MeasureThread : public QThread
     Q_OBJECT
 
 private:
+    bool stop_scheldued;
     double epsilon;
     double k, k2;
     void findresonance();
@@ -53,6 +54,7 @@ public:
     int sm1, sm2;
     double genvolpp;
     void run();
+    void stop();
 
 signals:
     void path(QList<qreal>,QPen pen);

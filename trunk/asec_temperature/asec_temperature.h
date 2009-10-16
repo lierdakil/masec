@@ -30,6 +30,8 @@ private slots:
     void on_btSettings_clicked();
     void on_btTest_clicked();
     void on_btStopTest_clicked();
+    void on_btPause_clicked();
+    void isTemptlRunning(bool running);
 
 public slots:
     void temp_set();
