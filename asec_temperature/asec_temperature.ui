@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>496</width>
+    <width>498</width>
     <height>338</height>
    </rect>
   </property>
@@ -88,6 +88,16 @@
             </size>
            </property>
           </spacer>
+         </item>
+         <item>
+          <widget class="QPushButton" name="btPause">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="text">
+            <string>Приостановить</string>
+           </property>
+          </widget>
          </item>
          <item>
           <widget class="QPushButton" name="btSettings">

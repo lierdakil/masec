@@ -52,6 +52,7 @@ vibupraut::~vibupraut()
 
 void vibupraut::measure(double startf, double stopf, QString filename)
 {
+    ui.btRun->setEnabled(false);
     thread.wait();
     thread.startf=startf;
     thread.stopf=stopf;
@@ -95,13 +96,29 @@ void vibupraut::line(qreal x1, qreal y1,qreal x2, qreal y2, QPen pen)
 
 void vibupraut::on_btRun_clicked()
 {
-    double sf=QInputDialog::getDouble(this,trUtf8("Начальная частота"),trUtf8("Введите, Hz"),100000);
-    double ff=QInputDialog::getDouble(this,trUtf8("Конечная частота"),trUtf8("Введите, Hz"),200000);
-    QString file=QInputDialog::getText(this,trUtf8("Имя файла"),trUtf8("Имя файла для сохранения резонансной кривой (оставьте пустым, чтобы не сохранять)"));
+    bool ok=false;
+    double sf=QInputDialog::getDouble(this,
+                                      trUtf8("Начальная частота"),
+                                      trUtf8("Введите, Hz"),
+                                      100000,0.010,15000000,2,&ok);
+    if(!ok) return;
+    double ff=QInputDialog::getDouble(this,
+                                      trUtf8("Конечная частота"),
+                                      trUtf8("Введите, Hz"),
+                                      200000,0.010,15000000,2,&ok);
+    if(!ok) return;
+    QString file=QInputDialog::getText(this,
+                                       trUtf8("Имя файла"),
+                                       trUtf8("Имя файла для сохранения "
+                                              "резонансной кривой (оставьте "
+                                              "пустым, чтобы не сохранять)"),
+                                       QLineEdit::Normal,"",&ok);
+    if(!ok) return;
     measure(sf,ff,file);
 }
 
 void vibupraut::onfinished(QStringList data)
 {
     ui.lbStatus->setText(data.join("\n"));
+    ui.btRun->setEnabled(true);
 }

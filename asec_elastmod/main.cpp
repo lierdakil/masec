@@ -2,10 +2,10 @@
 #include <QtGui>
 #include <iostream>
 
-#define getparam(p) \
+#define getparam(p,u) \
 { \
-  QRegExp r(QString("%1\\s*=\\s*([0-9eE.]+)").arg(#p));\
-  if(r.indexIn(line)>=0) p=r.capturedTexts().at(1).toDouble(); }
+  QRegExp r(QString("%1\\s*=\\s*([0-9eE.]+)\\s*([A-z]+)").arg(#p));\
+  if(r.indexIn(line)>=0) if(r.capturedTexts().at(2).toLower()==#u) p=r.capturedTexts().at(1).toDouble(); }
 #define checkparam(p,u) \
 if(p<0) p=QInputDialog::getDouble(0, \
                                   "asec_elastmod", \
@@ -33,12 +33,12 @@ int main(int argc, char *argv[])
             line=QString::fromLocal8Bit(f.readLine()).trimmed();
             if(line.startsWith('#'))
             {
-                getparam(Mq);
-                getparam(Ms);
-                getparam(Fr);
-                getparam(ls);
-                getparam(hs);
-                getparam(ws);
+                getparam(Mq,gm);
+                getparam(Ms,gm);
+                getparam(Fr,hz);
+                getparam(ls,cm);
+                getparam(hs,cm);
+                getparam(ws,cm);
                 //std::cout<<line.toLocal8Bit().data();
             }
         } while (line.startsWith('#'));

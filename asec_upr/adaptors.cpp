@@ -31,7 +31,7 @@ flow_adaptor::flow_adaptor(vibupraut *v) : QDBusAbstractAdaptor(v), vua(v)
 
 void flow_adaptor::stop()
 {
-    vua->thread.quit();//TODO: Make it stop for real
+    vua->thread.stop();
 }
 
 

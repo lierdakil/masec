@@ -70,8 +70,7 @@ void vib_temperature::temp_set()
     data<<QString("Timeout,min:%1").arg(temptl.timeout);
     data<<QString("Stabilization time,min:%1").arg(temptl.settime);
     emit finished(data);
-    ui.btStopTest->setEnabled(false);
-    ui.btTest->setEnabled(true);
+    isTemptlRunning(false);
 }
 
 void vib_temperature::error(QString message)
@@ -81,8 +80,7 @@ void vib_temperature::error(QString message)
     data<<message;
     emit finished(data);
     QErrorMessage::qtHandler()->showMessage(message);
-    ui.btStopTest->setEnabled(false);
-    ui.btTest->setEnabled(true);
+    isTemptlRunning(false);
 }
 
 void vib_temperature::newstatus(int status)
@@ -136,8 +134,7 @@ void vib_temperature::stopped()
     //	data<<trUtf8("::ERROR::");
     //	data<<trUtf8("Stopped by user");
     //	emit finished(data);
-    ui.btStopTest->setEnabled(false);
-    ui.btTest->setEnabled(true);
+    isTemptlRunning(false);
 }
 
 void vib_temperature::fix_range()
@@ -160,8 +157,8 @@ void vib_temperature::set_temp_zone(double temp,double ramp, double timeout)
     {
         if(temp<=wset.getMaxT())
         {
+            isTemptlRunning(true);
             ui.btStopTest->setEnabled(false);
-            ui.btTest->setEnabled(false);
             delete ui.gvTemp->scene();
             ui.gvTemp->setScene(new QGraphicsScene());
             temptl.start_zone(temp,ramp,timeout,wset.getSettime(temp));
@@ -181,11 +178,10 @@ void vib_temperature::set_temp_zone(double temp,double ramp, double timeout)
 
 void vib_temperature::on_btTest_clicked()
 {
-    ui.btStopTest->setEnabled(true);
-    ui.btTest->setEnabled(false);
-
     if (!qApp->property("tempid").toString().isEmpty())
     {
+        isTemptlRunning(true);
+        ui.btPause->setEnabled(false);
         delete ui.gvTemp->scene();
         ui.gvTemp->setScene(new QGraphicsScene());
         temptl.start_manual(
@@ -198,14 +194,28 @@ void vib_temperature::on_btTest_clicked()
                 ui.sbD_test->value(),
                 ui.cbRange_test->currentIndex(),
                 ui.sbMout_test->value());
-    } else {
+    } else
         QErrorMessage::qtHandler()->showMessage(trUtf8("Не установлен GPIB ID термоконтроллера."));
-        ui.btStopTest->setEnabled(false);
-        ui.btTest->setEnabled(true);
-    }
 }
 
 void vib_temperature::on_btStopTest_clicked()
 {
     temptl.stop();
+}
+
+void vib_temperature::on_btPause_clicked()
+{
+    temptl.stop();
+    QStringList data;\
+    data<<trUtf8("::ERROR::");
+    data<<trUtf8("Paused by user");
+    emit finished(data);
+}
+
+void vib_temperature::isTemptlRunning(bool running)
+{
+    ui.btStopTest->setEnabled(running);
+    ui.btTest->setEnabled(!running);
+    ui.btSettings->setEnabled(!running);
+    ui.btPause->setEnabled(running);
 }

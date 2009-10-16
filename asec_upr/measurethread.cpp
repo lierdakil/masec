@@ -14,6 +14,11 @@
 //#define GOLDEN
 #define PHI 1.61803398874989484
 
+class UserStoppedError
+{
+//does not do a thing! wohoo!
+};
+
 QList<qreal> sm_diff(QByteArray data, int nr)//nr - Depth of smoothing in one direction
 {
     QList<qreal> diff;
@@ -55,6 +60,7 @@ QByteArray MeasureThread::sweep()
         gen->startsweep();
         osc->wait("READY");
         data = osc->readcurve();
+        if (stop_scheldued) throw UserStoppedError();
 
         /*    max
         *     _
@@ -145,6 +151,7 @@ QByteArray MeasureThread::sweep()
         osc->wait("READY");
         gen->startsweep();
         osc->wait("READY");
+        if (stop_scheldued) throw UserStoppedError();
 
         data2_forward = osc->readcurve();
         k2=osc->ymul();
@@ -154,6 +161,7 @@ QByteArray MeasureThread::sweep()
         gen->startsweep();
         osc->wait("READY");
         data2_reverse = osc->readcurve();
+        if (stop_scheldued) throw UserStoppedError();
 
         max_data2=0;
         for(int i=0; i<data2_forward.count(); ++i)
@@ -231,7 +239,7 @@ double MeasureThread::find_extremum(QByteArray dat, int start, int stop, int sm,
     return golden(k*start+ssf,k*stop+ssf,epsilon,true);
 #else
     QList<qreal> diff=sm_diff(dat,sm);
-    int a,b;
+    int a=0,b=0;
     //left to right
     for(int i=start;i<stop;i++)
     {
@@ -266,6 +274,7 @@ void MeasureThread::findresonance()
     while ((xfmax <= xmax1)||(xfmax >= xmin))
     {
         //draw X axis
+        if (stop_scheldued) throw UserStoppedError();
         dat = sweep();
 
         emit line(0,0,dat.count(),0,Qt::SolidLine);
@@ -279,10 +288,13 @@ void MeasureThread::findresonance()
                 xfmax=i;
             }
         }
+        if (stop_scheldued) throw UserStoppedError();
 
         diff=sm_diff(dat,sm2);
+        if (stop_scheldued) throw UserStoppedError();
 
         emit path(diff, QPen(Qt::red));
+        if (stop_scheldued) throw UserStoppedError();
 
         float min=255;
         float max1=0;
@@ -296,6 +308,7 @@ void MeasureThread::findresonance()
                 xmin=i;
             }
         }
+        if (stop_scheldued) throw UserStoppedError();
 
         for (int i=0;i<xmin;i++)
         {
@@ -305,6 +318,7 @@ void MeasureThread::findresonance()
                 xmax1=i;
             }
         }
+        if (stop_scheldued) throw UserStoppedError();
 
         for (int i=xmin;i<dat.count();i++)
         {
@@ -314,6 +328,7 @@ void MeasureThread::findresonance()
                 xmax2=i;
             }
         }
+        if (stop_scheldued) throw UserStoppedError();
 
         draw_x(xmin);
         draw_x(xmax1);
@@ -342,6 +357,7 @@ void MeasureThread::findresonance()
 
 void MeasureThread::run()
 {
+    stop_scheldued=false;
     epsilon=0.1;
     fsf=startf;
     fff=stopf;
@@ -439,6 +455,8 @@ void MeasureThread::run()
         data<<QString("::ERROR::");
         data<<e.report();
         emit finished(data);
+    } catch (UserStoppedError e) {
+        //do nothing
     } catch(std::exception e) {
         QStringList data;
         data<<QString("::ERROR::");
@@ -447,6 +465,14 @@ void MeasureThread::run()
     }
 
     delete gen;
+    gen=0;
     delete vol;
+    vol=0;
     delete osc;
+    osc=0;
+}
+
+void MeasureThread::stop()
+{
+    stop_scheldued=true;
 }
