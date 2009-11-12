@@ -10,6 +10,10 @@
 #include <QFile>
 #include <QtCore>
 #include <QErrorMessage>
+#include <qwt_plot.h>
+#include <qwt_plot_curve.h>
+#include <qwt_plot_marker.h>
+#include <qwt_symbol.h>
 #include "ui_asec_upr.h"
 #include "measurethread.h"
 
@@ -31,9 +35,8 @@ public:
         MeasureThread thread;
 
 public slots:
-        void path(QList<qreal>,QPen pen);
-        void path(QByteArray,QPen pen);
-        void line(qreal x1, qreal y1,qreal x2, qreal y2, QPen pen);
+        void path(QVector<qreal>,QVector<qreal>,QPen pen);
+        void marker(qreal x, qreal y, QPen pen);
         void on_btRun_clicked();
         void onfinished(QStringList data);
 signals:

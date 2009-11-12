@@ -15,7 +15,14 @@
   </property>
   <layout class="QVBoxLayout">
    <item>
-    <widget class="QGraphicsView" name="graph"/>
+    <widget class="QwtPlot" name="graph">
+     <property name="frameShape">
+      <enum>QFrame::NoFrame</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Plain</enum>
+     </property>
+    </widget>
    </item>
    <item>
     <layout class="QGridLayout">
@@ -143,11 +150,18 @@
   </layout>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
+ <customwidgets>
+  <customwidget>
+   <class>QwtPlot</class>
+   <extends>QFrame</extends>
+   <header>qwt_plot.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <tabstops>
   <tabstop>edOscId</tabstop>
   <tabstop>edGenId</tabstop>
   <tabstop>edMulId</tabstop>
-  <tabstop>graph</tabstop>
  </tabstops>
  <resources/>
  <connections/>
