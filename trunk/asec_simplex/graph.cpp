@@ -32,12 +32,12 @@ m_ui(new Ui::Graph)
 
     connect(m_ui->sbLm,SIGNAL(valueChanged(double)),SLOT(sb_Lm_valueChanged(double)));
 
-    m_ui->sbRm->setValue(Rm*1e-3);
-    m_ui->sbLm->setValue(Lm);
-    m_ui->sbCm->setValue(Cm*1e19);
-    m_ui->sbU->setValue(U);
-    m_ui->sbC0->setValue(C0*1e14);
-    m_ui->sbR0->setValue(R0);
+    m_ui->sbRm->setValue(fabs(Rm)*1e-3);
+    m_ui->sbLm->setValue(fabs(Lm));
+    m_ui->sbCm->setValue(fabs(Cm)*1e19);
+    m_ui->sbU->setValue(fabs(U));
+    m_ui->sbC0->setValue(fabs(C0)*1e14);
+    m_ui->sbR0->setValue(fabs(R0));
     startf=X_f.first();
     endf=X_f.last();
 

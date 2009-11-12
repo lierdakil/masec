@@ -6,6 +6,7 @@
 #include <iostream>
 #include "graph.h"
 #include <QApplication>
+#include <QFileDialog>
 
 #define iRm 0
 #define iLm 1
@@ -17,6 +18,7 @@
 
 int main(int argc, char* argv[])
 {
+    QApplication app(argc,argv);
     QString parameters;
     QStringList arguments;
     bool consoleonly=false;
@@ -39,25 +41,41 @@ int main(int argc, char* argv[])
                 consoleonly=true;
                 break;
             default:
-                goto usage;
-                break;
+                std::cerr<<"Usage:\n"
+                        <<"\t"<<argv[0]<<" [-c] [datafile(s)]\n"
+                        <<"\tAnd ASCII table to append to on stdin\n"
+                        <<"\tc - console only, no gui\n"
+                        <<"\tRun without arguments for GUI mode\n";
+                return 1;
             }
         }
     }
 
+    QString asciitablename;
+    QStringList rawdatanames;
+    QFile ft;
+    QFile output;
+    bool is_file_open_read;
+    bool is_file_open_write;
     if(argc<2)
     {
-        usage:
-        std::cerr<<"Usage:\n"
-                <<"\t"<<argv[0]<<" [-c] datafile(s)\n"
-                <<"\tAnd ASCII table to append to on stdin\n"
-                <<"\tc - console only, no gui\n";
-        return 1;
+        //GUI mode
+        asciitablename=QFileDialog::getOpenFileName(0,"ASCII table with rough experimental data","","ASCII Table (*.txt)");
+        rawdatanames=QFileDialog::getOpenFileNames(0,"Raw data files","","ASCII Table (*.txt)");
+        rawdatanames.sort();
+        ft.setFileName(asciitablename);
+        output.setFileName(QFileDialog::getSaveFileName(0,"Ascii table to save","","ASCII Table (*.txt)"));
+        is_file_open_read=ft.open(QFile::ReadOnly);
+        is_file_open_write=output.open(QFile::WriteOnly);
+    } else {
+        //Console mode
+        rawdatanames=arguments;
+        is_file_open_read=ft.open(0,QFile::ReadOnly);
+        is_file_open_write=output.open(1,QFile::WriteOnly);
     }
 
-    QFile ft;
     QStringList table;
-    if(ft.open(0,QFile::ReadOnly))
+    if(is_file_open_read)
     {
         while(true)
         {
@@ -66,7 +84,7 @@ int main(int argc, char* argv[])
                 break;
             QString line=QString::fromLocal8Bit(buf);
             if(line.startsWith('#'))
-                std::cout<<line.toLocal8Bit().data();
+                output.write(line.toLocal8Bit());
             else if(!line.trimmed().isEmpty())
                 table<<line.trimmed();
         }
@@ -76,9 +94,10 @@ int main(int argc, char* argv[])
     if(table.count()<=1)
     {
         has_table=false;
-    } else if(table.count()!=arguments.count()+1)
+    } else if(table.count()!=rawdatanames.count()+1)
     {
-        std::cerr<<"Invalid ascii table specified";
+        std::cerr<<"Invalid ascii table specified\n"
+                <<table.count()<<"!="<<rawdatanames.count()+1;
         return 1;
     }
 
@@ -100,12 +119,12 @@ int main(int argc, char* argv[])
     bool useC0=false ,useLm=false, useU=true, useR0=true;
     double inLm=0, inC0=0, inU=5, inR0=1000;
 
-    for(int ifile=0;ifile<arguments.count();++ifile)
+    for(int ifile=0;ifile<rawdatanames.count();++ifile)
     {
-        QFile f(arguments[ifile]);
+        QFile f(rawdatanames[ifile]);
         if (!f.open(QIODevice::ReadOnly))
         {
-            std::cerr<<"could not open "<<arguments.at(ifile).toLocal8Bit().data();
+            std::cerr<<"could not open "<<rawdatanames.at(ifile).toLocal8Bit().data();
             return 2;
         }
 
@@ -271,11 +290,11 @@ int main(int argc, char* argv[])
                     else std::cerr<<inC0;
                     std::cerr<<"\n"
                             <<"U=";
-                    if(!useC0) std::cerr<<gsl_vector_get (min->x, 4)*gsl_vector_get (units, 4);
+                    if(!useU) std::cerr<<gsl_vector_get (min->x, 4)*gsl_vector_get (units, 4);
                     else std::cerr<<inU;
                     std::cerr<<"\t"
                             <<"R0=";
-                    if(!useC0) std::cerr<<gsl_vector_get (min->x, 5)*gsl_vector_get (units, 5);
+                    if(!useR0) std::cerr<<gsl_vector_get (min->x, 5)*gsl_vector_get (units, 5);
                     else std::cerr<<inR0;
                     std::cerr<<"\n"
                             <<"StDev="<<min->fval<<"\n"
@@ -338,7 +357,6 @@ int main(int argc, char* argv[])
             gsl_multimin_fminimizer_free(min);
             gsl_vector_free(ss);
 
-            QApplication app(argc,argv);
             Graph g(X_exp, Y_exp, X_f, Y_f, gsl_vector_get(par,0), gsl_vector_get(par,1),
                     gsl_vector_get(par,2), gsl_vector_get(par,4), gsl_vector_get(par,3),
                     gsl_vector_get(par,5), minf, minI, maxf, maxI);
@@ -365,7 +383,7 @@ int main(int argc, char* argv[])
                 gsl_vector_div(a,units);
             } else {
                 useLm=true;
-                useC0=true;
+                //useC0=true;
                 useU=true;
                 useR0=true;
                 if (has_table) {
@@ -387,7 +405,10 @@ int main(int argc, char* argv[])
     gsl_vector_free(units);
     if (has_table)
         foreach(QString s, table)
-            std::cout<<s.toLocal8Bit().data()<<"\n";
+        {
+            output.write(s.toLocal8Bit());
+            output.write("\n");
+        }
 }
 
 
