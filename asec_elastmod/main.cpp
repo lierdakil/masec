@@ -1,6 +1,7 @@
 #include <QtCore>
 #include <QtGui>
 #include <iostream>
+#include <exception>
 
 #define getparam(p,u) \
 { \
@@ -12,7 +13,7 @@ if(p<0) p=QInputDialog::getDouble(0, \
                                   QString("Please enter value for %1 in %2")\
                                   .arg(#p).arg(#u),\
                                   0,-2147483647,2147483647,10); \
-        std::cout<<"# "#p" = "<<p<<" "#u"\n"
+          std::cout<<"# "#p" = "<<p<<" "#u"\n"
 #define data_append(var) data<<QString::number(var,'f')
 
 int doCalculate(QFile *f, QString prefixf, QString prefixV)
@@ -41,7 +42,7 @@ int doCalculate(QFile *f, QString prefixf, QString prefixV)
     checkparam(ls,cm);
     checkparam(hs,cm);
     checkparam(ws,cm);
-    checkparam(rho,gm/cm3);
+    //checkparam(rho,gm/cm3);
     //TODO: Notify user that he can ignore rho
     if(rho<=0)
         rho=Ms/(ls*hs*ws);
@@ -54,6 +55,7 @@ int doCalculate(QFile *f, QString prefixf, QString prefixV)
     QByteArray buf;
     while(true)
     {
+
         buf=f->readLine();
         if(buf.isEmpty())
             break;
@@ -62,17 +64,22 @@ int doCalculate(QFile *f, QString prefixf, QString prefixV)
         if(line.isEmpty())
             continue;
         QStringList data=line.split('\t');
-        if(data.count()<=header.indexOf(prefixf+"Resonance freq, Hz") ||
-           data.count()<= header.indexOf(prefixV+"Resonance ampl, V") ||
-           data.count()<= header.indexOf(prefixf+"Antiresonance freq, Hz") ||
-           data.count()<= header.indexOf(prefixV+"Antiresonance ampl, V"))
+        int fri=header.indexOf(prefixf+"Resonance freq, Hz"),
+        Vri=header.indexOf(prefixV+"Resonance ampl, V"),
+        fai=header.indexOf(prefixf+"Antiresonance freq, Hz"),
+        Vai=header.indexOf(prefixV+"Antiresonance ampl, V");
+        if(data.count()<= fri ||
+           data.count()<= fai ||
+           data.count()<= Vri ||
+           data.count()<= Vai)
             continue;
+
         double A=1+Mq/Ms;
         double B=Mq*Fr/Ms;
-        double fr=data.at(header.indexOf(prefixf+"Resonance freq, Hz")).toDouble();
-        double fa=data.at(header.indexOf(prefixf+"Antiresonance freq, Hz")).toDouble();
-        double Vr=data.at(header.indexOf(prefixV+"Resonance ampl, V")).toDouble();
-        double Va=data.at(header.indexOf(prefixV+"Antiresonance ampl, V")).toDouble();
+        double fr=data.at(fri).toDouble();
+        double fa=data.at(fai).toDouble();
+        double Vr=data.at(Vri).toDouble();
+        double Va=data.at(Vai).toDouble();
         double fs=(fr+(fa-fr)*Va/(Va+Vr))*A-B;
         double E=4*rho*ls*ls*fs*fs;
         double Q1=2*(fa-fr)*A*sqrt(Vr*Va)/(fs*(Vr+Va));
@@ -81,6 +88,7 @@ int doCalculate(QFile *f, QString prefixf, QString prefixV)
         data_append(Q1);
         std::cout<<data.join("\t").append("\n").toLocal8Bit().data();
     }
+
     return 0;
 }
 
@@ -124,10 +132,10 @@ int main(int argc, char *argv[])
 
     if (consoleonly)
     {
-        if(argc>1)
-            prefixf=QString::fromLocal8Bit(argv[1])+" ";
-        if(argc>2)
-            prefixV=QString::fromLocal8Bit(argv[2])+" ";
+        if(arguments.length()>=1)
+            prefixf=arguments[0]+" ";
+        if(arguments.length()>=2)
+            prefixV=arguments[1]+" ";
         if(f.open(0,QIODevice::ReadOnly))
         {
             doCalculate(&f,prefixf,prefixV);
