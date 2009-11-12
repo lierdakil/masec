@@ -76,11 +76,11 @@ QByteArray MeasureThread::sweep()
         *
         */
 
-        emit path(data,QPen(Qt::green));
+        //emit path(data,QPen(Qt::green));
 
         QList<qreal> diff = sm_diff(data,sm1);
 
-        emit path(diff,QPen(Qt::darkYellow));
+        //emit path(diff,QPen(Qt::darkYellow));
 
         double min_diff_val=0;
         int min_diff_index=0;
@@ -118,9 +118,9 @@ QByteArray MeasureThread::sweep()
         //starti=2*maxi-min_diff_index;//double interval
         //stopi=2*mini-min_diff_index;
         starti=2*maxi-mini;
-        draw_x(starti);
+        //draw_x(starti);
         stopi=2*mini-maxi;
-        draw_x(stopi);
+        //draw_x(stopi);
     }
     //calculate coefficents to convert index to frequency
     double kt = (fff-fsf)/data.count();
@@ -143,8 +143,11 @@ QByteArray MeasureThread::sweep()
 
     for(int i=0; i<data.count(); i++)
     {
-        curve_wide<<QPair<double,double>(kt*i+fsf, data.at(i)*k2);
+        curve_wide_x<<kt*i+fsf;
+        curve_wide_y<<data.at(i)*k2;
     }
+
+    emit path(curve_wide_x,curve_wide_y,QPen(Qt::green));
 
     QByteArray data2_forward;
     QByteArray data2_reverse;
@@ -182,18 +185,22 @@ QByteArray MeasureThread::sweep()
     for(int i=1; i<=data2_reverse.count();++i)
         data2_reverse2.append(data2_reverse.at(data2_reverse.count()-i));
 
-    emit path(data2_forward,QPen(Qt::magenta));
-    emit path(data2_reverse2,QPen(Qt::blue));
+    /*emit path(data2_forward,QPen(Qt::magenta));
+    emit path(data2_reverse2,QPen(Qt::blue));*/
 
     for(int i=0; i<data2_forward.count(); i++)
     {
-        curve_forward<<QPair<double,double>(k*i+ssf, data2_forward.at(i)*k2);
+        curve_forward_x<<k*i+ssf;
+        curve_forward_y<<data2_forward.at(i)*k2;
     }
+    emit path(curve_forward_x, curve_forward_y,QPen(Qt::blue));
 
     for(int i=0; i<data2_reverse2.count(); i++)
     {
-        curve_reverse<<QPair<double,double>(k*i+ssf, data2_reverse2.at(i)*k2);
+        curve_reverse_x<<k*i+ssf;
+        curve_reverse_y<<data2_reverse2.at(i)*k2;
     }
+    emit path(curve_reverse_x, curve_reverse_y,QPen(Qt::magenta));
 
     return data2_reverse2;
 }
@@ -282,7 +289,7 @@ void MeasureThread::findresonance()
         if (stop_scheldued) throw UserStoppedError();
         dat = sweep();
 
-        emit line(0,0,dat.count(),0,Qt::SolidLine);
+        //emit line(0,0,dat.count(),0,Qt::SolidLine);
 
         int fmax=0;
         for (int i=0; i<dat.count();i++)
@@ -298,7 +305,7 @@ void MeasureThread::findresonance()
         diff=sm_diff(dat,sm2);
         if (stop_scheldued) throw UserStoppedError();
 
-        emit path(diff, QPen(Qt::red));
+        //emit path(diff, QPen(Qt::red));
         if (stop_scheldued) throw UserStoppedError();
 
         float min=255;
@@ -335,9 +342,9 @@ void MeasureThread::findresonance()
         }
         if (stop_scheldued) throw UserStoppedError();
 
-        draw_x(xmin);
-        draw_x(xmax1);
-        draw_x(xmax2);
+        //draw_x(xmin);
+        //draw_x(xmax1);
+        //draw_x(xmax2);
         cycles++;
         if(cycles>4)
             throw GPIBGenericException(trUtf8("Could not acquire resonance qurve"));
@@ -346,14 +353,14 @@ void MeasureThread::findresonance()
     gen->sweepoff();
 
     rf=find_extremum(dat,xmax1,xmin,sm2,true);
-    draw_x((rf-ssf)/k);
+    //draw_x((rf-ssf)/k);
     ra=getamplonf(rf);
-    draw_y(-ra/k2*sqrt(2));
+    //draw_y(-ra/k2*sqrt(2));
 
     af=find_extremum(dat,xmin,xmax2,sm2,false);
-    draw_x((af-ssf)/k);
+    //draw_x((af-ssf)/k);
     aa=getamplonf(af);
-    draw_y(-aa/k2*sqrt(2));
+    //draw_y(-aa/k2*sqrt(2));
 
     gen->sweepon();
 }
@@ -371,9 +378,12 @@ void MeasureThread::run()
     vol=0;
     osc=0;
 
-    curve_forward.clear();
-    curve_reverse.clear();
-    curve_wide.clear();
+    curve_forward_x.clear();
+    curve_reverse_x.clear();
+    curve_wide_x.clear();
+    curve_forward_y.clear();
+    curve_reverse_y.clear();
+    curve_wide_y.clear();
 
     try{
         //---------Main block-------------
@@ -420,11 +430,11 @@ void MeasureThread::run()
             f.write("\t");
             f.write(QString("Amplitude, V").toAscii());
             f.write("\r\n");
-            for(int i=0;i<curve_forward.count();i++)
+            for(int i=0;i<curve_forward_x.count();i++)
             {
-                f.write(QString::number(curve_forward.at(i).first,'f',10).toAscii());
+                f.write(QString::number(curve_forward_x.at(i),'f',10).toAscii());
                 f.write("\t");
-                f.write(QString::number(curve_forward.at(i).second,'f',10).toAscii());
+                f.write(QString::number(curve_forward_y.at(i),'f',10).toAscii());
                 f.write("\r\n");
             }
             f.close();
@@ -444,11 +454,11 @@ void MeasureThread::run()
             f.write("\t");
             f.write(QString("Amplitude, V").toAscii());
             f.write("\r\n");
-            for(int i=0;i<curve_reverse.count();i++)
+            for(int i=0;i<curve_reverse_x.count();i++)
             {
-                f.write(QString::number(curve_reverse.at(i).first,'f',10).toAscii());
+                f.write(QString::number(curve_reverse_x.at(i),'f',10).toAscii());
                 f.write("\t");
-                f.write(QString::number(curve_reverse.at(i).second,'f',10).toAscii());
+                f.write(QString::number(curve_reverse_y.at(i),'f',10).toAscii());
                 f.write("\r\n");
             }
             f.close();
@@ -468,11 +478,11 @@ void MeasureThread::run()
             f.write("\t");
             f.write(QString("Amplitude, V").toAscii());
             f.write("\r\n");
-            for(int i=0;i<curve_wide.count();i++)
+            for(int i=0;i<curve_wide_x.count();i++)
             {
-                f.write(QString::number(curve_wide.at(i).first,'f',10).toAscii());
+                f.write(QString::number(curve_wide_x.at(i),'f',10).toAscii());
                 f.write("\t");
-                f.write(QString::number(curve_wide.at(i).second,'f',10).toAscii());
+                f.write(QString::number(curve_wide_y.at(i),'f',10).toAscii());
                 f.write("\r\n");
             }
             f.close();

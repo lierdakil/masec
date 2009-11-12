@@ -24,3 +24,14 @@ LIBS += -L../build/ \
 QT += core \
     gui \
     dbus
+
+win32 {
+    INCLUDEPATH += C:\Qwt-5.2.0-svn\include
+    LIBS += -L C:\Qwt-5.2.0-svn\lib
+}
+unix {
+    INCLUDEPATH += /usr/include \
+        /usr/include/qwt5 \
+        /usr/include/qwt-qt4
+}
+LIBS += -lqwt

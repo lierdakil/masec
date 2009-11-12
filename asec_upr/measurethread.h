@@ -40,7 +40,9 @@ private:
     double ra; //Resonance Amplitude
     double af; //Antiresonance Frequency
     double aa; //Antiresonance Amplitude
-    QList<QPair<double,double> > curve_forward, curve_reverse, curve_wide;
+    //QList<QPair<double,double> > curve_forward, curve_reverse, curve_wide;
+    QVector<qreal> curve_forward_x, curve_reverse_x, curve_wide_x,
+    curve_forward_y, curve_reverse_y, curve_wide_y;
     double find_extremum(QByteArray dat, int start, int stop, int sm, bool max);
 
 public:
@@ -57,9 +59,11 @@ public:
     void stop();
 
 signals:
-    void path(QList<qreal>,QPen pen);
+    /*void path(QList<qreal>,QPen pen);
     void path(QByteArray,QPen pen);
-    void line(qreal x1, qreal y1,qreal x2, qreal y2, QPen pen);
+    void line(qreal x1, qreal y1,qreal x2, qreal y2, QPen pen);*/
+    void path(QVector<qreal>,QVector<qreal>,QPen pen);
+    void marker(qreal x, qreal y, QPen pen);
     void finished(QStringList data);
 };
 
