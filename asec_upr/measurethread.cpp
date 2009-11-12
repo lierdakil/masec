@@ -141,6 +141,11 @@ QByteArray MeasureThread::sweep()
     k2=osc->ymul();
     double ch1=max_data*k2/4;
 
+    for(int i=0; i<data.count(); i++)
+    {
+        curve_wide<<QPair<double,double>(kt*i+fsf, data.at(i)*k2);
+    }
+
     QByteArray data2_forward;
     QByteArray data2_reverse;
     int max_data2=0;
@@ -368,6 +373,7 @@ void MeasureThread::run()
 
     curve_forward.clear();
     curve_reverse.clear();
+    curve_wide.clear();
 
     try{
         //---------Main block-------------
@@ -443,6 +449,30 @@ void MeasureThread::run()
                 f.write(QString::number(curve_reverse.at(i).first,'f',10).toAscii());
                 f.write("\t");
                 f.write(QString::number(curve_reverse.at(i).second,'f',10).toAscii());
+                f.write("\r\n");
+            }
+            f.close();
+        }
+
+        if(!filename.isEmpty())
+        {
+            QFile f(filename+"_wide.txt");
+            f.open(QFile::WriteOnly);
+            foreach(QString s, data)
+            {
+                f.write("#");
+                f.write(s.toAscii());
+                f.write("\r\n");
+            }
+            f.write(QString("Frequency, Hz").toAscii());
+            f.write("\t");
+            f.write(QString("Amplitude, V").toAscii());
+            f.write("\r\n");
+            for(int i=0;i<curve_wide.count();i++)
+            {
+                f.write(QString::number(curve_wide.at(i).first,'f',10).toAscii());
+                f.write("\t");
+                f.write(QString::number(curve_wide.at(i).second,'f',10).toAscii());
                 f.write("\r\n");
             }
             f.close();

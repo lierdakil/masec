@@ -6,15 +6,17 @@
  */
 
 #include "gen.h"
+#include "measure_time.h"
 
-genctrl::genctrl(QString GPIBID) : GPIBctrl(GPIBID,"HEWLETT-PACKARD,33120A,0,10.0-5.0-1.0",60000)
+genctrl::genctrl(QString GPIBID) : GPIBctrl(GPIBID,"HEWLETT-PACKARD,33120A,0,10.0-5.0-1.0",6000*MEASURE_TIME)
 {
     //write("APPL:SIN 1, 5.0");
     write("FUNC:SHAP SIN");
     write("VOLT:UNIT VPP");
-    write("SWE:TIME 10");
+    write(QString("SWE:TIME %1").arg(MEASURE_TIME));
     write("SWE:SPAC LIN");
     write("TRIG:SOUR BUS");
+    write("OUTP:LOAD INF");
 }
 
 genctrl::~genctrl()

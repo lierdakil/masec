@@ -7,7 +7,8 @@ HEADERS += adaptors.h \
     ctrl/vol.h \
     ctrl/osc.h \
     ctrl/gen.h \
-    asec_upr.h
+    asec_upr.h \
+    measure_time.h
 SOURCES += ctrl/vol.cpp \
     ctrl/gen.cpp \
     ctrl/osc.cpp \
