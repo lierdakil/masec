@@ -7,6 +7,7 @@
 TARGET = asec_elastmod
 CONFIG   += console
 CONFIG   -= app_bundle
+CONFIG += exceptions
 DESTDIR = ../build/
 
 TEMPLATE = app
