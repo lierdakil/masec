@@ -121,10 +121,10 @@
      <item row="3" column="3">
       <widget class="QDoubleSpinBox" name="sbVPP">
        <property name="minimum">
-        <double>0.050000000000000</double>
+        <double>0.100000000000000</double>
        </property>
        <property name="maximum">
-        <double>10.000000000000000</double>
+        <double>20.000000000000000</double>
        </property>
        <property name="value">
         <double>5.000000000000000</double>

@@ -5,6 +5,7 @@
  *      Author: kazei
  */
 #include "osc.h"
+#include "measure_time.h"
 
 oscctrl::oscctrl(QString GPIBID) : GPIBctrl(GPIBID,"TEKTRONIX,TDS 2012,0,CF:91.1CT FV:v2.12 TDS2CM:CMV:v1.04")
 {
@@ -15,8 +16,8 @@ oscctrl::oscctrl(QString GPIBID) : GPIBctrl(GPIBID,"TEKTRONIX,TDS 2012,0,CF:91.1
     write("TRIG:MAI:EDGE:COUP DC");
     write("TRIG:MAI:MOD NORM");
     write("TRIG:MAI:TYP EDGE");
-    write("HOR:MAI:SEC 1");
-    write("HOR:MAI:POS 5");
+    write(QString("HOR:MAI:SEC %1").arg((double)MEASURE_TIME/10));
+    write(QString("HOR:MAI:POS %1").arg((double)MEASURE_TIME/2));
     write("CH1:POS 0");
     write("DAT INIT");
 }

@@ -40,7 +40,7 @@ private:
     double ra; //Resonance Amplitude
     double af; //Antiresonance Frequency
     double aa; //Antiresonance Amplitude
-    QList<QPair<double,double> > curve_forward, curve_reverse;
+    QList<QPair<double,double> > curve_forward, curve_reverse, curve_wide;
     double find_extremum(QByteArray dat, int start, int stop, int sm, bool max);
 
 public:
