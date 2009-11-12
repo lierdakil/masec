@@ -54,6 +54,7 @@ int main(int argc, char *argv[])
                 while (line.startsWith('#')){
                     line = QString::fromUtf8(f.readLine());
                 }
+                if(!line.contains(":")) continue;
                 QStringList dataline=line.split(";");
                 foreach(QString entry, dataline)
                 {
@@ -79,6 +80,7 @@ int main(int argc, char *argv[])
             {
                 QStringList dataline=line.split(";");
                 QVector<QString> row;
+                if(!line.contains(":")) goto cont;
                 row.fill("0",header.count());
                 foreach(QString entry, dataline)
                 {
@@ -90,6 +92,7 @@ int main(int argc, char *argv[])
                 foreach(QString cell, row)
                     cout<<cell.toLocal8Bit().data()<<"\t";
                 cout<<"\n";
+                cont:
                 if(f.atEnd())
                     break;
                 else
