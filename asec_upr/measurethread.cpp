@@ -43,24 +43,39 @@ QList<qreal> sm_diff(QByteArray data, int nr)//nr - Depth of smoothing in one di
     return diff;
 }
 
+inline QByteArray MeasureThread::dosweep(double startf, double stopf)
+{
+    gen->setsweep(startf,stopf);
+    osc->trig_mode(oscctrl::Normal);
+    osc->wait("READY");
+    gen->startsweep();
+    osc->wait("READY");
+    QByteArray result = osc->readcurve();
+    osc->trig_mode(oscctrl::Auto);
+    if (stop_scheldued) throw UserStoppedError();
+    return result;
+}
+
 QByteArray MeasureThread::sweep()
 {
     osc->setch1(volts1);
 
     int mini=0;
     int maxi=0;
-    int starti, stopi;
+    int starti=0, stopi=0;
 
     QByteArray data;
 
+    curve_forward_x.clear();
+    curve_reverse_x.clear();
+    curve_wide_x.clear();
+    curve_forward_y.clear();
+    curve_reverse_y.clear();
+    curve_wide_y.clear();
+
     while(!(mini>maxi))
     {
-        gen->setsweep(fsf,fff);
-        osc->wait("READY");
-        gen->startsweep();
-        osc->wait("READY");
-        data = osc->readcurve();
-        if (stop_scheldued) throw UserStoppedError();
+        data=dosweep(fsf,fff);
 
         /*    max
         *     _
@@ -123,10 +138,12 @@ QByteArray MeasureThread::sweep()
         //draw_x(stopi);
     }
     //calculate coefficents to convert index to frequency
-    double kt = (fff-fsf)/data.count();
+    kt = (fff-fsf)/data.count();
     sff = kt*(stopi)+fsf;
     ssf = kt*(starti)+fsf;
     k = (sff-ssf)/data.count();
+    emit marker(ssf, 0, QPen(Qt::darkGreen), QwtPlotMarker::VLine);
+    emit marker(sff, 0, QPen(Qt::darkGreen), QwtPlotMarker::VLine);
 
     int max_data=0;
     for(int i=0;i<data.count();i++)
@@ -155,21 +172,11 @@ QByteArray MeasureThread::sweep()
     do {
         osc->setch1(ch1);
 
-        gen->setsweep(ssf,sff);
-        osc->wait("READY");
-        gen->startsweep();
-        osc->wait("READY");
-        if (stop_scheldued) throw UserStoppedError();
+        data2_forward=dosweep(ssf,sff);
 
-        data2_forward = osc->readcurve();
         k2=osc->ymul();
 
-        gen->setsweep(sff,ssf);
-        osc->wait("READY");
-        gen->startsweep();
-        osc->wait("READY");
-        data2_reverse = osc->readcurve();
-        if (stop_scheldued) throw UserStoppedError();
+        data2_reverse=dosweep(sff,ssf);
 
         max_data2=0;
         for(int i=0; i<data2_forward.count(); ++i)
@@ -287,6 +294,7 @@ void MeasureThread::findresonance()
     {
         //draw X axis
         if (stop_scheldued) throw UserStoppedError();
+
         dat = sweep();
 
         //emit line(0,0,dat.count(),0,Qt::SolidLine);
@@ -345,6 +353,9 @@ void MeasureThread::findresonance()
         //draw_x(xmin);
         //draw_x(xmax1);
         //draw_x(xmax2);
+        emit marker(xmin*k+ssf, 0, QPen(Qt::red), QwtPlotMarker::VLine);
+        emit marker(xmax1*k+ssf, 0, QPen(Qt::red), QwtPlotMarker::VLine);
+        emit marker(xmax2*k+ssf, 0, QPen(Qt::red), QwtPlotMarker::VLine);
         cycles++;
         if(cycles>4)
             throw GPIBGenericException(trUtf8("Could not acquire resonance qurve"));
@@ -354,13 +365,17 @@ void MeasureThread::findresonance()
 
     rf=find_extremum(dat,xmax1,xmin,sm2,true);
     //draw_x((rf-ssf)/k);
-    ra=getamplonf(rf);
+    //ra=curve_forward_y.at((rf-ssf)/k);
+    ra=getamplonf(rf)*sqrt(2);
     //draw_y(-ra/k2*sqrt(2));
+    emit marker(rf, ra, QPen(Qt::black), QwtPlotMarker::Cross);
 
     af=find_extremum(dat,xmin,xmax2,sm2,false);
     //draw_x((af-ssf)/k);
-    aa=getamplonf(af);
+    //aa=ra=curve_forward_y.at((af-ssf)/k);
+    aa=getamplonf(af)*sqrt(2);
     //draw_y(-aa/k2*sqrt(2));
+    emit marker(af, aa, QPen(Qt::black), QwtPlotMarker::Cross);
 
     gen->sweepon();
 }
@@ -377,13 +392,6 @@ void MeasureThread::run()
     gen=0;
     vol=0;
     osc=0;
-
-    curve_forward_x.clear();
-    curve_reverse_x.clear();
-    curve_wide_x.clear();
-    curve_forward_y.clear();
-    curve_reverse_y.clear();
-    curve_wide_y.clear();
 
     try{
         //---------Main block-------------

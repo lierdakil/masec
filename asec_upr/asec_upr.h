@@ -36,7 +36,7 @@ public:
 
 public slots:
         void path(QVector<qreal>,QVector<qreal>,QPen pen);
-        void marker(qreal x, qreal y, QPen pen);
+        void marker(qreal x, qreal y, QPen pen, QwtPlotMarker::LineStyle style);
         void on_btRun_clicked();
         void onfinished(QStringList data);
 signals:

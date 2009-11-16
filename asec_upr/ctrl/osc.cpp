@@ -11,11 +11,12 @@ oscctrl::oscctrl(QString GPIBID) : GPIBctrl(GPIBID,"TEKTRONIX,TDS 2012,0,CF:91.1
 {
     write("ACQ:MOD PEAK");
     write("ACQ:STOPA RUNSTOP");
-    write("TRIG:MAI:EDGE:SOU EXT");
+    write("TRIG:MAI:EDGE:SOU EXT5");
     write("TRIG:MAI:EDGE:SLO FALL");
     write("TRIG:MAI:EDGE:COUP DC");
-    write("TRIG:MAI:MOD NORM");
+    write("TRIG:MAI:MOD AUTO");
     write("TRIG:MAI:TYP EDGE");
+    write("TRIG:MAI:LEV 1");
     write(QString("HOR:MAI:SEC %1").arg((double)MEASURE_TIME/10));
     write(QString("HOR:MAI:POS %1").arg((double)MEASURE_TIME/2));
     write("CH1:POS 0");
@@ -65,4 +66,17 @@ double oscctrl::getch1()
 void oscctrl::setch1(double vol)
 {
     write(QString("CH1:VOL %1").arg(vol));
+}
+
+void oscctrl::trig_mode(Mode mode)
+{
+    switch(mode) {
+        case Normal:
+        write("TRIG:MAI:MOD NORM");
+        break;
+
+        case Auto:
+        write("TRIG:MAI:MOD AUTO");
+        break;
+    }
 }

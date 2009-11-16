@@ -10,11 +10,17 @@
 class oscctrl: public GPIBctrl
 {
 public:
+    enum Mode {
+        Auto,
+        Normal
+    };
+
     oscctrl(QString GPIBID);
     ~oscctrl();
     QByteArray readcurve();
     void wait(QString state);
     void setch1(double vol);
+    void trig_mode(Mode mode);
     double getch1();
     double ymul();
 };

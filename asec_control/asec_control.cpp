@@ -14,6 +14,7 @@ vib_control::vib_control(QWidget *parent)
     connect(&scriptthread,SIGNAL(bug(QString,int)),this,SLOT(script_bug(QString,int)));
     connect(&scriptthread,SIGNAL(error(QString)),this,SLOT(script_error(QString)));
     connect(&scriptthread,SIGNAL(paused()),this,SLOT(script_paused()));
+    connect(&scriptthread,SIGNAL(update_time(int,int)),this,SLOT(update_time(int,int)));
 }
 
 vib_control::~vib_control()
@@ -148,4 +149,10 @@ void vib_control::on_cbFunction_currentIndexChanged(QString item)
         ui.tbHelp->setHtml(help);
     else
         script_error(help);
+}
+
+void vib_control::update_time(int max, int value)
+{
+    ui.progressBar->setMaximum(max);
+    ui.progressBar->setValue(value);
 }
