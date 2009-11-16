@@ -382,7 +382,7 @@ int main(int argc, char* argv[])
                 gsl_vector_memcpy(a,par);
                 gsl_vector_div(a,units);
             } else {
-                useLm=true;
+                //useLm=true;
                 //useC0=true;
                 useU=true;
                 useR0=true;

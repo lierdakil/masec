@@ -38,7 +38,11 @@ vibupraut::vibupraut(QWidget *parent)
     connect(&thread,SIGNAL(line(qreal,qreal,qreal,qreal,QPen)),this,SLOT(line(qreal,qreal,qreal,qreal,QPen)),Qt::QueuedConnection);*/
 
     qRegisterMetaType<QVector<qreal> >("QVector<qreal>");
+    qRegisterMetaType<QwtPlotMarker::LineStyle >("QwtPlotMarker::LineStyle");
     connect(&thread,SIGNAL(path(QVector<qreal>,QVector<qreal>,QPen)),this,SLOT(path(QVector<qreal>,QVector<qreal>,QPen)),Qt::QueuedConnection);
+    connect(&thread,SIGNAL(marker(qreal,qreal,QPen,QwtPlotMarker::LineStyle)), this, SLOT(marker(qreal,qreal,QPen,QwtPlotMarker::LineStyle)),Qt::QueuedConnection);
+
+    ui.graph->setBackgroundRole(QPalette::Light);
 }
 
 vibupraut::~vibupraut()
@@ -88,15 +92,17 @@ void vibupraut::path(QVector<qreal> xdata, QVector<qreal> ydata, QPen pen)
     //ui.graph->fitInView(ui.graph->scene()->sceneRect());
 }
 
-void vibupraut::marker(qreal x, qreal y, QPen pen)
+void vibupraut::marker(qreal x, qreal y, QPen pen, QwtPlotMarker::LineStyle style)
 {
-    QwtPlotMarker mark;
-    mark.setLinePen(pen);
-    mark.setLineStyle(QwtPlotMarker::Cross);
-    mark.setLabel(QwtText(QString("f = %1, V = %2").arg(x).arg(y),QwtText::AutoText));
-    mark.setLabelAlignment(Qt::AlignRight | Qt::AlignBottom);
-    mark.setValue(x,y);
-    mark.attach(ui.graph);
+    QwtPlotMarker *mark=new QwtPlotMarker;
+    mark->setLinePen(pen);
+    mark->setLineStyle(style);
+    mark->setLabel(QwtText(QString("f = %1, V = %2").arg(x).arg(y),QwtText::AutoText));
+    mark->setLabelOrientation(Qt::Vertical);
+    mark->setLabelAlignment(Qt::AlignVCenter | Qt::AlignLeft);
+    mark->setValue(x,y);
+    mark->attach(ui.graph);
+    ui.graph->replot();
 }
 
 /*void vibupraut::path(QByteArray data,QPen pen)

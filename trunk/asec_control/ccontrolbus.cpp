@@ -197,6 +197,20 @@ int CControlBus::call(QString function, QString service, QList<QScriptValue> arg
          * Новая строка данных БУДЕТ начата, если полсе измерительной функции вызвана установочная.
          */
 
+    int time_max=0,time_value=0;
+    for(int i=0; i<function_mean_work_time.count(); ++i)
+    {
+        if(function_mean_work_time.at(i)<0)
+        {
+            time_max=0;
+            time_value=-1;
+            break;
+        }
+        time_max+=function_mean_work_time.at(i)*function_max_calls.at(i);
+        time_value+=function_mean_work_time.at(i)*function_num_calls.at(i);
+    }
+    emit update_time(time_max/60000, time_value/60000);
+
     stopped=false;
 
     //Don;t call if data_file=0, throw error.

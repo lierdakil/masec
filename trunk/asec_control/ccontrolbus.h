@@ -48,6 +48,7 @@ signals:
     void new_row(QStringList row);//TODO: Obsolete
     void bus_error(QString error);
     void call_error(QString error);
+    void update_time(int max, int value);//in minutes
 
 public:
     //common name: ru.pp.livid.asec.* ; interface: ru.pp.livid.asec.exports
@@ -69,6 +70,12 @@ public:
     bool is_stopped();
     bool is_paused; //This variable is used as an invariant between static ScriptThread::call()
     //and ScriptThread::resume()
+
+    //Function counters and timers
+    QVector<QString> function_names;
+    QVector<int> function_num_calls;
+    QVector<int> function_max_calls;
+    QVector<int> function_mean_work_time;
 
 public slots:
     void reply_call(QStringList values);
