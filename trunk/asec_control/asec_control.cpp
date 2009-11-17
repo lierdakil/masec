@@ -15,6 +15,10 @@ vib_control::vib_control(QWidget *parent)
     connect(&scriptthread,SIGNAL(error(QString)),this,SLOT(script_error(QString)));
     connect(&scriptthread,SIGNAL(paused()),this,SLOT(script_paused()));
     connect(&scriptthread,SIGNAL(update_time(int,int)),this,SLOT(update_time(int,int)));
+    connect(&progressTimer,SIGNAL(timeout()),this,SLOT(progressTime()));
+
+    ui.progressBar->setVisible(false);
+    progressTimer.setInterval(60000);
 }
 
 vib_control::~vib_control()
@@ -54,17 +58,22 @@ void vib_control::script_started()
     ui.btStop->setEnabled(true);
     ui.code->setBugLine(-1);
     ui.code->repaint();
+    ui.progressBar->setVisible(true);
+    ui.progressBar->setMaximum(0);
+    progressTimer.start();
 }
 
 void vib_control::script_paused()
 {
     ui.btResume->setEnabled(true);
+    progressTimer.stop();
 }
 
 void vib_control::on_btResume_clicked()
 {
     scriptthread.resume();
     ui.btResume->setEnabled(false);
+    progressTimer.start();
 }
 
 void vib_control::script_finished()
@@ -72,6 +81,8 @@ void vib_control::script_finished()
     ui.btStop->setEnabled(false);
     ui.btRun->setEnabled(true);
     ui.btResume->setEnabled(false);
+    ui.progressBar->setVisible(false);
+    progressTimer.stop();
 }
 
 void vib_control::script_error(QString error)
@@ -154,5 +165,10 @@ void vib_control::on_cbFunction_currentIndexChanged(QString item)
 void vib_control::update_time(int max, int value)
 {
     ui.progressBar->setMaximum(max);
-    ui.progressBar->setValue(value);
+    ui.progressBar->setValue(max-value);
+}
+
+void vib_control::progressTime()
+{
+    ui.progressBar->setValue(ui.progressBar->value()-1);
 }
