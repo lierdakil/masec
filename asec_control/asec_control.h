@@ -17,6 +17,7 @@ public:
     ~vib_control();
     bool paused;
     QMutex mutex;
+    QTimer progressTimer;
     ScriptThread scriptthread;
     Ui::vib_controlClass ui;
 //    QList<graphic_window*> graphics;
@@ -35,6 +36,7 @@ public slots:
         void script_error(QString error);
         void script_bug(QString message, int BugLine);
         void update_time(int max, int value);
+        void progressTime();
 };
 
 #endif // VIB_CONTROL_H

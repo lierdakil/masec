@@ -80,10 +80,10 @@
             <bool>true</bool>
            </property>
            <property name="invertedAppearance">
-            <bool>false</bool>
+            <bool>true</bool>
            </property>
            <property name="format">
-            <string>%v of %m minutes</string>
+            <string>%v of %m minutes left</string>
            </property>
           </widget>
          </item>

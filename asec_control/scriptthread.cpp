@@ -54,11 +54,11 @@ QScriptValue ScriptThread::call(QScriptContext *context, QScriptEngine *engine)
     if(index<0)
         return context->throwError("Unknown function called!");
 
-    if(bus->function_mean_work_time[index]<0)
-        bus->function_mean_work_time[index]=call_time;
-    else
-        bus->function_mean_work_time[index]=
-                (bus->function_mean_work_time[index]+call_time)/2;
+    //if(bus->function_mean_work_time[index]<0)
+    bus->function_mean_work_time[index]=call_time;
+    //else
+    //    bus->function_mean_work_time[index]=
+    //            (bus->function_mean_work_time[index]+call_time)/2;
     bus->function_num_calls[index]+=1;
 
     return QScriptValue();
