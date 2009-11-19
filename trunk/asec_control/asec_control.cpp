@@ -14,7 +14,7 @@ vib_control::vib_control(QWidget *parent)
     connect(&scriptthread,SIGNAL(bug(QString,int)),this,SLOT(script_bug(QString,int)));
     connect(&scriptthread,SIGNAL(error(QString)),this,SLOT(script_error(QString)));
     connect(&scriptthread,SIGNAL(paused()),this,SLOT(script_paused()));
-    connect(&scriptthread,SIGNAL(update_time(int,int)),this,SLOT(update_time(int,int)));
+    connect(&scriptthread,SIGNAL(update_time(int,int,int,int)),this,SLOT(update_time(int,int,int,int)));
     connect(&progressTimer,SIGNAL(timeout()),this,SLOT(progressTime()));
 
     ui.progressBar->setVisible(false);
@@ -60,6 +60,8 @@ void vib_control::script_started()
     ui.code->repaint();
     ui.progressBar->setVisible(true);
     ui.progressBar->setMaximum(0);
+    time_elapsed=-1;
+    time_max=0;
     progressTimer.start();
 }
 
@@ -162,13 +164,25 @@ void vib_control::on_cbFunction_currentIndexChanged(QString item)
         script_error(help);
 }
 
-void vib_control::update_time(int max, int value)
+void vib_control::update_time(int calls, int max_calls, int time, int max_time)
 {
-    ui.progressBar->setMaximum(max);
-    ui.progressBar->setValue(max-value);
+    if(max_time>0 && time>0)
+    {
+        ui.progressBar->setMaximum(max_calls);
+        ui.progressBar->setValue(calls);
+        ui.lbStatus->setText(trUtf8("Left %1 of %2 minutes").arg(max_time-time).arg(max_time));
+        this->time_elapsed=time;
+        this->time_max=max_time;
+    }
 }
 
 void vib_control::progressTime()
 {
-    ui.progressBar->setValue(ui.progressBar->value()-1);
+    if(time_max>0)
+    {
+        time_elapsed++;
+        ui.lbStatus->setText(trUtf8("Left %1 of %2 minutes").arg(time_max-time_elapsed).arg(time_max));;
+    } else {
+        ui.lbStatus->setText(trUtf8("Estimating time..."));;
+    }
 }

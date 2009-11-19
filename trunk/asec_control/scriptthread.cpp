@@ -133,7 +133,7 @@ void ScriptThread::run()
     connect(bus,SIGNAL(bus_error(QString)), this, SIGNAL(error(QString)));
     connect(bus,SIGNAL(call_error(QString)), this, SIGNAL(error(QString)));
     connect(bus,SIGNAL(call_error(QString)), this, SIGNAL(paused()));
-    connect(bus,SIGNAL(update_time(int,int)), this, SIGNAL(update_time(int,int)));
+    connect(bus,SIGNAL(update_time(int,int,int,int)), this, SIGNAL(update_time(int,int,int,int)));
     if (success)
     {
         run_wrapper(call_count);
@@ -146,7 +146,7 @@ void ScriptThread::run()
     disconnect(bus,SIGNAL(bus_error(QString)), this, SIGNAL(error(QString)));
     disconnect(bus,SIGNAL(call_error(QString)), this, SIGNAL(error(QString)));
     disconnect(bus,SIGNAL(call_error(QString)), this, SIGNAL(paused()));
-    disconnect(bus,SIGNAL(update_time(int,int)), this, SIGNAL(update_time(int,int)));
+    disconnect(bus,SIGNAL(update_time(int,int,int,int)), this, SIGNAL(update_time(int,int,int,int)));
 
     CControlBus *bus_tmp=bus;
     bus=0;

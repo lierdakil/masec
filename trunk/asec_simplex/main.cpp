@@ -116,7 +116,7 @@ int main(int argc, char* argv[])
     gsl_vector *a;
     a=gsl_vector_alloc(PARAM_COUNT);
 
-    bool useC0=false ,useLm=false, useU=true, useR0=true;
+    bool useC0=false ,useLm=false, useU=false, useR0=true;
     double inLm=0, inC0=0, inU=5, inR0=1000;
 
     for(int ifile=0;ifile<rawdatanames.count();++ifile)
@@ -384,7 +384,7 @@ int main(int argc, char* argv[])
             } else {
                 //useLm=true;
                 //useC0=true;
-                useU=true;
+                //useU=true;
                 useR0=true;
                 if (has_table) {
 #define table_append_num(v) table[ifile+1].append(QString::number(v,'f',10)+"\t")

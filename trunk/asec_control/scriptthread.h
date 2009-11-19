@@ -34,7 +34,7 @@ signals:
     void bug(QString message, int BugLine=-1);
     void error(QString error);
     void paused();
-    void update_time(int max,int value);
+    void update_time(int calls, int max_calls, int time, int max_time);//in minutes
 };
 
 #endif /* SCRIPTTHREAD_H_ */

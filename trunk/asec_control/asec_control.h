@@ -18,6 +18,7 @@ public:
     bool paused;
     QMutex mutex;
     QTimer progressTimer;
+    int time_elapsed, time_max;
     ScriptThread scriptthread;
     Ui::vib_controlClass ui;
 //    QList<graphic_window*> graphics;
@@ -35,7 +36,7 @@ public slots:
         void script_finished();
         void script_error(QString error);
         void script_bug(QString message, int BugLine);
-        void update_time(int max, int value);
+        void update_time(int calls, int max_calls, int time, int max_time);//in minutes
         void progressTime();
 };
 
