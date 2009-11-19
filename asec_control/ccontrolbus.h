@@ -48,7 +48,7 @@ signals:
     void new_row(QStringList row);//TODO: Obsolete
     void bus_error(QString error);
     void call_error(QString error);
-    void update_time(int max, int value);//in minutes
+    void update_time(int calls, int max_calls, int time, int max_time);//in minutes
 
 public:
     //common name: ru.pp.livid.asec.* ; interface: ru.pp.livid.asec.exports

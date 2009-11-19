@@ -197,7 +197,7 @@ int CControlBus::call(QString function, QString service, QList<QScriptValue> arg
          * Новая строка данных БУДЕТ начата, если полсе измерительной функции вызвана установочная.
          */
 
-    int time_max=0,time_value=0;
+    int time_max=0,time_value=0,calls_max=0,calls_value=0;
     for(int i=0; i<function_mean_work_time.count(); ++i)
     {
         if(function_mean_work_time.at(i)<0)
@@ -206,10 +206,12 @@ int CControlBus::call(QString function, QString service, QList<QScriptValue> arg
             time_value=-1;
             break;
         }
+        calls_max+=function_max_calls.at(i);
+        calls_value+=function_num_calls.at(i);
         time_max+=function_mean_work_time.at(i)*function_max_calls.at(i);
         time_value+=function_mean_work_time.at(i)*function_num_calls.at(i);
     }
-    emit update_time(time_max/60000, time_value/60000);
+    emit update_time(calls_value,calls_max,time_value/60000, time_max/60000);
 
     stopped=false;
 
