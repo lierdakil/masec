@@ -377,6 +377,15 @@ int CControlBus::call(QString function, QString service, QList<QScriptValue> arg
         return R_CALL_ERROR;
     }
 
+    if (reply.at(0)=="::SUCCESS::" && reply.count()==1)
+        //Функции, возвращаюющие такой ответ, не относятся ни к измерительным,
+        //ни к установочным в идеальном понимании, поэтому они должны
+        //выходить здесь.
+        //По стандарту, такие функции должны возвращать ТОЛЬКО элемент ::SUCCESS::
+    {
+        return R_CALL_SUCCESS;
+    }
+
     //Сохренение материала из возвращенного значения в result_row
     result_row_mutex.lock();
     result_row<<reply;
