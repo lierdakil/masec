@@ -10,6 +10,10 @@ Graph::Graph(QVector<qreal> X_exp, QVector<qreal> Y_exp,
 QDialog(0),
 m_ui(new Ui::Graph)
 {
+    this->Va=Va;
+    this->Vr=Vr;
+    this->fa=fa;
+    this->fr=fr;
     m_ui->setupUi(this);
     exp.setData(X_exp,Y_exp);
     fn.setData(X_f,Y_f);
@@ -29,6 +33,12 @@ m_ui(new Ui::Graph)
     A.setValue(fa,Va);
     A.attach(m_ui->qwtPlot);
     m_ui->qwtPlot->update();
+    qwtPlotPicker=new QwtPlotPicker(QwtPlot::xBottom,QwtPlot::yLeft,
+                                    QwtPlotPicker::PointSelection,
+                                    QwtPlotPicker::CrossRubberBand,
+                                    QwtPlotPicker::AlwaysOn,
+                                    m_ui->qwtPlot->canvas());
+    setres=true;
 
     connect(m_ui->sbLm,SIGNAL(valueChanged(double)),SLOT(sb_Lm_valueChanged(double)));
 
@@ -46,11 +56,13 @@ m_ui(new Ui::Graph)
     connect(m_ui->sbU,SIGNAL(valueChanged(double)),SLOT(sb_valueChanged(double)));
     connect(m_ui->sbC0,SIGNAL(valueChanged(double)),SLOT(sb_valueChanged(double)));
     connect(m_ui->sbR0,SIGNAL(valueChanged(double)),SLOT(sb_valueChanged(double)));
+    connect(qwtPlotPicker,SIGNAL(selected(QwtDoublePoint)),SLOT(plotSelected(QwtDoublePoint)));
 }
 
 Graph::~Graph()
 {
     delete m_ui;
+    delete qwtPlotPicker;
 }
 
 double Graph::Rm()
@@ -122,10 +134,10 @@ void Graph::sb_valueChanged(double val)
     func_params.U=m_ui->sbU->value();
     func_params.R0=m_ui->sbR0->value();
 
-    double Vr = If((const gsl_vector*)NULL, &func_params, startf);
-    double Va = Vr;
-    double fr = startf;
-    double fa = startf;
+    Vr = If((const gsl_vector*)NULL, &func_params, startf);
+    Va = Vr;
+    fr = startf;
+    fa = startf;
 
     QVector<qreal> X_f,Y_f;
     for(double f=startf; f<endf; ++f)
@@ -145,11 +157,31 @@ void Graph::sb_valueChanged(double val)
         }
     }
     fn.setData(X_f,Y_f);
+    fn.setVisible(true);
     R.setValue(fr,Vr);
     R.setLabel(QwtText(QString("f_r = %1, V_r = %2").arg(fr).arg(Vr),QwtText::AutoText));
     A.setValue(fa,Va);
     A.setLabel(QwtText(QString("f_a = %1, V_a = %2").arg(fa).arg(Va),QwtText::AutoText));
     m_ui->qwtPlot->update();
+    m_ui->qwtPlot->replot();
+}
+
+void Graph::plotSelected(QwtDoublePoint p)
+{
+    fn.setVisible(false);
+    if(setres)
+    {
+        fr=p.x();
+        Vr=p.y();
+        R.setValue(fr,Vr);
+        R.setLabel(QwtText(QString("f_r = %1, V_r = %2").arg(fr).arg(Vr),QwtText::AutoText));
+    } else {
+        fa=p.x();
+        Va=p.y();
+        A.setValue(fa,Va);
+        A.setLabel(QwtText(QString("f_a = %1, V_a = %2").arg(fa).arg(Va),QwtText::AutoText));
+    }
+    setres=!setres;
     m_ui->qwtPlot->replot();
 }
 

@@ -7,6 +7,7 @@
 #include "graph.h"
 #include <QApplication>
 #include <QFileDialog>
+#include <QMessageBox>
 
 #define iRm 0
 #define iLm 1
@@ -116,7 +117,7 @@ int main(int argc, char* argv[])
     gsl_vector *a;
     a=gsl_vector_alloc(PARAM_COUNT);
 
-    bool useC0=false ,useLm=false, useU=false, useR0=true;
+    bool useC0=false ,useLm=false, useU=true, useR0=true;
     double inLm=0, inC0=0, inU=5, inR0=1000;
 
     for(int ifile=0;ifile<rawdatanames.count();++ifile)
@@ -258,7 +259,10 @@ int main(int argc, char* argv[])
             size_t iter=0;
             double oldsize=0;
 
-            do
+            QMessageBox::StandardButton usesimplex=QMessageBox::Yes;
+            if (!consoleonly) usesimplex = QMessageBox::question(0,"Select method","Do you want to use simplex?",QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes);
+
+            if(usesimplex==QMessageBox::Yes) do
             {
                 iter++;
                 if(iter % 10==0)
@@ -361,6 +365,7 @@ int main(int argc, char* argv[])
                     gsl_vector_get(par,2), gsl_vector_get(par,4), gsl_vector_get(par,3),
                     gsl_vector_get(par,5), minf, minI, maxf, maxI);
             g.setWindowTitle(f.fileName());
+            g.setWindowState(Qt::WindowMaximized);
             if(!consoleonly)
                 gstatus=g.exec();
             else
@@ -389,10 +394,10 @@ int main(int argc, char* argv[])
                 if (has_table) {
 #define table_append_num(v) table[ifile+1].append(QString::number(v,'f',10)+"\t")
                     table[ifile+1].append("\t"+f.fileName()+"\t");
-                    table_append_num(maxf);
-                    table_append_num(maxI);
-                    table_append_num(minf);
-                    table_append_num(minI);
+                    table_append_num(g.fr);
+                    table_append_num(g.Vr);
+                    table_append_num(g.fa);
+                    table_append_num(g.Va);
                     table_append_num(min->fval);
                     table_append_num(noise);
                 }
