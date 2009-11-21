@@ -16,7 +16,7 @@ vib_temperature::vib_temperature(QWidget *parent)
     connection.registerService("ru.pp.livid.asec.temp");
     connection.registerObject("/", this);
 
-    ui.gvTemp->setScene(new QGraphicsScene());
+    //ui.gvTemp->setScene(new QGraphicsScene());
     ui.gbTest->setVisible(false);
 
     //	Current paradigm supposes fix_timer is run at program start and ended at termination
@@ -34,6 +34,13 @@ vib_temperature::vib_temperature(QWidget *parent)
 
     QSettings f("settings.ini",QSettings::IniFormat);
     ui.sbt_test->setValue(f.value("TempCtrl/mantmout", 5).toDouble());
+
+    ui.plotTemp->setAutoReplot(true);
+    ui.plotTemp->setBackgroundRole(QPalette::Light);
+    qpc_setpoint.attach(ui.plotTemp);
+    qpc_setpoint.setPen(QPen(Qt::blue));
+    qpc_temperature.attach(ui.plotTemp);
+    qpc_temperature.setPen(QPen(Qt::red));
 
     try{
         tempctrl temp(qApp->property("tempid").toString());
@@ -112,20 +119,25 @@ void vib_temperature::on_btSettings_clicked()
 
 void vib_temperature::newpoint(float time, float temp, float setpoint)
 {
-    static float lasttime;
-    static float lasttemp;
-    static float lastsetp;
-    if(time>lasttime && lasttime!=0)
+    //ui.gvTemp->scene()->addLine(lasttime,-lasttemp,time,-temp,QPen(Qt::red));
+    //ui.gvTemp->scene()->addLine(lasttime,-lastsetp,time,-setpoint,QPen(Qt::blue));
+    //ui.gvTemp->fitInView(ui.gvTemp->scene()->sceneRect());
+    qv_setpoint_x.append(time);
+    qv_setpoint_y.append(setpoint);
+    qv_temperature_x.append(time);
+    qv_temperature_y.append(temp);
+    qpc_setpoint.setData(qv_setpoint_x,qv_setpoint_y);
+    qpc_temperature.setData(qv_temperature_x,qv_temperature_y);
+    if(QFile::exists(filename))
     {
-        ui.gvTemp->scene()->addLine(lasttime,-lasttemp,time,-temp,QPen(Qt::red));
-        ui.gvTemp->scene()->addLine(lasttime,-lastsetp,time,-setpoint,QPen(Qt::blue));
-        ui.gvTemp->fitInView(ui.gvTemp->scene()->sceneRect());
+        QFile f(filename);
+
+        f.open(QFile::WriteOnly | QFile::Append);
+        f.write(QString("%1\t%2\t%3\n").arg(clock()).arg(setpoint,0,'f').arg(temp,0,'f').toLocal8Bit());
+        f.close();
     }
     ui.nlT->setProperty("value",temp);
     ui.nlTime->setProperty("value",time);
-    lasttime=time;
-    lasttemp=temp;
-    lastsetp=setpoint;
 }
 
 void vib_temperature::stopped()
@@ -159,8 +171,12 @@ void vib_temperature::set_temp_zone(double temp,double ramp, double timeout)
         {
             isTemptlRunning(true);
             ui.btStopTest->setEnabled(false);
-            delete ui.gvTemp->scene();
-            ui.gvTemp->setScene(new QGraphicsScene());
+            //delete ui.gvTemp->scene();
+            //ui.gvTemp->setScene(new QGraphicsScene());
+            qv_setpoint_x.clear();
+            qv_setpoint_y.clear();
+            qv_temperature_x.clear();
+            qv_temperature_y.clear();
             temptl.start_zone(temp,ramp,timeout,wset.getSettime(temp));
         } else {
             QStringList data;
@@ -176,14 +192,36 @@ void vib_temperature::set_temp_zone(double temp,double ramp, double timeout)
     }
 }
 
+void vib_temperature::setFilename(QString filename)
+{
+    this->filename=filename;
+    if(!QFile::exists(filename))
+    {
+        QFile f(filename);
+        f.open(QFile::WriteOnly);
+        f.write("Time, ms\tSetpoint, K\tTemperature, K\n");
+        f.close();
+        emit finished(QStringList("::SUCCESS::"));
+    } else {
+        QStringList data;
+        data<<QString("::ERROR::");
+        data<<QString("File %1 already exists").arg(filename);
+        emit finished(data);
+    }
+}
+
 void vib_temperature::on_btTest_clicked()
 {
     if (!qApp->property("tempid").toString().isEmpty())
     {
         isTemptlRunning(true);
         ui.btPause->setEnabled(false);
-        delete ui.gvTemp->scene();
-        ui.gvTemp->setScene(new QGraphicsScene());
+        //delete ui.gvTemp->scene();
+        //ui.gvTemp->setScene(new QGraphicsScene());
+        qv_setpoint_x.clear();
+        qv_setpoint_y.clear();
+        qv_temperature_x.clear();
+        qv_temperature_y.clear();
         temptl.start_manual(
                 ui.sbNewT_test->value(),
                 ui.sbRamp->value(),

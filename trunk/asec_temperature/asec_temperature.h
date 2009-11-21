@@ -13,6 +13,8 @@
 #include "settings.h"
 #include "QTempTimeline.h"
 
+#include <qwt_plot_curve.h>
+
 class vib_temperature : public QWidget
 {
     Q_OBJECT
@@ -25,6 +27,10 @@ public:
     QTempTimer temptl;
 private:
     QTimer fix_timer;
+    QwtPlotCurve qpc_setpoint, qpc_temperature;
+    QVector<double> qv_setpoint_x, qv_temperature_x,
+    qv_setpoint_y, qv_temperature_y;
+    QString filename;
 
 private slots:
     void on_btSettings_clicked();
@@ -40,6 +46,7 @@ public slots:
     void newpoint(float time, float temp, float setpoint);
     void error(QString message);
     void set_temp_zone(double temp, double ramp, double timeout);
+    void setFilename(QString filename);
     void newstatus(int status);
 signals:
     void finished(QStringList data);

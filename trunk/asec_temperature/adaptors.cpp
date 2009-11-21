@@ -17,6 +17,11 @@ void export_adaptor::set_temp(double temp, double ramp, double timeout)
     t->set_temp_zone(temp,ramp,timeout);
 }
 
+void export_adaptor::set_filename(QString file)
+{
+    t->setFilename(file);
+}
+
 flow_adaptor::flow_adaptor(vib_temperature *parent) : QDBusAbstractAdaptor(parent), t(parent)
 {
     setAutoRelaySignals(true);
@@ -58,6 +63,16 @@ QString help_adaptor::set_temp()
                         "<p><code>timeout</code> - "
                         "максимальное время установлния температуры (в минутах). Если это время "
                         "будет превышено, выполнение программы прервется.</p>");
+    QString retvals=returned_values().join("<br/>");
+    return trUtf8("%1 <p>Возвращаемые значения:<br/>%2</p>").arg(desc,retvals);
+}
+
+QString help_adaptor::set_filename()
+{
+    QString desc=trUtf8("<p>Установить имя файла для сохранения зависимости температуры и уставки от времени."
+                        "Запись производится в конец файла с каждой новой точкой. Файл создается при установке имени,"
+                        "если такой файл существует, генерируется ошибка выполнения.</p>"
+                        "<p><code>file</code> - имя файла для сохранения зависимости температуры и уставки от времени</p> ");
     QString retvals=returned_values().join("<br/>");
     return trUtf8("%1 <p>Возвращаемые значения:<br/>%2</p>").arg(desc,retvals);
 }
