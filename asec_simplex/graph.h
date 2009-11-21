@@ -6,6 +6,7 @@
 #include <qwt_plot_curve.h>
 #include <qwt_plot_marker.h>
 #include <qwt_symbol.h>
+#include <qwt_plot_picker.h>
 #include "functions.h"
 
 namespace Ui {
@@ -27,6 +28,12 @@ public:
     double U();
     double C0();
     double R0();
+    double Vr;
+    double Va;
+    double fr;
+    double fa;
+    QwtPlotPicker* qwtPlotPicker;
+
     virtual ~Graph();
 
 protected:
@@ -39,10 +46,12 @@ private:
     QwtPlotMarker R;
     QwtPlotMarker A;
     double startf,endf;
+    bool setres;//setres=true - setting resonance, false -- antiresonance
 
 private slots:
     void sb_valueChanged(double );
     void sb_Lm_valueChanged(double );
+    void plotSelected(QwtDoublePoint);
 };
 
 #endif // GRAPH_H
