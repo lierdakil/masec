@@ -23,13 +23,13 @@ win32 {
 unix {
     INCLUDEPATH += /usr/include \
         /usr/include/qwt5 \
-	/usr/include/qwt-qt4
-    QMAKE_CXXFLAGS+= -fopenmp
-    QMAKE_LFLAGS+= -fopenmp
+        /usr/include/qwt-qt4
 }
 
+QMAKE_CXXFLAGS+= -fopenmp
+QMAKE_LFLAGS+= -fopenmp
 #Debian uses -lqwt-qt4
-LIBS += -lqwt \
+LIBS += -lqwt5 \
     -lgsl \
     -lgslcblas
 FORMS += graph.ui

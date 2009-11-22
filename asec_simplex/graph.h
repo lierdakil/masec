@@ -21,13 +21,21 @@ public:
                    QVector<qreal> X_f, QVector<qreal> Y_f,
                    double Rm, double Lm, double Cm ,double U,
                    double C0, double R0, double fa, double Va,
-                   double fr, double Vr);
+                   double fr, double Vr, bool useRm, bool useLm,
+                   bool useCm, bool useU, bool useC0, bool useR0,
+                   bool usesimplex);
     double Rm();
     double Lm();
     double Cm();
     double U();
     double C0();
     double R0();
+    bool useRm();
+    bool useLm();
+    bool useCm();
+    bool useU();
+    bool useC0();
+    bool useR0();
     double Vr;
     double Va;
     double fr;
