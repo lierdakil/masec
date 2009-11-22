@@ -26,10 +26,14 @@ unix {
         /usr/include/qwt-qt4
 }
 
-QMAKE_CXXFLAGS+= -fopenmp
-QMAKE_LFLAGS+= -fopenmp
+system($$QMAKE_CXX dummy.cpp -o $$DESTDIR/dummy){
+    message(Enabling OpenMP support...)
+    QMAKE_CXXFLAGS+= -fopenmp
+    QMAKE_LFLAGS+= -fopenmp
+}
+
 #Debian uses -lqwt-qt4
-LIBS += -lqwt5 \
+LIBS += -lqwt \
     -lgsl \
     -lgslcblas
 FORMS += graph.ui
