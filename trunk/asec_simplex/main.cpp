@@ -142,11 +142,22 @@ int main(int argc, char* argv[])
         }
 
         QVector<Point2D> func_data;//I(f)
+        bool readline=true;
         while(!f.atEnd())
         {
             QStringList line = QString::fromAscii(f.readLine()).split('\t');
             if(line.length()==2)
-                func_data<<fPoint2D(line[0].toDouble(),line[1].toDouble());
+            {
+                if(readline) func_data<<fPoint2D(line[0].toDouble(),line[1].toDouble());
+                readline=!readline;
+            }
+            else if(line.at(0).contains("#Generator amplitude, VPP:"))
+            {
+                bool ok;
+                double tU = line.at(0).split(":").at(1).toDouble(&ok);
+                if(ok) inU=tU/2;
+                std::cerr<<"read U value from curve file: "<<inU<<"\n";
+            }
         }
         func_data.pop_front();
         f.close();
@@ -363,7 +374,8 @@ int main(int argc, char* argv[])
 
             Graph g(X_exp, Y_exp, X_f, Y_f, gsl_vector_get(par,0), gsl_vector_get(par,1),
                     gsl_vector_get(par,2), gsl_vector_get(par,4), gsl_vector_get(par,3),
-                    gsl_vector_get(par,5), minf, minI, maxf, maxI);
+                    gsl_vector_get(par,5), minf, minI, maxf, maxI, false, useLm, false, useU, useC0,
+                    useR0, usesimplex==QMessageBox::Yes);
             g.setWindowTitle(f.fileName());
             g.setWindowState(Qt::WindowMaximized);
             if(!consoleonly)
@@ -376,22 +388,19 @@ int main(int argc, char* argv[])
             inLm=g.Lm();
             inC0=g.C0();
 
-            if(gstatus==QDialog::Rejected)
-            {
-                gsl_vector_set(par,iRm,g.Rm());
-                gsl_vector_set(par,iLm,g.Lm());
-                gsl_vector_set(par,iCm,g.Cm());
-                gsl_vector_set(par,iC0,g.C0());
-                gsl_vector_set(par,iU,g.U());
-                gsl_vector_set(par,iR0,g.R0());
-                gsl_vector_memcpy(a,par);
-                gsl_vector_div(a,units);
-            } else {
-                //useLm=true;
-                //useC0=true;
-                //useU=true;
-                useR0=true;
-                if (has_table) {
+            gsl_vector_set(par,iRm,g.Rm());
+            gsl_vector_set(par,iLm,g.Lm());
+            gsl_vector_set(par,iCm,g.Cm());
+            gsl_vector_set(par,iC0,g.C0());
+            gsl_vector_set(par,iU,g.U());
+            gsl_vector_set(par,iR0,g.R0());
+            gsl_vector_memcpy(a,par);
+            gsl_vector_div(a,units);
+            useLm=g.useLm();
+            useC0=g.useC0();
+            useR0=g.useR0();
+            useU=g.useU();
+            if(gstatus==QDialog::Accepted && has_table) {
 #define table_append_num(v) table[ifile+1].append(QString::number(v,'f',10)+"\t")
                     table[ifile+1].append("\t"+f.fileName()+"\t");
                     table_append_num(g.fr);
@@ -400,7 +409,6 @@ int main(int argc, char* argv[])
                     table_append_num(g.Va);
                     table_append_num(min->fval);
                     table_append_num(noise);
-                }
             }
 
             gsl_vector_free(par);

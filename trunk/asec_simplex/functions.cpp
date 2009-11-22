@@ -50,7 +50,7 @@ double StDev(const gsl_vector *v, void *params) //sum from 0 to N-1 (I_exp(f)-I(
         {
             double I = If(v,p,data->at(i).x);
             double r = (data->at(i).y-I);
-            S+=r*r;
+            S+=r*r*(-i*(i-data->count()));
         }
     }
     return S/data->count();

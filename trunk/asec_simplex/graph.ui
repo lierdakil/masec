@@ -41,7 +41,7 @@ p, li { white-space: pre-wrap; }
        </property>
       </widget>
      </item>
-     <item row="0" column="4">
+     <item row="0" column="3">
       <widget class="QLabel" name="lbU">
        <property name="text">
         <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
@@ -52,7 +52,7 @@ p, li { white-space: pre-wrap; }
        </property>
       </widget>
      </item>
-     <item row="0" column="5">
+     <item row="0" column="4">
       <widget class="QLabel" name="lbC0">
        <property name="text">
         <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
@@ -63,7 +63,7 @@ p, li { white-space: pre-wrap; }
        </property>
       </widget>
      </item>
-     <item row="0" column="6">
+     <item row="0" column="5">
       <widget class="QLabel" name="lbR0">
        <property name="text">
         <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
@@ -122,7 +122,7 @@ p, li { white-space: pre-wrap; }
        </property>
       </widget>
      </item>
-     <item row="1" column="4">
+     <item row="1" column="3">
       <widget class="QDoubleSpinBox" name="sbU">
        <property name="decimals">
         <number>50</number>
@@ -138,7 +138,7 @@ p, li { white-space: pre-wrap; }
        </property>
       </widget>
      </item>
-     <item row="1" column="5">
+     <item row="1" column="4">
       <widget class="QDoubleSpinBox" name="sbC0">
        <property name="decimals">
         <number>50</number>
@@ -154,7 +154,7 @@ p, li { white-space: pre-wrap; }
        </property>
       </widget>
      </item>
-     <item row="1" column="6">
+     <item row="1" column="5">
       <widget class="QDoubleSpinBox" name="sbR0">
        <property name="decimals">
         <number>50</number>
@@ -181,6 +181,48 @@ p, li { white-space: pre-wrap; }
        </property>
       </widget>
      </item>
+     <item row="2" column="0">
+      <widget class="QCheckBox" name="cbFixRm">
+       <property name="text">
+        <string>Fix</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QCheckBox" name="cbFixLm">
+       <property name="text">
+        <string>Fix</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="2">
+      <widget class="QCheckBox" name="cbFixCm">
+       <property name="text">
+        <string>Fix</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="3">
+      <widget class="QCheckBox" name="cbFixU">
+       <property name="text">
+        <string>Fix</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="4">
+      <widget class="QCheckBox" name="cbFixC0">
+       <property name="text">
+        <string>Fix</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="5">
+      <widget class="QCheckBox" name="cbFixR0">
+       <property name="text">
+        <string>Fix</string>
+       </property>
+      </widget>
+     </item>
     </layout>
    </item>
    <item>
@@ -197,6 +239,7 @@ p, li { white-space: pre-wrap; }
    <class>QwtPlot</class>
    <extends>QFrame</extends>
    <header>qwt_plot.h</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources/>

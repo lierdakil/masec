@@ -6,7 +6,11 @@ Graph::Graph(QVector<qreal> X_exp, QVector<qreal> Y_exp,
              double Rm, double Lm, double Cm ,double U,
              double C0, double R0,
              double fa, double Va,
-             double fr, double Vr) :
+             double fr, double Vr,
+             bool useRm, bool useLm,
+             bool useCm, bool useU,
+             bool useC0, bool useR0,
+             bool usesimplex) :
 QDialog(0),
 m_ui(new Ui::Graph)
 {
@@ -15,24 +19,36 @@ m_ui(new Ui::Graph)
     this->fa=fa;
     this->fr=fr;
     m_ui->setupUi(this);
+    m_ui->cbFixRm->setChecked(useRm);
+    m_ui->cbFixLm->setChecked(useLm);
+    m_ui->cbFixCm->setChecked(useCm);
+    m_ui->cbFixU->setChecked(useU);
+    m_ui->cbFixC0->setChecked(useC0);
+    m_ui->cbFixR0->setChecked(useR0);
     exp.setData(X_exp,Y_exp);
-    fn.setData(X_f,Y_f);
+    if(usesimplex) fn.setData(X_f,Y_f);
     exp.attach(m_ui->qwtPlot);
     fn.attach(m_ui->qwtPlot);
     fn.setPen(QPen(Qt::red));
+    exp.setPen(QPen(Qt::darkBlue));
+    exp.setStyle(QwtPlotCurve::Dots);
     R.setLinePen(Qt::SolidLine);
     R.setLineStyle(QwtPlotMarker::Cross);
     R.setLabel(QwtText(QString("f_r = %1, V_r = %2").arg(fr).arg(Vr),QwtText::AutoText));
     R.setLabelAlignment(Qt::AlignRight | Qt::AlignBottom);
-    R.setValue(fr,Vr);
     R.attach(m_ui->qwtPlot);
     A.setLinePen(Qt::SolidLine);
     A.setLineStyle(QwtPlotMarker::Cross);
     A.setLabel(QwtText(QString("f_a = %1, V_a = %2").arg(fa).arg(Va),QwtText::AutoText));
     A.setLabelAlignment(Qt::AlignLeft | Qt::AlignTop);
-    A.setValue(fa,Va);
     A.attach(m_ui->qwtPlot);
-    m_ui->qwtPlot->update();
+
+    if(usesimplex)
+    {
+        R.setValue(fr,Vr);
+        A.setValue(fa,Va);
+    }
+
     qwtPlotPicker=new QwtPlotPicker(QwtPlot::xBottom,QwtPlot::yLeft,
                                     QwtPlotPicker::PointSelection,
                                     QwtPlotPicker::CrossRubberBand,
@@ -50,6 +66,9 @@ m_ui(new Ui::Graph)
     m_ui->sbR0->setValue(fabs(R0));
     startf=X_f.first();
     endf=X_f.last();
+
+    m_ui->qwtPlot->setBackgroundRole(QPalette::Light);
+    m_ui->qwtPlot->replot();
 
     connect(m_ui->sbRm,SIGNAL(valueChanged(double)),SLOT(sb_valueChanged(double)));
     connect(m_ui->sbCm,SIGNAL(valueChanged(double)),SLOT(sb_valueChanged(double)));
@@ -93,6 +112,31 @@ double Graph::C0()
 double Graph::R0()
 {
     return m_ui->sbR0->value();
+}
+
+bool Graph::useRm()
+{
+    return m_ui->cbFixRm->isChecked();
+}
+bool Graph::useLm()
+{
+    return m_ui->cbFixLm->isChecked();
+}
+bool Graph::useCm()
+{
+    return m_ui->cbFixCm->isChecked();
+}
+bool Graph::useU()
+{
+    return m_ui->cbFixU->isChecked();
+}
+bool Graph::useC0()
+{
+    return m_ui->cbFixC0->isChecked();
+}
+bool Graph::useR0()
+{
+    return m_ui->cbFixR0->isChecked();
 }
 
 void Graph::changeEvent(QEvent *e)
