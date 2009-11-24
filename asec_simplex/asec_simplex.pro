@@ -15,15 +15,17 @@ HEADERS += point2d.h \
     graph.h \
     functions.h
 win32 {
-    INCLUDEPATH += C:\Qwt-5.2.0-svn\include \
+    INCLUDEPATH += C:\Qwt-5.2.1-svn\include \
         C:\gsl\include
-    LIBS += -L C:\Qwt-5.2.0-svn\lib \
+    LIBS += -L C:\Qwt-5.2.1-svn\lib \
         -L "C:\gsl\lib"
+    LIBS += -lqwt5
 }
 unix {
     INCLUDEPATH += /usr/include \
         /usr/include/qwt5 \
         /usr/include/qwt-qt4
+    LIBS += -lqwt
 }
 
 system($$QMAKE_CXX dummy.cpp -o $$DESTDIR/dummy){
@@ -33,7 +35,6 @@ system($$QMAKE_CXX dummy.cpp -o $$DESTDIR/dummy){
 }
 
 #Debian uses -lqwt-qt4
-LIBS += -lqwt \
-    -lgsl \
+LIBS += -lgsl \
     -lgslcblas
 FORMS += graph.ui

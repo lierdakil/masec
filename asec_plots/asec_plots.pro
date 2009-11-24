@@ -18,14 +18,14 @@ FORMS += qplotparam.ui \
     asec_plots.ui
 RESOURCES +=
 win32{
-    INCLUDEPATH += C:\Qwt-5.2.0-svn\include
-    LIBS += -L C:\Qwt-5.2.0-svn\lib
+    INCLUDEPATH += C:\Qwt-5.2.1-svn\include
+    LIBS += -L C:\Qwt-5.2.1-svn\lib
+    LIBS += -lqwt5
 }
 else {
     INCLUDEPATH += /usr/include \
         /usr/include/qwt5 \
         /usr/include/qwt-qt4
+    #Debian uses -lqwt-qt4 instead
+    LIBS += -lqwt
 }
-
-#Debian uses -lqwt-qt4 instead
-LIBS += -lqwt

@@ -20,11 +20,11 @@
 //#define LAMBDA 1.540562
 #define PI 3.1415926535
 
-int main(void)
+int main()
 {
     int i, j;
     gsl_matrix *a;
-    gsl_vector *x, *b,;
+    gsl_vector *x, *b;
 //    int signum;
 //    gsl_permutation *perm;
 

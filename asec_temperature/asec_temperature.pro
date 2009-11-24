@@ -25,12 +25,13 @@ LIBS += -L../build \
     -lasec_gpib
 
 win32 {
-    INCLUDEPATH += C:\Qwt-5.2.0-svn\include
-    LIBS += -L C:\Qwt-5.2.0-svn\lib
+    INCLUDEPATH += C:\Qwt-5.2.1-svn\include
+    LIBS += -L C:\Qwt-5.2.1-svn\lib
+    LIBS += -lqwt5
 }
 unix {
     INCLUDEPATH += /usr/include \
         /usr/include/qwt5 \
         /usr/include/qwt-qt4
+    LIBS += -lqwt
 }
-LIBS += -lqwt
