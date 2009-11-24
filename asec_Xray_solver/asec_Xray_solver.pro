@@ -18,15 +18,10 @@ SOURCES += main.cpp
 
 win32 {
     INCLUDEPATH += C:\MinGW\include
-    LIBS += -L "C:\MinGW\lib"
 }
 
 unix {
-    INCLUDEPATH += /usr/include \
-        /usr/include/qwt5 \
-        /usr/include/qwt-qt4
-    QMAKE_CXXFLAGS+= -fopenmp
-    QMAKE_LFLAGS+= -fopenmp
+    INCLUDEPATH += /usr/include
 }
 
 #Debian uses -lqwt-qt4
