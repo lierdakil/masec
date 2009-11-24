@@ -17,8 +17,8 @@ TEMPLATE = app
 SOURCES += main.cpp
 
 win32 {
-    INCLUDEPATH += C:\gsl\include
-    LIBS += -L "C:\gsl\lib"
+    INCLUDEPATH += C:\MinGW\include
+    LIBS += -L "C:\MinGW\lib"
 }
 
 unix {

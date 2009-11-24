@@ -17,7 +17,7 @@
 
 class vib_temperature : public QWidget
 {
-    Q_OBJECT
+    Q_OBJECT;
 
 public:
     vib_temperature(QWidget *parent = 0);
