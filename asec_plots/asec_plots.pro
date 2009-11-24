@@ -20,7 +20,7 @@ RESOURCES +=
 win32{
     INCLUDEPATH += C:\Qwt-5.2.1-svn\include
     LIBS += -L C:\Qwt-5.2.1-svn\lib
-    LIBS += -lqwt5
+    LIBS += -lqwt
 }
 else {
     INCLUDEPATH += /usr/include \

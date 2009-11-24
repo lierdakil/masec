@@ -4,13 +4,13 @@
 #include <exception>
 #include "defines.h"
 
-int doCalculate(QFile *f, QString prefixf, QString prefixV)
+int doCalculate(QTextStream *in, QTextStream *out, QString prefixf, QString prefixV)
 {
     double Mq=-1, Ms=-1, Fr=-1, ls=-1, hs=-1, ws=-1, rho=-1;
     QString line;
     do
     {
-        line=QString::fromLocal8Bit(f->readLine()).trimmed();
+        line=in->readLine().trimmed();
         if(line.startsWith('#'))
         {
             getparam(Mq,gm);
@@ -20,7 +20,7 @@ int doCalculate(QFile *f, QString prefixf, QString prefixV)
             getparam(hs,cm);
             getparam(ws,cm);
             getparam(rho,gm/cm3);
-            //std::cout<<line.toLocal8Bit().data();
+            *out<<line<<"\n";
         }
     } while (line.startsWith('#'));
 
@@ -39,15 +39,12 @@ int doCalculate(QFile *f, QString prefixf, QString prefixV)
     header<<"fs, Hz";
     header<<"E, dn,cm2";
     header<<"1/Q";
-    std::cout<<header.join("\t").append("\n").toLocal8Bit().data();
-    QByteArray buf;
+    *out<<header.join("\t")<<"\n";
     while(true)
     {
-
-        buf=f->readLine();
-        if(buf.isEmpty())
+        line=in->readLine().trimmed();
+        if(line.isEmpty())
             break;
-        line=QString::fromLocal8Bit(buf).trimmed();
 
         if(line.isEmpty())
             continue;
@@ -74,7 +71,7 @@ int doCalculate(QFile *f, QString prefixf, QString prefixV)
         data_append(fs);
         data_append(E);
         data_append(Q1);
-        std::cout<<data.join("\t").append("\n").toLocal8Bit().data();
+        *out<<data.join("\t")<<"\n";
     }
 
     return 0;
@@ -83,8 +80,6 @@ int doCalculate(QFile *f, QString prefixf, QString prefixV)
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-    QFile f;
-    QString prefixf,prefixV;
     QString parameters;
     QStringList arguments;
     bool consoleonly=false;
@@ -118,19 +113,42 @@ int main(int argc, char *argv[])
         }
     }
 
+    QFile in;
+    QFile out;
+    QString prefixf,prefixV;
+
     if (consoleonly)
     {
         if(arguments.length()>=1)
             prefixf=arguments[0]+" ";
         if(arguments.length()>=2)
             prefixV=arguments[1]+" ";
-        if(f.open(0,QIODevice::ReadOnly))
-        {
-            doCalculate(&f,prefixf,prefixV);
-            f.close();
-            return 0;
-        } else {
-            return 2;
-        }
+        in.open(0,QIODevice::ReadOnly);
+        out.open(1,QIODevice::WriteOnly);
+    } else {
+        in.setFileName(
+                QFileDialog::getOpenFileName(
+                        0,
+                        "ASCII table with rough experimental data",
+                        "","ASCII Table (*.txt)"
+                        )
+                );
+        in.open(QIODevice::ReadOnly | QIODevice::Text);
+        out.setFileName(
+                QFileDialog::getSaveFileName(
+                        0,
+                        "ASCII table to save to",
+                        "","ASCII Table (*.txt)"
+                        )
+                );
+        out.open(QIODevice::WriteOnly | QIODevice::Text);
+        prefixf=QInputDialog::getText(0,"Frequency column prefix", "Enter frequency column name prefix (usually Simplex) to use as calculation basis");
+        prefixV=QInputDialog::getText(0,"Amplitude column prefix", "Enter amplitude column name prefix (usually Simplex) to use as calculation basis");
     }
+    QTextStream instream(&in);
+    QTextStream outstream(&out);
+    doCalculate(&instream,&outstream,prefixf,prefixV);
+    in.close();
+    out.close();
+    return 0;
 }

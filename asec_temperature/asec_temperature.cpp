@@ -133,7 +133,7 @@ void vib_temperature::newpoint(float time, float temp, float setpoint)
     {
         QFile f(filename);
 
-        f.open(QFile::WriteOnly | QFile::Append);
+        f.open(QFile::WriteOnly | QFile::Append | QIODevice::Text);
         f.write(QString("%1\t%2\t%3\n").arg(clock()).arg(setpoint,0,'f').arg(temp,0,'f').toLocal8Bit());
         f.close();
     }

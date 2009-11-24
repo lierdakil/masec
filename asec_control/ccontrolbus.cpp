@@ -226,7 +226,7 @@ int CControlBus::call(QString function, QString service, QList<QScriptValue> arg
     result_row_mutex.lock();
     if(last_call=="mes" && function.left(function.indexOf("_"))=="set")
     {
-        while(!data_file->open(QIODevice::Append))
+        while(!data_file->open(QIODevice::Append | QIODevice::Text))
         {
             if(QMessageBox::warning(0,tr("Failed to open data file"),
                                     tr("Program was unable to open data file. Retry?"),
