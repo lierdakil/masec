@@ -427,23 +427,23 @@ void MeasureThread::run()
         if(!filename.isEmpty())
         {
             QFile f(filename+"_forward.txt");
-            f.open(QFile::WriteOnly);
+            f.open(QFile::WriteOnly | QIODevice::Text);
             foreach(QString s, data)
             {
                 f.write("#");
                 f.write(s.toAscii());
-                f.write("\r\n");
+                f.write("\n");
             }
             f.write(QString("Frequency, Hz").toAscii());
             f.write("\t");
             f.write(QString("Amplitude, V").toAscii());
-            f.write("\r\n");
+            f.write("\n");
             for(int i=0;i<curve_forward_x.count();i++)
             {
                 f.write(QString::number(curve_forward_x.at(i),'f',10).toAscii());
                 f.write("\t");
                 f.write(QString::number(curve_forward_y.at(i),'f',10).toAscii());
-                f.write("\r\n");
+                f.write("\n");
             }
             f.close();
         }
@@ -451,23 +451,23 @@ void MeasureThread::run()
         if(!filename.isEmpty())
         {
             QFile f(filename+"_reverse.txt");
-            f.open(QFile::WriteOnly);
+            f.open(QFile::WriteOnly | QIODevice::Text);
             foreach(QString s, data)
             {
                 f.write("#");
                 f.write(s.toAscii());
-                f.write("\r\n");
+                f.write("\n");
             }
             f.write(QString("Frequency, Hz").toAscii());
             f.write("\t");
             f.write(QString("Amplitude, V").toAscii());
-            f.write("\r\n");
+            f.write("\n");
             for(int i=0;i<curve_reverse_x.count();i++)
             {
                 f.write(QString::number(curve_reverse_x.at(i),'f',10).toAscii());
                 f.write("\t");
                 f.write(QString::number(curve_reverse_y.at(i),'f',10).toAscii());
-                f.write("\r\n");
+                f.write("\n");
             }
             f.close();
         }
@@ -475,23 +475,23 @@ void MeasureThread::run()
         if(!filename.isEmpty())
         {
             QFile f(filename+"_wide.txt");
-            f.open(QFile::WriteOnly);
+            f.open(QFile::WriteOnly | QIODevice::Text);
             foreach(QString s, data)
             {
                 f.write("#");
                 f.write(s.toAscii());
-                f.write("\r\n");
+                f.write("\n");
             }
             f.write(QString("Frequency, Hz").toAscii());
             f.write("\t");
             f.write(QString("Amplitude, V").toAscii());
-            f.write("\r\n");
+            f.write("\n");
             for(int i=0;i<curve_wide_x.count();i++)
             {
                 f.write(QString::number(curve_wide_x.at(i),'f',10).toAscii());
                 f.write("\t");
                 f.write(QString::number(curve_wide_y.at(i),'f',10).toAscii());
-                f.write("\r\n");
+                f.write("\n");
             }
             f.close();
         }

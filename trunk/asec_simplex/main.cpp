@@ -66,8 +66,8 @@ int main(int argc, char* argv[])
         rawdatanames.sort();
         ft.setFileName(asciitablename);
         output.setFileName(QFileDialog::getSaveFileName(0,"Ascii table to save","","ASCII Table (*.txt)"));
-        is_file_open_read=ft.open(QFile::ReadOnly);
-        is_file_open_write=output.open(QFile::WriteOnly);
+        is_file_open_read=ft.open(QFile::ReadOnly | QIODevice::Text);
+        is_file_open_write=output.open(QFile::WriteOnly | QIODevice::Text);
     } else {
         //Console mode
         rawdatanames=arguments;
@@ -123,7 +123,7 @@ int main(int argc, char* argv[])
     for(int ifile=0;ifile<rawdatanames.count();++ifile)
     {
         QFile f(rawdatanames[ifile]);
-        if (!f.open(QIODevice::ReadOnly))
+        if (!f.open(QIODevice::ReadOnly | QIODevice::Text))
         {
             std::cerr<<"could not open "<<rawdatanames.at(ifile).toLocal8Bit().data();
             return 2;

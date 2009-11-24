@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
     if(arguments.count()==1 && !usegui)
     {
         QFile f(arguments[0]);
-        if (f.open(QIODevice::ReadOnly))
+        if (f.open(QIODevice::ReadOnly | QIODevice::Text))
         {
             QString line;
             QStringList header;

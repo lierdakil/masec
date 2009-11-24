@@ -111,7 +111,7 @@ void vib_control::on_btSaveCode_clicked()
     if(fd.exec())
     {
         QFile f(fd.selectedFiles().first());
-        if(f.open(QIODevice::WriteOnly))
+        if(f.open(QIODevice::WriteOnly | QIODevice::Text))
         {
             f.write(ui.code->textEdit()->toPlainText().toUtf8());
             f.close();
@@ -127,7 +127,7 @@ void vib_control::on_btLoadCode_clicked()
     if(fd.exec())
     {
         QFile f(fd.selectedFiles().first());
-        if(f.open(QIODevice::ReadOnly))
+        if(f.open(QIODevice::ReadOnly | QIODevice::Text))
         {
             ui.code->textEdit()->setPlainText(QString::fromUtf8(f.readAll()));
             f.close();

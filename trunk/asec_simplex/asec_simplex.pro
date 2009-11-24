@@ -5,7 +5,7 @@ QT += gui \
     core
 TARGET = asec_simplex
 TEMPLATE = app
-CONFIG += console
+CONFIG += console release
 DESTDIR = ../build/
 SOURCES += point2d.cpp \
     main.cpp \
@@ -15,17 +15,12 @@ HEADERS += point2d.h \
     graph.h \
     functions.h
 win32 {
-    INCLUDEPATH += C:\Qwt-5.2.1-svn\include \
-        C:\gsl\include
-    LIBS += -L C:\Qwt-5.2.1-svn\lib \
-        -L "C:\gsl\lib"
-    LIBS += -lqwt5
+    INCLUDEPATH += C:\MinGW\include
 }
 unix {
     INCLUDEPATH += /usr/include \
         /usr/include/qwt5 \
         /usr/include/qwt-qt4
-    LIBS += -lqwt
 }
 
 system($$QMAKE_CXX dummy.cpp -o $$DESTDIR/dummy){
@@ -35,6 +30,7 @@ system($$QMAKE_CXX dummy.cpp -o $$DESTDIR/dummy){
 }
 
 #Debian uses -lqwt-qt4
+LIBS += -lqwt
 LIBS += -lgsl \
     -lgslcblas
 FORMS += graph.ui
