@@ -28,7 +28,7 @@ unix {
 
 system($$QMAKE_CXX dummy.cpp -o $$DESTDIR/dummy){
     message(Enabling OpenMP support...)
-    QMAKE_CXXFLAGS+= -fopenmp
+    QMAKE_CXXFLAGS+= -fopenmp -DOPENMP
     QMAKE_LFLAGS+= -fopenmp
 }
 

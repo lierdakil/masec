@@ -1,4 +1,8 @@
 #include "functions.h"
+//#define OPENMP
+#ifndef OPENMP
+#include <QtConcurrentRun>
+#endif
 
 double If(const gsl_vector *v, void *params, double f) //I(f)
 {
@@ -35,6 +39,7 @@ double If(const gsl_vector *v, void *params, double f) //I(f)
         return GSL_NAN;
 }
 
+#ifdef OPENMP
 double StDev(const gsl_vector *v, void *params) //sum from 0 to N-1 (I_exp(f)-I(f))**2
 {
     param_struct *p = (param_struct*)params;
@@ -55,6 +60,28 @@ double StDev(const gsl_vector *v, void *params) //sum from 0 to N-1 (I_exp(f)-I(
     }
     return S/data->count();
 }
+#else
+double part(int start, int stop, const gsl_vector *v, param_struct *p)
+{
+    double S=0;
+    for(int i=start; i<stop; ++i)
+    {
+        double I = If(v,p,p->data->at(i).x);
+        double r = (p->data->at(i).y-I);
+        S+=r*r*(-i*(i-p->data->count()));
+    }
+    return S;
+}
+
+double StDev(const gsl_vector *v, void *params) //sum from 0 to N-1 (I_exp(f)-I(f))**2
+{
+    param_struct *p = (param_struct*)params;
+    QFuture<double> S1=QtConcurrent::run(part,0,p->data->count()/2,v,p);
+    QFuture<double> S2=QtConcurrent::run(part,p->data->count()/2,p->data->count(),v,p);
+    double S=S1.result()+S2.result();
+    return S/p->data->count();
+}
+#endif
 
 Point2D find_extremum(QVector<Point2D> dat, bool max, int* index)
 {
