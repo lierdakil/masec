@@ -7,6 +7,14 @@ QPlotWindow::QPlotWindow(bool *success)
     X_iface=0;
     Y_iface=0;
     *success=editparams();
+    ui.qwtPlot->setBackgroundRole(QPalette::Light);
+    picker=new QwtPlotPicker(QwtPlot::xBottom,QwtPlot::yLeft,
+                             QwtPlotPicker::NoSelection,
+                             QwtPlotPicker::CrossRubberBand,
+                             QwtPlotPicker::AlwaysOn,
+                             ui.qwtPlot->canvas());
+    symbol.setStyle(QwtSymbol::Ellipse);
+    curve.setSymbol(symbol);
     curve.attach(ui.qwtPlot);
 }
 
@@ -16,6 +24,7 @@ QPlotWindow::~QPlotWindow()
     disconnect(Y_iface,SIGNAL(finished(QStringList)),this,SLOT(new_Y(QStringList)));
     delete X_iface;
     delete Y_iface;
+    delete picker;
 }
 
 bool QPlotWindow::editparams()

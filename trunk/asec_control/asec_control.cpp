@@ -164,13 +164,25 @@ void vib_control::on_cbFunction_currentIndexChanged(QString item)
         script_error(help);
 }
 
+QString vib_control::minstotime(int mins)
+{
+    if(mins<60)
+        return trUtf8("%1 m").arg(mins);
+    else
+        return trUtf8("%1 h %2 m").arg((mins)/60).arg(
+                (mins)%60);
+}
+
 void vib_control::update_time(int calls, int max_calls, int time, int max_time)
 {
     if(max_time>0 && time>0)
     {
         ui.progressBar->setMaximum(max_calls);
         ui.progressBar->setValue(calls);
-        ui.lbStatus->setText(trUtf8("Left %1 of %2 minutes").arg(max_time-time).arg(max_time));
+
+        ui.lbStatus->setText(trUtf8("Left %1 of %2").arg(
+                minstotime(max_time-time)).arg(
+                minstotime(max_time)));
         this->time_elapsed=time;
         this->time_max=max_time;
     }
@@ -181,7 +193,9 @@ void vib_control::progressTime()
     if(time_max>0)
     {
         time_elapsed++;
-        ui.lbStatus->setText(trUtf8("Left %1 of %2 minutes").arg(time_max-time_elapsed).arg(time_max));;
+        ui.lbStatus->setText(trUtf8("Left %1 of %2").arg(
+                minstotime(time_max-time_elapsed)).arg(
+                minstotime(time_max)));
     } else {
         ui.lbStatus->setText(trUtf8("Estimating time..."));;
     }

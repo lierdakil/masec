@@ -31,7 +31,10 @@ m_ui(new Ui::Graph)
     fn.attach(m_ui->qwtPlot);
     fn.setPen(QPen(Qt::red));
     exp.setPen(QPen(Qt::darkBlue));
-    exp.setStyle(QwtPlotCurve::Dots);
+    exp.setStyle(QwtPlotCurve::NoCurve);
+    symbol.setStyle(QwtSymbol:: Ellipse);
+    symbol.setPen(QPen(Qt::darkBlue));
+    exp.setSymbol(symbol);
     R.setLinePen(Qt::SolidLine);
     R.setLineStyle(QwtPlotMarker::Cross);
     R.setLabel(QwtText(QString("f_r = %1, V_r = %2").arg(fr).arg(Vr),QwtText::AutoText));

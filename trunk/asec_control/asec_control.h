@@ -12,6 +12,8 @@ class vib_control : public QWidget
 {
     Q_OBJECT
 
+private:
+    inline QString minstotime(int mins);
 public:
     vib_control(QWidget *parent = 0);
     ~vib_control();
