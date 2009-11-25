@@ -40,7 +40,6 @@ public:
     double Va;
     double fr;
     double fa;
-    QwtPlotPicker* qwtPlotPicker;
 
     virtual ~Graph();
 
@@ -54,6 +53,8 @@ private:
     QwtPlotMarker R;
     QwtPlotMarker A;
     double startf,endf;
+    QwtPlotPicker* qwtPlotPicker;
+    QwtSymbol symbol;
     bool setres;//setres=true - setting resonance, false -- antiresonance
 
 private slots:
