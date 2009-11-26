@@ -93,12 +93,14 @@ CControlBus::~CControlBus()
     }
 
     foreach(QDBusInterface* flow, flow_interfaces)
+    {
+        flow->disconnect();
         delete flow;
+    }
 
     foreach(QDBusInterface* exports, exports_interfaces)
         delete exports;
 
-    //TODO: diconnect critical?
     QMutexLocker locker(&file_mutex);
     QMutexLocker locker_result(&result_row_mutex);
     // Закрыть файл, вычистить все лишнее и тд и тп.
@@ -174,7 +176,6 @@ void CControlBus::reply_call(QStringList values)
     eventloop_mutex.unlock();
 }
 
-//TODO: get module name from DBus
 void CControlBus::critical_call(QString module, QString message)
 {
     QStringList reply_t;
@@ -330,6 +331,7 @@ int CControlBus::call(QString function, QString service, QList<QScriptValue> arg
         reply_wait=new QEventLoop(this);
     else {
         emit call_error(tr("Tried to create event loop, but it's already there!"));
+        eventloop_mutex.unlock();
         return R_CALL_ERROR;
     }
     eventloop_mutex.unlock();
@@ -347,7 +349,6 @@ int CControlBus::call(QString function, QString service, QList<QScriptValue> arg
     //other threads and to avoid race conditions
 
     //since local event loop finished, reply is here, so disconect
-    //TODO: does it really disconnect here?
     if(!disconnect(flow,SIGNAL(finished(QStringList)),this,SLOT(reply_call(QStringList))))
     {
         emit call_error(tr("Could not disconnect reply_call"));
