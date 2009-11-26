@@ -83,7 +83,6 @@ int main(int argc, char *argv[])
     QString parameters;
     QStringList arguments;
     bool consoleonly=false;
-    //TODO: add GUI, use files instead of STDIN in gui mode
 
     for(int i=1; i<argc; ++i)
     {
