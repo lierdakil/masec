@@ -361,8 +361,9 @@ int CControlBus::call(QString function, QString service, QList<QScriptValue> arg
         }
         if(last_call=="mes" && function.left(function.indexOf("_"))=="set") //если началась новая "строка"
             data_file->write(QString("\n").toUtf8());//Перейдем на новую строку
+        else //Иначе идет дописка к текущей строке
+            data_file->write(";");//поэтому нужно дописать разделитель
         data_file->write(reply.join(";").toUtf8());//Сохраняем ответ
-        data_file->write(";");//не забыв дописать ; в конец строки
         data_file->close();
     }
     file_mutex.unlock();
