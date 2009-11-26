@@ -236,13 +236,14 @@ int CControlBus::call(QString function, QString service, QList<QScriptValue> arg
             {
                 result_row.clear();
                 emit call_error(tr("Failed to open data file. Abort by user."));
+                file_mutex.unlock();
+                result_row_mutex.unlock();
                 return R_CALL_ERROR_UNRECOVERABLE;
             }
         }
         data_file->write(result_row.join(";").toUtf8());
         data_file->write(QString("\n").toUtf8());
         data_file->close();
-        emit new_row(result_row);
         result_row.clear();
     }
     result_row_mutex.unlock();
