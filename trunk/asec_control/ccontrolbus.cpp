@@ -121,7 +121,6 @@ CControlBus::~CControlBus()
 
     data_file->write(result_row.join(";").toUtf8());
     data_file->close();
-    emit new_row(result_row);
     result_row.clear();
     delete data_file;
 }
