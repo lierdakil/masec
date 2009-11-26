@@ -164,7 +164,7 @@ int main(int argc, char* argv[])
 
         QVector<Point2D> func_sm_data; //smoothen initial data and lessen number of points
         double noise=0;
-        int step=50;
+        int step=24;
         for(int i=step/2;i<func_data.count()-step/2;++i)
         {
             double y=0;
@@ -284,7 +284,6 @@ int main(int argc, char* argv[])
                     break;
 
                 double size = gsl_multimin_fminimizer_size(min);
-                //status = gsl_multimin_test_size (size, 1e-10);
                 if(size!=oldsize || iter%10!=9 || size>10)
                     status=GSL_CONTINUE;
                 else
@@ -369,6 +368,7 @@ int main(int argc, char* argv[])
             if(useU) gsl_vector_set(par,4,inU);
             if(useR0) gsl_vector_set(par,5,inR0);
 
+            double StDev=min->fval;
             gsl_multimin_fminimizer_free(min);
             gsl_vector_free(ss);
 
@@ -377,7 +377,7 @@ int main(int argc, char* argv[])
                     gsl_vector_get(par,5), minf, minI, maxf, maxI, false, useLm, false, useU, useC0,
                     useR0, usesimplex==QMessageBox::Yes);
             g.setWindowTitle(f.fileName());
-            g.setWindowState(Qt::WindowMaximized);
+            g.setWindowState(Qt::WindowFullScreen);
             if(!consoleonly)
                 gstatus=g.exec();
             else
@@ -407,7 +407,7 @@ int main(int argc, char* argv[])
                     table_append_num(g.Vr);
                     table_append_num(g.fa);
                     table_append_num(g.Va);
-                    table_append_num(min->fval);
+                    table_append_num(StDev);
                     table_append_num(noise);
             }
 

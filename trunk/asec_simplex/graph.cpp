@@ -32,8 +32,9 @@ m_ui(new Ui::Graph)
     fn.setPen(QPen(Qt::red));
     exp.setPen(QPen(Qt::darkBlue));
     exp.setStyle(QwtPlotCurve::NoCurve);
-    symbol.setStyle(QwtSymbol:: Ellipse);
+    symbol.setStyle(QwtSymbol::Ellipse);
     symbol.setPen(QPen(Qt::darkBlue));
+    symbol.setSize(3,3);
     exp.setSymbol(symbol);
     R.setLinePen(Qt::SolidLine);
     R.setLineStyle(QwtPlotMarker::Cross);
@@ -187,7 +188,7 @@ void Graph::sb_valueChanged(double val)
     fa = startf;
 
     QVector<qreal> X_f,Y_f;
-    for(double f=startf; f<endf; ++f)
+    for(double f=startf; f<endf; f+=1)
     {
         double I=If((const gsl_vector*)NULL, &func_params, f);
         X_f.push_back(f);
