@@ -102,26 +102,9 @@ CControlBus::~CControlBus()
         delete exports;
 
     QMutexLocker locker(&file_mutex);
-    QMutexLocker locker_result(&result_row_mutex);
     // Закрыть файл, вычистить все лишнее и тд и тп.
-    while(!data_file->open(QIODevice::Append))
-    {
-        if(QMessageBox::warning(0,tr("Failed to open data file"),
-                                tr("Program was unable to open data file. Retry?"),
-                                QMessageBox::Retry||QMessageBox::Abort,
-                                QMessageBox::Retry)==QMessageBox::Retry)
-            continue;
-        else
-        {
-            result_row.clear();
-            delete data_file;
-            return;
-        }
-    }
-
-    data_file->write(result_row.join(";").toUtf8());
-    data_file->close();
-    result_row.clear();
+    if(data_file->isOpen())
+        data_file->close();
     delete data_file;
 }
 
@@ -221,32 +204,6 @@ int CControlBus::call(QString function, QString service, QList<QScriptValue> arg
         emit call_error(trUtf8("Experiment was not started or stopped before end of script!"));
         return R_CALL_ERROR;
     }
-
-    file_mutex.lock();
-    result_row_mutex.lock();
-    if(last_call=="mes" && function.left(function.indexOf("_"))=="set")
-    {
-        while(!data_file->open(QIODevice::Append | QIODevice::Text))
-        {
-            if(QMessageBox::warning(0,tr("Failed to open data file"),
-                                    tr("Program was unable to open data file. Retry?"),
-                                    QMessageBox::Retry||QMessageBox::Abort,
-                                    QMessageBox::Retry)==QMessageBox::Abort)
-            {
-                result_row.clear();
-                emit call_error(tr("Failed to open data file. Abort by user."));
-                file_mutex.unlock();
-                result_row_mutex.unlock();
-                return R_CALL_ERROR_UNRECOVERABLE;
-            }
-        }
-        data_file->write(result_row.join(";").toUtf8());
-        data_file->write(QString("\n").toUtf8());
-        data_file->close();
-        result_row.clear();
-    }
-    result_row_mutex.unlock();
-    file_mutex.unlock();
 
     //читаем список функций на интерфейсе exports
     QDBusInterface* exports=0;//(service,"/","ru.pp.livid.asec.exports")
@@ -387,10 +344,28 @@ int CControlBus::call(QString function, QString service, QList<QScriptValue> arg
         return R_CALL_SUCCESS;
     }
 
-    //Сохренение материала из возвращенного значения в result_row
-    result_row_mutex.lock();
-    result_row<<reply;
-    result_row_mutex.unlock();
+    //Сохренение материала из возвращенного значения в файл
+    file_mutex.lock();
+    {
+        while(!data_file->open(QIODevice::Append | QIODevice::Text))
+        {
+            if(QMessageBox::warning(0,tr("Failed to open data file"),
+                                    tr("Program was unable to open data file. Retry?"),
+                                    QMessageBox::Retry||QMessageBox::Abort,
+                                    QMessageBox::Retry)==QMessageBox::Abort)
+            {
+                emit call_error(tr("Failed to open data file. Abort by user."));
+                file_mutex.unlock();
+                return R_CALL_ERROR_UNRECOVERABLE;
+            }
+        }
+        if(last_call=="mes" && function.left(function.indexOf("_"))=="set") //если началась новая "строка"
+            data_file->write(QString("\n").toUtf8());//Перейдем на новую строку
+        data_file->write(reply.join(";").toUtf8());//Сохраняем ответ
+        data_file->write(";");//не забыв дописать ; в конец строки
+        data_file->close();
+    }
+    file_mutex.unlock();
 
     last_call=function.left(function.indexOf('_'));
 

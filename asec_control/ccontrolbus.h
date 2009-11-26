@@ -33,11 +33,9 @@ class CControlBus : public QObject
     Q_OBJECT
 
 private:
-    QStringList result_row;
     QFile *data_file;
     QString last_call;
     QMutex file_mutex;
-    QMutex result_row_mutex;
     QMutex eventloop_mutex;
     QEventLoop *reply_wait;
     QStringList reply;

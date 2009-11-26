@@ -58,6 +58,8 @@ int main(int argc, char *argv[])
                 QStringList dataline=line.split(";");
                 foreach(QString entry, dataline)
                 {
+                    if(!entry.contains(":"))
+                        continue;
                     QString name=entry.split(":").at(0);
                     if(!header.contains(name))
                         header<<name;
@@ -84,6 +86,8 @@ int main(int argc, char *argv[])
                 row.fill("0",header.count());
                 foreach(QString entry, dataline)
                 {
+                    if(!entry.contains(":"))
+                        continue;
                     QString name=entry.split(":").at(0);
                     QString value=entry.split(":").at(1);
                     int id=header.indexOf(name);
